@@ -85,6 +85,12 @@ export interface MapViewProps {
   heatMode: HeatMode;
   /** User-tuned heat opacity multiplier, 0 (transparent) → 1 (full). */
   heatOpacity: number;
+  /**
+   * Transient highlight target set when a search result is selected.
+   * `id` changes on every selection so repeat picks re-trigger the pulse.
+   * `null` clears the pulse.
+   */
+  highlight: { id: number; lng: number; lat: number; areaId: string | null } | null;
   onMapReady: (map: MapRef) => void;
 }
 
@@ -98,8 +104,10 @@ export default function MapView({
   latestReport,
   heatMode,
   heatOpacity,
+  highlight,
   onMapReady,
 }: MapViewProps) {
+
   /** The community layer emphasises the choropleth; others emphasise heat. */
   const areaFocused = layer.categories.length === 0;
   const showIncidentHeat = heatMode !== "ambient";
@@ -224,7 +232,22 @@ export default function MapView({
             "line-opacity-transition": { duration: 300, delay: 0 },
           }}
         />
+        {/* Transient highlight ring around the polygon matched by search. */}
+        <Layer
+          id="areas-highlight"
+          type="line"
+          filter={["==", ["get", "id"], highlight?.areaId ?? "__none__"]}
+          paint={{
+            "line-color": "#F59E0B",
+            "line-width": highlight ? 6 : 0,
+            "line-blur": 2,
+            "line-opacity": highlight ? 0.95 : 0,
+            "line-width-transition": { duration: 400, delay: 0 },
+            "line-opacity-transition": { duration: 400, delay: 0 },
+          }}
+        />
       </Source>
+
 
       {/*
         Ambient street-level heat: a soft baseline that covers every area.
@@ -415,6 +438,23 @@ export default function MapView({
         </Marker>
       )}
 
+      {highlight && (
+        <Marker
+          // Keying on the selection id remounts the node so the CSS
+          // animation restarts even when the same result is picked twice.
+          key={highlight.id}
+          longitude={highlight.lng}
+          latitude={highlight.lat}
+          anchor="center"
+        >
+          <span className="pointer-events-none relative block size-6">
+            <span className="absolute -inset-3 animate-ping rounded-full bg-warning/40" />
+            <span className="absolute inset-0 animate-ping rounded-full bg-warning/60" />
+            <span className="absolute inset-1.5 rounded-full border-2 border-white bg-warning shadow-lg" />
+          </span>
+        </Marker>
+      )}
+
       {latestReport && (
         <Marker longitude={latestReport.lng} latitude={latestReport.lat} anchor="bottom">
           <span className="relative block size-5 animate-in zoom-in duration-500">
@@ -423,6 +463,7 @@ export default function MapView({
           </span>
         </Marker>
       )}
+
     </Map>
   );
 }
