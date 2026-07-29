@@ -157,3 +157,21 @@ export interface SearchEntry {
  *  - "both"    : incident heat layered over the ambient baseline (default)
  */
 export type HeatMode = "incident" | "ambient" | "both";
+
+/**
+ * A selectable district / division. Districts exist independently of seeded
+ * `AreaProperties`, so a district may have no micro (street/para) coverage.
+ */
+export interface District {
+  id: string;
+  nameBn: string;
+  nameEn: string;
+  /** Division the district belongs to, shown as the selector subtitle. */
+  divisionBn: string;
+  divisionEn: string;
+  center: [number, number];
+  /** Camera zoom applied when the district is selected. */
+  zoom: number;
+  /** Seeded `AreaProperties.id`s inside this district; empty when unseeded. */
+  areaIds: string[];
+}

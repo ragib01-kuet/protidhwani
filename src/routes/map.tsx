@@ -1,6 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClientOnly, createFileRoute, useRouter } from "@tanstack/react-router";
-import { ChevronLeft, Loader2, MapPin } from "lucide-react";
+import { ChevronLeft, Loader2, MapPin, TriangleAlert } from "lucide-react";
 import type { MapRef } from "react-map-gl/maplibre";
 
 import { AdvisoryToast, type Advisory } from "@/components/alerts/AdvisoryToast";
@@ -15,9 +15,17 @@ import { ReportFAB } from "@/components/reports/ReportFAB";
 import { ReportModal } from "@/components/reports/ReportModal";
 import { AreaInfoSheet } from "@/components/safety/AreaInfoSheet";
 import { InsightCard } from "@/components/safety/InsightCard";
-import { AREAS, DEMO_ROUTES, DHAKA_FALLBACK } from "@/data/safety-data";
+import { DistrictSelector } from "@/components/map/DistrictSelector";
+import {
+  AREAS,
+  DEMO_ROUTES,
+  DHAKA_FALLBACK,
+  DISTRICTS,
+  hasMicroCoverage,
+} from "@/data/safety-data";
 import { useSafetyLayer } from "@/hooks/useSafetyLayer";
-import type { DemoRoute, HeatMode, Incident, SearchEntry } from "@/types/safety";
+import type { DemoRoute, District, HeatMode, Incident, SearchEntry } from "@/types/safety";
+
 
 // MapLibre touches `window` at import time, so it must never load during SSR.
 const MapView = lazy(() => import("@/components/map/MapView"));
@@ -122,6 +130,45 @@ function SafetyMapPage() {
   const flyTo = useCallback((lng: number, lat: number, zoom = 12.5) => {
     mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200, essential: true });
   }, []);
+
+  /** District the camera is currently framing. Defaults to Dhaka (seeded). */
+  const [districtId, setDistrictId] = useState<string>(DISTRICTS[0].id);
+  const district = useMemo(
+    () => DISTRICTS.find((d) => d.id === districtId) ?? DISTRICTS[0],
+    [districtId],
+  );
+  /** False for districts with no seeded street/para units → no micro heat. */
+  const districtCovered = hasMicroCoverage(district.id);
+
+  /**
+   * Moves the camera to a district and tells the user, once, when street-level
+   * heat is unavailable there (the ambient surface simply has no points).
+   */
+  const handleSelectDistrict = useCallback(
+    (next: District) => {
+      setDistrictId(next.id);
+      // Clear any area sheet from the previous district to avoid stale context.
+      setSheetOpen(false);
+      flyTo(next.center[0], next.center[1], next.zoom);
+      pulse({ lng: next.center[0], lat: next.center[1], areaId: null });
+      setAdvisory(
+        hasMicroCoverage(next.id)
+          ? {
+              id: Date.now(),
+              tone: "success",
+              bn: `${next.nameBn} — এলাকা ও মাইক্রো তাপ দেখানো হচ্ছে।`,
+              en: `${next.nameEn} — area and micro heat available.`,
+            }
+          : {
+              id: Date.now(),
+              tone: "caution",
+              bn: `${next.nameBn}-এ এখনো সড়ক/পাড়া পর্যায়ের তাপ ডেটা নেই।`,
+              en: `No street/para level heat data yet for ${next.nameEn}.`,
+            },
+      );
+    },
+    [flyTo, pulse],
+  );
 
 
   const handleSelectArea = useCallback(
@@ -278,6 +325,25 @@ function SafetyMapPage() {
               onFilter={() => setPanelsOpen((v) => !v)}
             />
           </div>
+
+          {/* District switcher + honest coverage state for unseeded districts. */}
+          <DistrictSelector value={districtId} onChange={handleSelectDistrict} />
+
+          {!districtCovered && (
+            <div className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft px-3 py-2 shadow-card animate-fade-in">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+              <p className="min-w-0">
+                <span lang="bn" className="block text-[13px] font-bold leading-snug text-foreground">
+                  {district.nameBn}-এ মাইক্রো তাপ এখনো নেই — শুধু সাধারণ মানচিত্র দেখা যাবে।
+                </span>
+                <span lang="en" className="block text-[11px] leading-snug text-muted-foreground">
+                  Micro heat unavailable for {district.nameEn} — base map only until data is seeded.
+                </span>
+              </p>
+            </div>
+          )}
+
+
 
           {panelsOpen ? (
             /* On desktop the filters sit inside one panel so the wrapped pills
