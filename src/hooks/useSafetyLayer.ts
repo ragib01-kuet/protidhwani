@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AREAS,
   INCIDENTS_BY_WINDOW,
+  MICRO_AREAS,
+  MICRO_AREA_KIND_LABELS,
   SAFETY_LAYERS,
   SERVICES,
 } from "@/data/safety-data";
@@ -57,10 +59,17 @@ export function useSafetyLayer() {
   };
 }
 
-/** Flat, memoised search index over seeded areas + service points. */
+/**
+ * Flat, memoised search index over areas, their street/para micro units, and
+ * service points — ordered area → street → service so broad matches surface
+ * first and precise ones sit right beneath their parent.
+ */
 export function useSearchIndex(): SearchEntry[] {
-  return useMemo(
-    () => [
+  return useMemo(() => {
+    const areaNameBn = new Map(AREAS.map((a) => [a.id, a.nameBn]));
+    const areaNameEn = new Map(AREAS.map((a) => [a.id, a.nameEn]));
+
+    return [
       ...AREAS.map<SearchEntry>((a) => ({
         id: `area-${a.id}`,
         kind: "area",
@@ -72,6 +81,17 @@ export function useSearchIndex(): SearchEntry[] {
         lng: a.center[0],
         lat: a.center[1],
       })),
+      ...MICRO_AREAS.map<SearchEntry>((m) => ({
+        id: `micro-${m.id}`,
+        kind: "street",
+        areaId: m.areaId,
+        nameBn: m.nameBn,
+        nameEn: m.nameEn,
+        subtitleBn: `${MICRO_AREA_KIND_LABELS[m.kind].bn} · ${areaNameBn.get(m.areaId) ?? ""}`,
+        subtitleEn: `${MICRO_AREA_KIND_LABELS[m.kind].en} · ${areaNameEn.get(m.areaId) ?? ""}`,
+        lng: m.lng,
+        lat: m.lat,
+      })),
       ...SERVICES.map<SearchEntry>((s) => ({
         id: `svc-${s.id}`,
         kind: "service",
@@ -82,10 +102,10 @@ export function useSearchIndex(): SearchEntry[] {
         lng: s.lng,
         lat: s.lat,
       })),
-    ],
-    [],
-  );
+    ];
+  }, []);
 }
+
 
 /** localStorage-backed recent searches; degrades silently when storage is blocked. */
 export function useRecentSearches() {
@@ -122,8 +142,19 @@ export function useRecentSearches() {
   return { recent, pushRecent };
 }
 
-/** Case-insensitive substring match across both languages, ranked by match position. */
-export function searchEntries(index: SearchEntry[], query: string, limit = 6): SearchEntry[] {
+/** Ordering weight so results group as area → street/para → service. */
+const KIND_WEIGHT: Record<SearchEntry["kind"], number> = {
+  area: 0,
+  street: 1,
+  service: 2,
+};
+
+/**
+ * Case-insensitive substring match across both languages. Results are sorted
+ * by kind first (area, then street/para, then service) and by match position
+ * inside each group, so a query returns broad → precise matches.
+ */
+export function searchEntries(index: SearchEntry[], query: string, limit = 8): SearchEntry[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   return index
@@ -132,7 +163,11 @@ export function searchEntries(index: SearchEntry[], query: string, limit = 6): S
       return { entry, rank: hay.indexOf(q) };
     })
     .filter((r) => r.rank >= 0)
-    .sort((a, b) => a.rank - b.rank)
+    .sort(
+      (a, b) =>
+        KIND_WEIGHT[a.entry.kind] - KIND_WEIGHT[b.entry.kind] || a.rank - b.rank,
+    )
     .slice(0, limit)
     .map((r) => r.entry);
 }
+
