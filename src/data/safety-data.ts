@@ -204,6 +204,26 @@ export const AREAS_GEOJSON: FeatureCollection<Polygon, AreaProperties> = {
   })),
 };
 
+/**
+ * Area centres as weighted points. Rendered as a smooth temperature surface so
+ * the map never shows hard rectangular "boxes" — the polygons above are kept
+ * purely as invisible click targets.
+ */
+export const AREA_HEAT_GEOJSON: FeatureCollection<Point> = {
+  type: "FeatureCollection",
+  features: AREAS.map((area) => ({
+    type: "Feature",
+    id: `heat-${area.id}`,
+    properties: {
+      // Lower safety score -> hotter, normalised to a 1–5 scale.
+      weight: Math.max(1, Math.min(5, Math.round((100 - area.safetyScore) / 20) + 1)),
+    },
+    geometry: { type: "Point", coordinates: area.center },
+  })),
+};
+
+
+
 export const SERVICES: ServicePoint[] = [
   { id: "svc-1", type: "police", nameEn: "Mirpur Model Police Station", nameBn: "মিরপুর মডেল থানা", lng: 90.3671, lat: 23.8042 },
   { id: "svc-2", type: "hospital", nameEn: "Delta Medical Centre", nameBn: "ডেল্টা মেডিকেল সেন্টার", lng: 90.3688, lat: 23.8098 },
