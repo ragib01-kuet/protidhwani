@@ -142,8 +142,19 @@ export function useRecentSearches() {
   return { recent, pushRecent };
 }
 
-/** Case-insensitive substring match across both languages, ranked by match position. */
-export function searchEntries(index: SearchEntry[], query: string, limit = 6): SearchEntry[] {
+/** Ordering weight so results group as area → street/para → service. */
+const KIND_WEIGHT: Record<SearchEntry["kind"], number> = {
+  area: 0,
+  street: 1,
+  service: 2,
+};
+
+/**
+ * Case-insensitive substring match across both languages. Results are sorted
+ * by kind first (area, then street/para, then service) and by match position
+ * inside each group, so a query returns broad → precise matches.
+ */
+export function searchEntries(index: SearchEntry[], query: string, limit = 8): SearchEntry[] {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   return index
@@ -152,7 +163,11 @@ export function searchEntries(index: SearchEntry[], query: string, limit = 6): S
       return { entry, rank: hay.indexOf(q) };
     })
     .filter((r) => r.rank >= 0)
-    .sort((a, b) => a.rank - b.rank)
+    .sort(
+      (a, b) =>
+        KIND_WEIGHT[a.entry.kind] - KIND_WEIGHT[b.entry.kind] || a.rank - b.rank,
+    )
     .slice(0, limit)
     .map((r) => r.entry);
 }
+
