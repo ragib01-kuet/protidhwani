@@ -119,6 +119,10 @@
   --border: oklch(0.92 0.005 250);
   --input: oklch(0.94 0.006 250);
   --ring: oklch(0.52 0.09 178);
+  --brand-soft: oklch(0.95 0.03 178);
+  --emergency-soft: oklch(0.95 0.04 27);
+  --verified-soft: oklch(0.95 0.04 262);
+  --warning-soft: oklch(0.96 0.05 75);
 }
 
 @layer base {
