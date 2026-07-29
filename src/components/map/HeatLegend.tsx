@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronDown, Info } from "lucide-react";
 
 import type { HeatMode } from "@/types/safety";
+import { toBnNumber } from "@/utils/bn";
 
 /** Segmented switch options — Bangla dominant, English secondary. */
 const MODES: { id: HeatMode; bn: string; en: string }[] = [
