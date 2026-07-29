@@ -13,6 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import {
   AREAS,
   AREAS_GEOJSON,
+  AREA_HEAT_GEOJSON,
   MICRO_AREAS,
   MICRO_HEAT_GEOJSON,
 } from "@/data/safety-data";
@@ -195,68 +196,63 @@ export default function MapView({
       reuseMaps
     >
 
-      {/* Community safety choropleth — opacity is animated so layer swaps crossfade. */}
+      {/* Area polygons are invisible click targets only — the visible signal is
+          the smooth temperature surface below, never hard rectangles. */}
       <Source id="areas" type="geojson" data={AREAS_GEOJSON}>
         <Layer
           id="areas-fill"
           type="fill"
-          paint={{
-            "fill-color": [
-              "step",
-              ["get", "safetyScore"],
-              safetyColor(0),
-              20,
-              safetyColor(20),
-              40,
-              safetyColor(40),
-              60,
-              safetyColor(60),
-              80,
-              safetyColor(80),
-            ],
-            "fill-opacity": (areaFocused ? 0.5 : 0.22) * areaDim,
-            "fill-opacity-transition": { duration: 300, delay: 0 },
-            "fill-outline-color": "rgba(255,255,255,0.35)",
-          }}
+          paint={{ "fill-color": "#000000", "fill-opacity": 0.001 }}
         />
-        <Layer
-          id="areas-outline"
-          type="line"
-          paint={{
-            "line-color": "rgba(15,118,110,0.55)",
-            "line-width": 1.2,
-            // Keep a visible floor so area boundaries never fully disappear.
-            "line-opacity": 0.25 + 0.75 * areaDim,
-            "line-opacity-transition": { duration: 300, delay: 0 },
-          }}
-        />
+      </Source>
 
+      {/*
+        Area-level temperature surface. Replaces the old rectangular choropleth:
+        each area centre radiates a soft gradient, so regional risk reads as a
+        temperature field. Fades out as street-level heat takes over.
+      */}
+      <Source id="area-heat" type="geojson" data={AREA_HEAT_GEOJSON}>
         <Layer
-          id="areas-selected"
-          type="line"
-          filter={["==", ["get", "id"], selectedAreaId ?? "__none__"]}
+          id="area-heat-layer"
+          type="heatmap"
           paint={{
-            "line-color": "#0F766E",
-            "line-width": 2.5,
-            "line-opacity": 0.9,
-            "line-opacity-transition": { duration: 300, delay: 0 },
-          }}
-        />
-        {/* Transient highlight ring around the polygon matched by search. */}
-        <Layer
-          id="areas-highlight"
-          type="line"
-          filter={["==", ["get", "id"], highlight?.areaId ?? "__none__"]}
-          paint={{
-            "line-color": "#F59E0B",
-            "line-width": highlight ? 6 : 0,
-            "line-blur": 2,
-            "line-opacity": highlight ? 0.95 : 0,
-            "line-width-transition": { duration: 400, delay: 0 },
-            "line-opacity-transition": { duration: 400, delay: 0 },
+            "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.25, 5, 1],
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.1, 11, 1.6],
+            "heatmap-radius": ["interpolate", ["exponential", 1.8], ["zoom"], 5, 45, 9, 110, 12, 260],
+            "heatmap-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              5,
+              (areaFocused ? 0.75 : 0.5) * areaDim,
+              10.5,
+              (areaFocused ? 0.55 : 0.35) * areaDim,
+              12.5,
+              0,
+            ],
+            "heatmap-opacity-transition": { duration: 300, delay: 0 },
+            "heatmap-color": [
+              "interpolate",
+              ["linear"],
+              ["heatmap-density"],
+              0,
+              "rgba(34,197,94,0)",
+              0.18,
+              "rgba(74,222,128,0.35)",
+              0.38,
+              "rgba(250,204,21,0.5)",
+              0.58,
+              "rgba(251,146,60,0.6)",
+              0.8,
+              "rgba(239,68,68,0.7)",
+              1,
+              "rgba(153,27,27,0.8)",
+            ],
           }}
         />
       </Source>
+
+
 
 
       {/*

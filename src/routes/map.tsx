@@ -1,11 +1,12 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClientOnly, createFileRoute, useRouter } from "@tanstack/react-router";
-import { ChevronLeft, Loader2, MapPin, TriangleAlert } from "lucide-react";
+import { ChevronLeft, Loader2, SlidersHorizontal, X } from "lucide-react";
 import type { MapRef } from "react-map-gl/maplibre";
 
 import { AdvisoryToast, type Advisory } from "@/components/alerts/AdvisoryToast";
 import { BottomNav } from "@/components/BottomNav";
-import { HeatLegend } from "@/components/map/HeatLegend";
+import { MapMenu } from "@/components/map/MapMenu";
+import { TemperatureScale } from "@/components/map/TemperatureScale";
 import { MapControls } from "@/components/map/MapControls";
 import { SafetyLayerToggle } from "@/components/map/SafetyLayerToggle";
 import { TimeWindowChips } from "@/components/map/TimeWindowChips";
@@ -14,8 +15,6 @@ import { SearchBar } from "@/components/navigation/SearchBar";
 import { ReportFAB } from "@/components/reports/ReportFAB";
 import { ReportModal } from "@/components/reports/ReportModal";
 import { AreaInfoSheet } from "@/components/safety/AreaInfoSheet";
-import { InsightCard } from "@/components/safety/InsightCard";
-import { DistrictSelector } from "@/components/map/DistrictSelector";
 import {
   AREAS,
   DEMO_ROUTES,
@@ -89,7 +88,8 @@ function SafetyMapPage() {
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [latestReport, setLatestReport] = useState<Incident | null>(null);
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
-  const [panelsOpen, setPanelsOpen] = useState(true);
+  /** Single menubar panel holding every map control. */
+  const [menuOpen, setMenuOpen] = useState(false);
   /** Which heat surfaces the map paints — controlled from the legend. */
   const [heatMode, setHeatMode] = useState<HeatMode>("both");
   /** Heat opacity multiplier (0–1) so users can keep polygons/streets legible. */
@@ -283,6 +283,11 @@ function SafetyMapPage() {
     [addIncident],
   );
 
+  const activeWindow = useMemo(
+    () => TIME_WINDOWS.find((t) => t.id === timeWindow),
+    [timeWindow],
+  );
+
   const reportLocation = userLocation ?? DHAKA_FALLBACK;
 
 
@@ -312,90 +317,100 @@ function SafetyMapPage() {
         </Suspense>
       </ClientOnly>
 
-      {/* Top overlay: back + search, then (optional) filter chips.
-          On desktop it becomes the top of a single left-hand control column. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4 lg:right-auto lg:w-[24rem]">
-        <div className="pointer-events-auto mx-auto w-full max-w-md space-y-2.5 lg:mx-0 lg:max-w-none">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5">
+      {/* Menubar: one row (back · search · menu) plus the single control panel.
+          Nothing else floats over the map, so it stays readable on any screen. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4">
+        <div className="pointer-events-auto mx-auto w-full max-w-md space-y-2.5 lg:mx-0 lg:w-[23rem] lg:max-w-none">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2">
             <button
               onClick={() => router.history.back()}
               aria-label="পেছনে যান / Go back"
-              className="grid size-12 shrink-0 place-items-center rounded-full border border-border bg-card/95 text-foreground shadow-lift backdrop-blur transition-transform active:scale-95"
+              className="grid size-11 shrink-0 place-items-center rounded-full border border-border bg-card/95 text-foreground shadow-lift backdrop-blur transition-transform active:scale-95"
             >
               <ChevronLeft className="size-5" />
             </button>
-            <SearchBar
-              onSelect={handleSearchSelect}
-              onFilter={() => setPanelsOpen((v) => !v)}
-            />
+            <SearchBar onSelect={handleSearchSelect} />
+            <button
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-expanded={menuOpen}
+              aria-label="মানচিত্র নিয়ন্ত্রণ / Map controls"
+              className={`grid size-11 shrink-0 place-items-center rounded-full border shadow-lift backdrop-blur transition-transform active:scale-95 ${
+                menuOpen
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card/95 text-foreground"
+              }`}
+            >
+              {menuOpen ? <X className="size-5" /> : <SlidersHorizontal className="size-5" />}
+            </button>
           </div>
 
-          {/* District switcher + honest coverage state for unseeded districts. */}
-          <DistrictSelector value={districtId} onChange={handleSelectDistrict} />
-
-          {!districtCovered && (
-            <div className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft px-3 py-2 shadow-card animate-fade-in">
-              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
-              <p className="min-w-0">
-                <span lang="bn" className="block text-[13px] font-bold leading-snug text-foreground">
-                  {district.nameBn}-এ মাইক্রো তাপ এখনো নেই — শুধু সাধারণ মানচিত্র দেখা যাবে।
+          {/* Compact summary of what the heat currently represents. */}
+          {!menuOpen && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="inline-flex items-baseline gap-1 rounded-full border border-border bg-card/95 px-2.5 py-1 shadow-card backdrop-blur">
+                <span lang="bn" className="text-[12px] font-bold leading-none">
+                  {layer.bn}
                 </span>
-                <span lang="en" className="block text-[11px] leading-snug text-muted-foreground">
-                  Micro heat unavailable for {district.nameEn} — base map only until data is seeded.
+                <span lang="en" className="text-[10px] leading-none text-muted-foreground">
+                  {layer.en}
                 </span>
-              </p>
+              </span>
+              <span className="inline-flex items-baseline gap-1 rounded-full border border-border bg-card/95 px-2.5 py-1 shadow-card backdrop-blur">
+                <span lang="bn" className="text-[12px] font-bold leading-none">
+                  {activeWindow?.bn}
+                </span>
+                <span lang="en" className="text-[10px] leading-none text-muted-foreground">
+                  {activeWindow?.en}
+                </span>
+              </span>
+              <span className="inline-flex items-baseline gap-1 rounded-full border border-border bg-card/95 px-2.5 py-1 shadow-card backdrop-blur">
+                <span lang="bn" className="text-[12px] font-bold leading-none">
+                  {district.nameBn}
+                </span>
+              </span>
             </div>
           )}
 
-
-
-          {panelsOpen ? (
-            /* On desktop the filters sit inside one panel so the wrapped pills
-               read as a grouped sidebar instead of floating chips. */
-            <div className="space-y-2.5 animate-fade-in lg:rounded-3xl lg:border lg:border-border lg:bg-card/90 lg:p-3 lg:shadow-lift lg:backdrop-blur">
-              <SafetyLayerToggle value={layerId} onChange={setLayerId} />
-              <TimeWindowChips value={timeWindow} onChange={setTimeWindow} />
-            </div>
-          ) : (
-            /* Collapsed state keeps the active layer visible as a single chip. */
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/95 py-1.5 pl-1.5 pr-3.5 shadow-card backdrop-blur animate-fade-in">
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-brand-soft text-primary">
-                <MapPin className="size-4" aria-hidden />
-              </span>
-              <span lang="bn" className="text-[14px] font-bold leading-none">
-                {layer.bn}
-              </span>
-              <span lang="en" className="text-[12px] leading-none text-muted-foreground">
-                {layer.en}
-              </span>
-            </div>
-          )}
+          <MapMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            districtId={districtId}
+            onDistrictChange={handleSelectDistrict}
+            districtCovered={districtCovered}
+            districtName={{ bn: district.nameBn, en: district.nameEn }}
+            layerId={layerId}
+            onLayerChange={setLayerId}
+            timeWindow={timeWindow}
+            onTimeWindowChange={setTimeWindow}
+            heatMode={heatMode}
+            onHeatModeChange={setHeatMode}
+            heatOpacity={heatOpacity}
+            onHeatOpacityChange={setHeatOpacity}
+            areaOpacity={areaOpacity}
+            onAreaOpacityChange={setAreaOpacity}
+          />
 
           <AdvisoryToast advisory={advisory} onDismiss={() => setAdvisory(null)} />
         </div>
       </div>
 
-      {/* Right rail: zoom, locate, layers. */}
+      {/* Right rail: zoom + locate. */}
       <div className="pointer-events-none absolute right-3 top-1/2 z-20 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-4">
         <MapControls
           onZoomIn={() => mapRef.current?.zoomIn({ duration: 300 })}
           onZoomOut={() => mapRef.current?.zoomOut({ duration: 300 })}
           onLocate={locateMe}
-          onToggleLayers={() => setPanelsOpen((v) => !v)}
-          layersOpen={panelsOpen}
         />
       </div>
 
-      {/* Primary report action, anchored bottom-right above the legend row. */}
+      {/* Primary report action. */}
       <div className="pointer-events-none absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-3 z-30 sm:right-4 lg:bottom-4">
         <ReportFAB onClick={() => setReportOpen(true)} />
       </div>
 
-      {/* Bottom overlay: one column — routes, insights, then the heat legend.
-          Mobile: centered column above the bottom nav, clear of the FAB.
-          Desktop: bottom of the same left-hand control column. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] overflow-y-auto p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:max-h-[45dvh] lg:w-[24rem] lg:pb-4 lg:pr-4">
-        <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2.5 lg:mx-0 lg:max-w-none">
+      {/* Bottom-left: route comparison (when active) + the temperature scale. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2.5 p-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:w-[23rem] lg:pb-4">
+        <div className="pointer-events-auto mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
           <RouteComparisonPanel
             routeSet={routeSet}
             emptyFor={routeEmptyFor}
@@ -403,25 +418,10 @@ function SafetyMapPage() {
             onSelectRoute={setSelectedRouteId}
             onClose={closeRoutes}
           />
-          {/* Insights are dropped on short desktop windows so the left column
-              never collides with the filter panel above it. */}
-          {panelsOpen && (
-            <div className="lg:[@media(max-height:820px)]:hidden">
-              <InsightCard />
-            </div>
-          )}
-          <HeatLegend
-            mode={heatMode}
-            onModeChange={setHeatMode}
-            opacity={heatOpacity}
-            onOpacityChange={setHeatOpacity}
-            areaOpacity={areaOpacity}
-            onAreaOpacityChange={setAreaOpacity}
-            layer={layer}
-            timeWindow={TIME_WINDOWS.find((t) => t.id === timeWindow)}
-          />
         </div>
+        <TemperatureScale />
       </div>
+
 
 
 

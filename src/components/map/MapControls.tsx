@@ -1,23 +1,19 @@
-import { Crosshair, Layers, Minus, Plus } from "lucide-react";
+import { Crosshair, Minus, Plus } from "lucide-react";
 
 export interface MapControlsProps {
   onZoomIn: () => void;
   onZoomOut: () => void;
   onLocate: () => void;
-  onToggleLayers: () => void;
-  layersOpen: boolean;
 }
 
 /**
  * Stacked right-rail map controls: a joined zoom pair, then standalone
- * locate + layer buttons — matching the reference UI grouping.
+ * locate button. Every other control lives in the menubar panel.
  */
 export function MapControls({
   onZoomIn,
   onZoomOut,
   onLocate,
-  onToggleLayers,
-  layersOpen,
 }: MapControlsProps) {
   return (
     <div className="pointer-events-auto flex flex-col items-end gap-3">
@@ -47,14 +43,6 @@ export function MapControls({
         <Crosshair className="size-5" />
       </button>
 
-      <button
-        onClick={onToggleLayers}
-        aria-pressed={layersOpen}
-        aria-label="স্তর দেখান বা লুকান / Toggle layers"
-        className="grid size-12 place-items-center rounded-2xl border border-border bg-card/95 text-foreground shadow-lift backdrop-blur transition-transform active:scale-95"
-      >
-        <Layers className="size-5" />
-      </button>
     </div>
   );
 }
