@@ -215,45 +215,75 @@ export default function MapView({
         />
       </Source>
 
-      {/* Ambient street-level heat so the overlay covers every area. */}
+      {/*
+        Ambient street-level heat: a soft baseline that covers every area.
+        It fades out past zoom 14 so it never masks the precise incident data.
+      */}
       <Source id="micro-heat" type="geojson" data={MICRO_HEAT_GEOJSON}>
         <Layer
           id="micro-heat-layer"
           type="heatmap"
           paint={{
-            "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.2, 5, 0.9],
-            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.6, 14, 2.6],
-            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 5, 40, 14, 80],
-            "heatmap-opacity": 0.6,
+            "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.18, 5, 0.85],
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.4, 13, 2.2],
+            // Exponential growth keeps blobs geographically stable while zooming.
+            "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 26, 11, 55, 15, 130],
+            "heatmap-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              5,
+              areaFocused ? 0.6 : 0.4,
+              13,
+              areaFocused ? 0.5 : 0.3,
+              15.5,
+              0,
+            ],
+            "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
               ["linear"],
               ["heatmap-density"],
               0,
               "rgba(74,222,128,0)",
-              0.3,
-              "rgba(163,230,53,0.45)",
-              0.55,
-              "rgba(250,204,21,0.6)",
-              0.75,
-              "rgba(251,146,60,0.7)",
+              0.2,
+              "rgba(134,239,172,0.35)",
+              0.4,
+              "rgba(250,204,21,0.5)",
+              0.65,
+              "rgba(251,146,60,0.6)",
+              0.85,
+              "rgba(239,68,68,0.7)",
               1,
-              "rgba(239,68,68,0.8)",
+              "rgba(185,28,28,0.8)",
             ],
           }}
         />
       </Source>
 
-      {/* Incident heatmap — always visible, weighted by severity. */}
+      {/*
+        Incident heat: report density for the active window. Above zoom 14.5 it
+        gives way to individual, precisely-placed incident dots.
+      */}
       <Source id="incidents" type="geojson" data={incidentGeoJSON}>
         <Layer
           id="incidents-heat"
           type="heatmap"
           paint={{
-            "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.25, 5, 1],
-            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 6, 1, 14, 3],
-            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 5, 30, 14, 60],
-            "heatmap-opacity": areaFocused ? 0.55 : 0.85,
+            "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.3, 5, 1],
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1, 14, 2.6],
+            "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 20, 11, 42, 15, 95],
+            "heatmap-opacity": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              5,
+              areaFocused ? 0.6 : 0.9,
+              14,
+              areaFocused ? 0.55 : 0.85,
+              15.5,
+              0,
+            ],
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
@@ -261,18 +291,44 @@ export default function MapView({
               ["heatmap-density"],
               0,
               "rgba(22,163,74,0)",
-              0.25,
-              "rgba(22,163,74,0.55)",
-              0.5,
-              "rgba(202,138,4,0.7)",
-              0.75,
-              "rgba(234,88,12,0.8)",
-              1,
+              0.2,
+              "rgba(163,230,53,0.5)",
+              0.45,
+              "rgba(250,204,21,0.7)",
+              0.7,
+              "rgba(249,115,22,0.8)",
+              0.88,
               "rgba(220,38,38,0.9)",
+              1,
+              "rgba(153,27,27,0.95)",
             ],
           }}
         />
+        {/* Precise incident dots — only meaningful once the heat blobs fade. */}
+        <Layer
+          id="incidents-point"
+          type="circle"
+          paint={{
+            "circle-radius": ["interpolate", ["linear"], ["get", "severity"], 1, 4, 5, 8],
+            "circle-color": [
+              "step",
+              ["get", "severity"],
+              "#22C55E",
+              2,
+              "#FACC15",
+              3,
+              "#F97316",
+              4,
+              "#DC2626",
+            ],
+            "circle-stroke-width": 1.5,
+            "circle-stroke-color": "#ffffff",
+            "circle-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95],
+            "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95],
+          }}
+        />
       </Source>
+
 
       {/* Route comparison lines. */}
       <Source id="routes" type="geojson" data={routeGeoJSON}>
