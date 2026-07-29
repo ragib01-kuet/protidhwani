@@ -234,7 +234,7 @@ function SafetyMapPage() {
       </div>
 
       {/* Right controls. */}
-      <div className="absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2">
+      <div className="absolute right-4 top-1/2 z-30 flex -translate-y-1/2 flex-col gap-2">
         <button
           onClick={locateMe}
           aria-label="আমার অবস্থান / My location"
