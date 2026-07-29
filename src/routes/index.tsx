@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import {
   AlertTriangle,
   ShieldCheck,
@@ -16,6 +17,7 @@ import {
   MessageCircle,
   Share2,
   ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
