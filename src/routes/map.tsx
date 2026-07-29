@@ -259,10 +259,12 @@ function SafetyMapPage() {
             <>
               <RouteComparisonPanel
                 routeSet={routeSet}
+                emptyFor={routeEmptyFor}
                 selectedRouteId={selectedRouteId}
                 onSelectRoute={setSelectedRouteId}
-                onClose={() => setRouteSetId(null)}
+                onClose={closeRoutes}
               />
+
               <InsightCard />
               <TimeSlider value={timeWindow} onChange={setTimeWindow} />
             </>
