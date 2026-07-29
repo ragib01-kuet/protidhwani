@@ -749,7 +749,7 @@ function Legend() {
 
 /* ---------------------------------- FAB -------------------------------- */
 
-function ReportFab({ open, setOpen }: { open: boolean; setOpen: (b: boolean) => void }) {
+function ReportFab({ open, setOpen, onAction }: { open: boolean; setOpen: (b: boolean) => void; onAction: (k: "photo" | "quick" | "emergency" | "anonymous") => void }) {
   const actions = [
     { icon: Camera, bn: "ছবি তুলুন", en: "Take photo", tone: "primary" },
     { icon: FileText, bn: "দ্রুত রিপোর্ট", en: "Quick report", tone: "verified" },
