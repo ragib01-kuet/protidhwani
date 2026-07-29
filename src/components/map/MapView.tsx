@@ -333,8 +333,13 @@ export default function MapView({
             ],
             "circle-stroke-width": 1.5,
             "circle-stroke-color": "#ffffff",
-            "circle-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95],
-            "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95],
+            "circle-opacity": showIncidentHeat
+              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95]
+              : 0,
+            "circle-stroke-opacity": showIncidentHeat
+              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95]
+              : 0,
+            "circle-opacity-transition": { duration: 300, delay: 0 },
           }}
         />
       </Source>
