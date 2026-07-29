@@ -22,6 +22,7 @@ import {
   DHAKA_FALLBACK,
   DISTRICTS,
   hasMicroCoverage,
+  TIME_WINDOWS,
 } from "@/data/safety-data";
 import { useSafetyLayer } from "@/hooks/useSafetyLayer";
 import type { DemoRoute, District, HeatMode, Incident, SearchEntry } from "@/types/safety";
