@@ -18,7 +18,7 @@ export function SafetyLayerToggle({ value, onChange }: SafetyLayerToggleProps) {
     <div
       role="tablist"
       aria-label="মানচিত্রের স্তর / Map layers"
-      className="scrollbar-none -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1"
+      className="scrollbar-none -mx-1 flex snap-x gap-2 overflow-x-auto px-1 pb-1 lg:flex-wrap lg:overflow-x-visible"
     >
       {SAFETY_LAYERS.map((layer) => {
         const active = layer.id === value;
