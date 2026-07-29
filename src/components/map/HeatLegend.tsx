@@ -44,6 +44,8 @@ export function HeatLegend({
   onModeChange,
   opacity,
   onOpacityChange,
+  areaOpacity,
+  onAreaOpacityChange,
   layer,
   timeWindow,
 }: HeatLegendProps) {
