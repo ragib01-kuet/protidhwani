@@ -222,9 +222,9 @@ export default function MapView({
           type="heatmap"
           paint={{
             "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.2, 5, 0.9],
-            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 14, 2.4],
-            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 6, 26, 14, 70],
-            "heatmap-opacity": 0.45,
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.6, 14, 2.6],
+            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 5, 40, 14, 80],
+            "heatmap-opacity": 0.6,
             "heatmap-color": [
               "interpolate",
               ["linear"],
@@ -252,7 +252,7 @@ export default function MapView({
           paint={{
             "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.25, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 6, 1, 14, 3],
-            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 6, 18, 14, 48],
+            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 5, 30, 14, 60],
             "heatmap-opacity": areaFocused ? 0.55 : 0.85,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
