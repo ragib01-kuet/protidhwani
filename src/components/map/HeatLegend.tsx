@@ -65,8 +65,8 @@ export function HeatLegend({
           তাপমাত্রা
         </span>
         <span className="flex items-center gap-1">
-          <span lang="en" className="text-[10px] uppercase tracking-wider text-muted-foreground">
-            Heat
+          <span lang="bn" className="text-[10px] font-semibold text-primary">
+            {open ? "ব্যাখ্যা লুকান" : "তাপ মানে কী?"}
           </span>
           <ChevronDown
             aria-hidden
@@ -75,6 +75,7 @@ export function HeatLegend({
             }`}
           />
         </span>
+
       </button>
 
       <div
