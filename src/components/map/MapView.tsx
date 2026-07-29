@@ -195,41 +195,15 @@ export default function MapView({
       reuseMaps
     >
 
-      {/* Community safety choropleth — opacity is animated so layer swaps crossfade. */}
+      {/* Area polygons are invisible click targets only — the visible signal is
+          the smooth temperature surface below, never hard rectangles. */}
       <Source id="areas" type="geojson" data={AREAS_GEOJSON}>
         <Layer
           id="areas-fill"
           type="fill"
-          paint={{
-            "fill-color": [
-              "step",
-              ["get", "safetyScore"],
-              safetyColor(0),
-              20,
-              safetyColor(20),
-              40,
-              safetyColor(40),
-              60,
-              safetyColor(60),
-              80,
-              safetyColor(80),
-            ],
-            "fill-opacity": (areaFocused ? 0.5 : 0.22) * areaDim,
-            "fill-opacity-transition": { duration: 300, delay: 0 },
-            "fill-outline-color": "rgba(255,255,255,0.35)",
-          }}
+          paint={{ "fill-color": "#000000", "fill-opacity": 0.001 }}
         />
-        <Layer
-          id="areas-outline"
-          type="line"
-          paint={{
-            "line-color": "rgba(15,118,110,0.55)",
-            "line-width": 1.2,
-            // Keep a visible floor so area boundaries never fully disappear.
-            "line-opacity": 0.25 + 0.75 * areaDim,
-            "line-opacity-transition": { duration: 300, delay: 0 },
-          }}
-        />
+
 
         <Layer
           id="areas-selected"
