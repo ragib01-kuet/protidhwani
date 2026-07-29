@@ -329,7 +329,7 @@ function SafetyMapPage() {
             >
               <ChevronLeft className="size-5" />
             </button>
-            <SearchBar onSelect={handleSearchSelect} onFilter={() => setMenuOpen(true)} />
+            <SearchBar onSelect={handleSearchSelect} />
             <button
               onClick={() => setMenuOpen((v) => !v)}
               aria-expanded={menuOpen}
@@ -400,8 +400,6 @@ function SafetyMapPage() {
           onZoomIn={() => mapRef.current?.zoomIn({ duration: 300 })}
           onZoomOut={() => mapRef.current?.zoomOut({ duration: 300 })}
           onLocate={locateMe}
-          onToggleLayers={() => setMenuOpen((v) => !v)}
-          layersOpen={menuOpen}
         />
       </div>
 
