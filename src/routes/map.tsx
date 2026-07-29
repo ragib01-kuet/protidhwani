@@ -230,9 +230,10 @@ function SafetyMapPage() {
         </Suspense>
       </ClientOnly>
 
-      {/* Top overlay: back + search, then (optional) filter chips. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4">
-        <div className="pointer-events-auto mx-auto w-full max-w-md space-y-2.5">
+      {/* Top overlay: back + search, then (optional) filter chips.
+          On desktop it becomes the top of a single left-hand control column. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4 lg:right-auto lg:w-[24rem]">
+        <div className="pointer-events-auto mx-auto w-full max-w-md space-y-2.5 lg:mx-0 lg:max-w-none">
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5">
             <button
               onClick={() => router.history.back()}
