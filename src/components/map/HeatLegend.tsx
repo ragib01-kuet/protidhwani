@@ -1,6 +1,21 @@
 import { useState } from "react";
 import { ChevronDown, Info } from "lucide-react";
 
+import type { HeatMode } from "@/types/safety";
+
+/** Segmented switch options — Bangla dominant, English secondary. */
+const MODES: { id: HeatMode; bn: string; en: string }[] = [
+  { id: "incident", bn: "ঘটনা", en: "Incident" },
+  { id: "ambient", bn: "পটভূমি", en: "Ambient" },
+  { id: "both", bn: "উভয়", en: "Both" },
+];
+
+export interface HeatLegendProps {
+  /** Active heat source selection. */
+  mode: HeatMode;
+  onModeChange: (mode: HeatMode) => void;
+}
+
 /**
  * Floating heat legend.
  *
@@ -10,12 +25,15 @@ import { ChevronDown, Info } from "lucide-react";
  *
  *  1. Incident heat  — density of actual reports in the selected time window.
  *  2. Ambient heat   — baseline risk derived from street/para safety scores.
+ *
+ * The segmented switch shows either source alone, or both at once.
  */
-export function HeatLegend() {
+export function HeatLegend({ mode, onModeChange }: HeatLegendProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="pointer-events-auto w-56 rounded-2xl border border-border bg-card/95 p-3 shadow-lift backdrop-blur lg:w-full">
+
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -56,6 +74,38 @@ export function HeatLegend() {
           সংকট
         </span>
       </div>
+
+      {/* Heat source switch: incident only / ambient only / both. */}
+      <div
+        role="group"
+        aria-label="তাপের উৎস / Heat source"
+        className="mt-2.5 grid grid-cols-3 gap-1 rounded-full bg-secondary p-1"
+      >
+        {MODES.map((m) => {
+          const active = m.id === mode;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onModeChange(m.id)}
+              className={`rounded-full px-1.5 py-1 text-center leading-none transition-all duration-200 active:scale-95 ${
+                active
+                  ? "bg-primary text-primary-foreground shadow-card"
+                  : "text-muted-foreground hover:bg-card"
+              }`}
+            >
+              <span lang="bn" className="block text-[11px] font-bold">
+                {m.bn}
+              </span>
+              <span lang="en" className="block text-[9px] opacity-80">
+                {m.en}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
 
       {open && (
         <dl className="mt-3 space-y-2.5 border-t border-border pt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
