@@ -67,6 +67,9 @@ function SafetyMapPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [routeSetId, setRouteSetId] = useState<string | null>(null);
+  /** Destination that has no seeded route pair — drives the empty state. */
+  const [routeEmptyFor, setRouteEmptyFor] = useState<{ bn: string; en: string } | null>(null);
+
   const [selectedRouteId, setSelectedRouteId] = useState<DemoRoute["id"]>("safest");
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [latestReport, setLatestReport] = useState<Incident | null>(null);
