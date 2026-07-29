@@ -118,6 +118,9 @@ export default function MapView({
   /** Clamped multiplier applied to every heat stop so the basemap, area
    *  polygons and street labels stay readable underneath. */
   const dim = Math.min(1, Math.max(0, heatOpacity));
+  /** Clamped multiplier for the always-on all-areas overlay. Lets the user
+   *  decide how dimmed polygons get once a category layer takes focus. */
+  const areaDim = Math.min(1, Math.max(0, areaOpacity));
   /** Live zoom drives micro (street/para) precision. */
   const [zoom, setZoom] = useState(BANGLADESH_CENTER.zoom);
   const showMicro = zoom >= 11.5;
