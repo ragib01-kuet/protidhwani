@@ -655,8 +655,9 @@ function LiveAlert({ visible, onClose, onSOS }: { visible: boolean; onClose: () 
           ].map((b) => (
             <button
               key={b.l}
+              onClick={b.tone === "emergency" ? onSOS : onClose}
               className={[
-                "tap rounded-lg py-1.5 text-[11.5px] font-semibold",
+                "tap rounded-lg py-1.5 text-[11.5px] font-semibold transition-transform active:scale-[0.97]",
                 b.tone === "emergency"
                   ? "bg-emergency text-emergency-foreground"
                   : "bg-background text-foreground hover:bg-muted",
