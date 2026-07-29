@@ -83,6 +83,8 @@ export interface MapViewProps {
   latestReport: Incident | null;
   /** Which heat surfaces to paint. */
   heatMode: HeatMode;
+  /** User-tuned heat opacity multiplier, 0 (transparent) → 1 (full). */
+  heatOpacity: number;
   onMapReady: (map: MapRef) => void;
 }
 
@@ -95,12 +97,16 @@ export default function MapView({
   userLocation,
   latestReport,
   heatMode,
+  heatOpacity,
   onMapReady,
 }: MapViewProps) {
   /** The community layer emphasises the choropleth; others emphasise heat. */
   const areaFocused = layer.categories.length === 0;
   const showIncidentHeat = heatMode !== "ambient";
   const showAmbientHeat = heatMode !== "incident";
+  /** Clamped multiplier applied to every heat stop so the basemap, area
+   *  polygons and street labels stay readable underneath. */
+  const dim = Math.min(1, Math.max(0, heatOpacity));
   /** Live zoom drives micro (street/para) precision. */
   const [zoom, setZoom] = useState(BANGLADESH_CENTER.zoom);
   const showMicro = zoom >= 11.5;
