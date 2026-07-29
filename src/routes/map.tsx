@@ -227,36 +227,66 @@ function SafetyMapPage() {
         </Suspense>
       </ClientOnly>
 
-      {/* Top overlay: search, layers, advisories. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 space-y-3 p-4">
+      {/* Top overlay: back + search, active layer title, filters, advisories. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-4">
         <div className="pointer-events-auto mx-auto max-w-xl space-y-3">
-          <SearchBar onSelect={handleSearchSelect} />
-          {panelsOpen && <SafetyLayerToggle value={layerId} onChange={setLayerId} />}
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+            <button
+              onClick={() => router.history.back()}
+              aria-label="পেছনে যান / Go back"
+              className="grid size-14 shrink-0 place-items-center rounded-full border border-border bg-card/95 text-foreground shadow-lift backdrop-blur transition-transform active:scale-95"
+            >
+              <ChevronLeft className="size-6" />
+            </button>
+            <SearchBar
+              onSelect={handleSearchSelect}
+              onFilter={() => setPanelsOpen((v) => !v)}
+            />
+          </div>
+
+          {/* Current layer badge — mirrors the reference "Crime Heat Map" chip. */}
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-card/95 py-2 pl-2 pr-4 shadow-card backdrop-blur">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-brand-soft text-primary">
+              <MapPin className="size-5" aria-hidden />
+            </span>
+            <span lang="bn" className="text-[15px] font-bold leading-none">
+              {layer.bn}
+            </span>
+            <span lang="en" className="text-[13px] leading-none text-muted-foreground">
+              {layer.en}
+            </span>
+          </div>
+
+          {panelsOpen && (
+            <div className="space-y-3 animate-fade-in">
+              <SafetyLayerToggle value={layerId} onChange={setLayerId} />
+              <TimeWindowChips value={timeWindow} onChange={setTimeWindow} />
+            </div>
+          )}
+
           <AdvisoryToast advisory={advisory} onDismiss={() => setAdvisory(null)} />
         </div>
       </div>
 
-      {/* Right controls. */}
-      <div className="absolute right-4 top-[38%] z-30 flex -translate-y-1/2 flex-col gap-2">
-        <button
-          onClick={locateMe}
-          aria-label="আমার অবস্থান / My location"
-          className="grid size-11 place-items-center rounded-full border border-border bg-card/95 text-primary shadow-card backdrop-blur transition-transform active:scale-95"
-        >
-          <Crosshair className="size-5" />
-        </button>
-        <button
-          onClick={() => setPanelsOpen((v) => !v)}
-          aria-pressed={panelsOpen}
-          aria-label="প্যানেল দেখান বা লুকান / Toggle panels"
-          className="grid size-11 place-items-center rounded-full border border-border bg-card/95 text-primary shadow-card backdrop-blur transition-transform active:scale-95"
-        >
-          <Layers className="size-5" />
-        </button>
+      {/* Right rail: zoom, locate, layers, then the primary report action. */}
+      <div className="pointer-events-none absolute right-4 top-1/2 z-30 flex -translate-y-1/2 flex-col items-end gap-4">
+        <MapControls
+          onZoomIn={() => mapRef.current?.zoomIn({ duration: 300 })}
+          onZoomOut={() => mapRef.current?.zoomOut({ duration: 300 })}
+          onLocate={locateMe}
+          onToggleLayers={() => setPanelsOpen((v) => !v)}
+          layersOpen={panelsOpen}
+        />
+        <ReportFAB onClick={() => setReportOpen(true)} />
       </div>
 
-      {/* Bottom overlay: insights, time slider, routes, FAB. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[62dvh] space-y-3 overflow-y-auto p-4">
+      {/* Bottom-left legend. */}
+      <div className="pointer-events-none absolute bottom-4 left-4 z-20">
+        <HeatLegend />
+      </div>
+
+      {/* Bottom overlay: routes + insights, kept clear of the legend. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 max-h-[52dvh] overflow-y-auto p-4 pb-40">
         <div className="pointer-events-auto mx-auto max-w-xl space-y-3">
           {panelsOpen && (
             <>
@@ -267,16 +297,12 @@ function SafetyMapPage() {
                 onSelectRoute={setSelectedRouteId}
                 onClose={closeRoutes}
               />
-
               <InsightCard />
-              <TimeSlider value={timeWindow} onChange={setTimeWindow} />
             </>
           )}
-          <div className="flex justify-end">
-            <ReportFAB onClick={() => setReportOpen(true)} />
-          </div>
         </div>
       </div>
+
 
       <AreaInfoSheet
         area={selectedArea}
