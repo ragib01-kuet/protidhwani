@@ -101,9 +101,28 @@ function SafetyMapPage() {
     [routeSet],
   );
 
+  /** Transient search highlight; cleared automatically after the pulse. */
+  const [highlight, setHighlight] = useState<
+    { id: number; lng: number; lat: number; areaId: string | null } | null
+  >(null);
+  const pulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** Triggers a ~1.8s highlight pulse, replacing any pulse already running. */
+  const pulse = useCallback((target: { lng: number; lat: number; areaId: string | null }) => {
+    if (pulseTimer.current) clearTimeout(pulseTimer.current);
+    setHighlight({ id: Date.now(), ...target });
+    pulseTimer.current = setTimeout(() => setHighlight(null), 1800);
+  }, []);
+
+  // Avoid a state update after unmount if the user navigates mid-pulse.
+  useEffect(() => () => {
+    if (pulseTimer.current) clearTimeout(pulseTimer.current);
+  }, []);
+
   const flyTo = useCallback((lng: number, lat: number, zoom = 12.5) => {
     mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200, essential: true });
   }, []);
+
 
   const handleSelectArea = useCallback(
     (areaId: string) => {
