@@ -16,8 +16,9 @@ export function TimeWindowChips({ value, onChange }: TimeWindowChipsProps) {
     <div
       role="tablist"
       aria-label="সময়সীমা / Time window"
-      className="scrollbar-none inline-flex max-w-full items-center gap-1 overflow-x-auto rounded-full border border-border bg-card/95 p-1 shadow-card backdrop-blur"
+      className="flex flex-wrap items-center gap-1 rounded-3xl border border-border bg-card p-1 shadow-card"
     >
+
       {TIME_WINDOWS.map((w) => {
         const active = w.id === value;
         return (
