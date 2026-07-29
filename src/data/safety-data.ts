@@ -4,10 +4,11 @@ import type {
   InsightItem,
   SafetyLayerDef,
   ServicePoint,
+  MicroArea,
   DemoRouteSet,
   TimeWindow,
 } from "@/types/safety";
-import type { FeatureCollection, Polygon } from "geojson";
+import type { FeatureCollection, Point, Polygon } from "geojson";
 
 /**
  * Seeded demo data. Deliberately small (8 areas, ~30 incidents) and fully
@@ -472,3 +473,68 @@ export const INSIGHTS: InsightItem[] = [
 
 /** Fallback used when Geolocation is unavailable or denied. */
 export const DHAKA_FALLBACK: { lng: number; lat: number } = { lng: 90.4125, lat: 23.8103 };
+
+/**
+ * Street / para level units. These drive precise search results and the
+ * micro heat points that make the overlay readable at high zoom.
+ */
+export const MICRO_AREAS: MicroArea[] = [
+  // Mirpur 10
+  { id: "m-mirpur-1", areaId: "mirpur-10", nameBn: "মিরপুর ১০ গোলচত্বর", nameEn: "Mirpur 10 Roundabout", kind: "spot", safetyScore: 38, reportCount: 41, lng: 90.3688, lat: 23.8073 },
+  { id: "m-mirpur-2", areaId: "mirpur-10", nameBn: "শাহ আলী মার্কেট রোড", nameEn: "Shah Ali Market Road", kind: "street", safetyScore: 44, reportCount: 27, lng: 90.3611, lat: 23.8102 },
+  { id: "m-mirpur-3", areaId: "mirpur-10", nameBn: "সেনপাড়া পর্বতা", nameEn: "Senpara Parbata", kind: "para", safetyScore: 52, reportCount: 19, lng: 90.3721, lat: 23.8035 },
+  { id: "m-mirpur-4", areaId: "mirpur-10", nameBn: "কাজীপাড়া গলি", nameEn: "Kazipara Lane", kind: "street", safetyScore: 41, reportCount: 23, lng: 90.3702, lat: 23.7961 },
+
+  // Gulshan 2
+  { id: "m-gulshan-1", areaId: "gulshan-2", nameBn: "গুলশান ২ চত্বর", nameEn: "Gulshan 2 Circle", kind: "spot", safetyScore: 88, reportCount: 9, lng: 90.4151, lat: 23.7936 },
+  { id: "m-gulshan-2", areaId: "gulshan-2", nameBn: "রোড ১১, গুলশান", nameEn: "Road 11, Gulshan", kind: "street", safetyScore: 84, reportCount: 12, lng: 90.4106, lat: 23.7891 },
+  { id: "m-gulshan-3", areaId: "gulshan-2", nameBn: "নিকেতন আবাসিক", nameEn: "Niketan Residential", kind: "para", safetyScore: 79, reportCount: 14, lng: 90.4189, lat: 23.7842 },
+
+  // Dhanmondi
+  { id: "m-dhanmondi-1", areaId: "dhanmondi", nameBn: "সাত মসজিদ রোড", nameEn: "Satmasjid Road", kind: "street", safetyScore: 68, reportCount: 26, lng: 90.3702, lat: 23.7488 },
+  { id: "m-dhanmondi-2", areaId: "dhanmondi", nameBn: "ধানমন্ডি ২৭ নম্বর", nameEn: "Dhanmondi 27", kind: "spot", safetyScore: 61, reportCount: 31, lng: 90.3766, lat: 23.7541 },
+  { id: "m-dhanmondi-3", areaId: "dhanmondi", nameBn: "রায়েরবাজার", nameEn: "Rayer Bazar", kind: "para", safetyScore: 54, reportCount: 22, lng: 90.3629, lat: 23.7452 },
+
+  // Motijheel
+  { id: "m-motijheel-1", areaId: "motijheel", nameBn: "শাপলা চত্বর", nameEn: "Shapla Chattar", kind: "spot", safetyScore: 49, reportCount: 38, lng: 90.4189, lat: 23.7331 },
+  { id: "m-motijheel-2", areaId: "motijheel", nameBn: "দিলকুশা বাণিজ্যিক এলাকা", nameEn: "Dilkusha Commercial Area", kind: "para", safetyScore: 57, reportCount: 21, lng: 90.4152, lat: 23.7288 },
+  { id: "m-motijheel-3", areaId: "motijheel", nameBn: "টয়েনবি সার্কুলার রোড", nameEn: "Toynbee Circular Road", kind: "street", safetyScore: 62, reportCount: 16, lng: 90.4211, lat: 23.7362 },
+
+  // Uttara
+  { id: "m-uttara-1", areaId: "uttara", nameBn: "রাজলক্ষ্মী মোড়", nameEn: "Rajlakkhi Crossing", kind: "spot", safetyScore: 74, reportCount: 18, lng: 90.4004, lat: 23.8721 },
+  { id: "m-uttara-2", areaId: "uttara", nameBn: "সোনারগাঁও জনপথ", nameEn: "Sonargaon Janapath", kind: "street", safetyScore: 82, reportCount: 11, lng: 90.3948, lat: 23.8789 },
+
+  // Lalbagh
+  { id: "m-lalbagh-1", areaId: "lalbagh", nameBn: "লালবাগ কেল্লা এলাকা", nameEn: "Lalbagh Fort Area", kind: "spot", safetyScore: 36, reportCount: 44, lng: 90.3881, lat: 23.7192 },
+  { id: "m-lalbagh-2", areaId: "lalbagh", nameBn: "চকবাজার গলি", nameEn: "Chawkbazar Lane", kind: "street", safetyScore: 29, reportCount: 57, lng: 90.3934, lat: 23.7168 },
+  { id: "m-lalbagh-3", areaId: "lalbagh", nameBn: "আজিমপুর ছাপরা মসজিদ", nameEn: "Azimpur Chapra Mosque", kind: "para", safetyScore: 43, reportCount: 25, lng: 90.3838, lat: 23.7258 },
+
+  // Divisions — coarse anchors so the overlay covers the whole country.
+  { id: "m-ctg-1", areaId: "chattogram", nameBn: "আগ্রাবাদ", nameEn: "Agrabad", kind: "para", safetyScore: 59, reportCount: 34, lng: 91.8121, lat: 22.3269 },
+  { id: "m-ctg-2", areaId: "chattogram", nameBn: "জিইসি মোড়", nameEn: "GEC Circle", kind: "spot", safetyScore: 64, reportCount: 28, lng: 91.8211, lat: 22.3591 },
+  { id: "m-raj-1", areaId: "rajshahi", nameBn: "সাহেব বাজার", nameEn: "Shaheb Bazar", kind: "spot", safetyScore: 83, reportCount: 15, lng: 88.6011, lat: 24.3688 },
+  { id: "m-raj-2", areaId: "rajshahi", nameBn: "কাজলা গেট", nameEn: "Kazla Gate", kind: "street", safetyScore: 87, reportCount: 8, lng: 88.6382, lat: 24.3652 },
+];
+
+export const MICRO_AREA_KIND_LABELS: Record<MicroArea["kind"], { bn: string; en: string }> = {
+  street: { bn: "সড়ক", en: "Street" },
+  para: { bn: "পাড়া", en: "Para" },
+  spot: { bn: "মোড়", en: "Spot" },
+};
+
+/**
+ * Ambient heat points derived from micro areas. They keep the heat overlay
+ * continuous across every area instead of only where incidents exist.
+ */
+export const MICRO_HEAT_GEOJSON: FeatureCollection<Point> = {
+  type: "FeatureCollection",
+  features: MICRO_AREAS.map((m) => ({
+    type: "Feature",
+    id: m.id,
+    properties: {
+      // Lower safety score -> hotter. Normalised to the 1–5 severity scale.
+      weight: Math.max(1, Math.min(5, Math.round((100 - m.safetyScore) / 20) + 1)),
+    },
+    geometry: { type: "Point", coordinates: [m.lng, m.lat] },
+  })),
+};

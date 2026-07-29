@@ -115,16 +115,37 @@ export interface InsightItem {
   tone: "positive" | "neutral" | "caution";
 }
 
+/**
+ * Street / para level unit inside an area. Gives the map a second, finer
+ * granularity so search and the heat overlay can be more precise than
+ * neighbourhood polygons.
+ */
+export interface MicroArea {
+  id: string;
+  /** Parent AreaProperties.id */
+  areaId: string;
+  nameBn: string;
+  nameEn: string;
+  /** "street" = road/lane, "para" = residential block, "spot" = junction/market. */
+  kind: "street" | "para" | "spot";
+  /** 0–100, higher is safer. */
+  safetyScore: number;
+  reportCount: number;
+  lng: number;
+  lat: number;
+}
+
 /** Unified entry used by the local (non-geocoding) search index. */
 export interface SearchEntry {
   id: string;
-  kind: "area" | "service";
+  kind: "area" | "street" | "service";
   nameBn: string;
   nameEn: string;
   subtitleBn: string;
   subtitleEn: string;
   lng: number;
   lat: number;
-  /** Present when kind === "area". */
+  /** Present when kind === "area" or "street". */
   areaId?: string;
 }
+
