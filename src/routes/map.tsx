@@ -355,37 +355,63 @@ function MapCanvas({
         </g>
 
         {/* Heat blobs */}
-        {HEAT_BLOBS.map((b, i) => (
-          <circle
-            key={`h-${i}`}
-            cx={b.cx}
-            cy={b.cy}
-            r={b.r}
-            fill={`url(#heat-${i})`}
-            className="mix-blend-multiply"
-          />
-        ))}
+        {layer !== "clusters" &&
+          HEAT_BLOBS.map((b, i) => {
+            const s = Math.min(1, b.s * timelineScale * catMod);
+            const opacity = layer === "safe" ? 0.35 : 1;
+            return (
+              <circle
+                key={`h-${i}`}
+                cx={b.cx}
+                cy={b.cy}
+                r={b.r * (0.85 + s * 0.35)}
+                fill={`url(#heat-${i})`}
+                className="mix-blend-multiply transition-all duration-500"
+                style={{ opacity }}
+              />
+            );
+          })}
+
+        {/* Safe overlay */}
+        {layer === "safe" &&
+          HEAT_BLOBS.filter((b) => b.s < 0.5).map((b, i) => (
+            <circle
+              key={`safe-${i}`}
+              cx={b.cx}
+              cy={b.cy}
+              r={b.r * 0.8}
+              fill="oklch(0.78 0.15 150 / 0.35)"
+              className="mix-blend-multiply"
+            />
+          ))}
 
         {/* Report clusters */}
-        {HEAT_BLOBS.filter((b) => b.s > 0.55).map((b, i) => (
-          <g
-            key={`c-${i}`}
-            className="cursor-pointer"
-            onClick={() => onSelectArea(b.label)}
-          >
-            <circle cx={b.cx} cy={b.cy} r="2.6" fill="white" stroke={heatColor(b.s)} strokeWidth="0.8" />
-            <text
-              x={b.cx}
-              y={b.cy + 0.9}
-              textAnchor="middle"
-              fontSize="2.2"
-              fontWeight="700"
-              fill="oklch(0.25 0.05 180)"
+        {HEAT_BLOBS.filter((b) => b.s * timelineScale * catMod > 0.55).map((b, i) => {
+          const s = Math.min(1, b.s * timelineScale * catMod);
+          const highlighted = matched?.label === b.label;
+          return (
+            <g
+              key={`c-${i}`}
+              className="cursor-pointer"
+              onClick={() => onSelectArea(b.label)}
             >
-              {clusterCount(b.s)}
-            </text>
-          </g>
-        ))}
+              {highlighted && (
+                <circle cx={b.cx} cy={b.cy} r="5" fill="none" stroke="oklch(0.55 0.2 262)" strokeWidth="0.6" className="animate-ping" />
+              )}
+              <circle cx={b.cx} cy={b.cy} r={highlighted ? 3.2 : 2.6} fill="white" stroke={heatColor(s)} strokeWidth={highlighted ? 1.1 : 0.8} />
+              <text
+                x={b.cx}
+                y={b.cy + 0.9}
+                textAnchor="middle"
+                fontSize="2.2"
+                fontWeight="700"
+                fill="oklch(0.25 0.05 180)"
+              >
+                {clusterCount(s)}
+              </text>
+            </g>
+          );
+        })}
 
         {/* You are here */}
         <g>
