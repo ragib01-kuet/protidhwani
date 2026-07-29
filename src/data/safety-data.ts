@@ -6,6 +6,7 @@ import type {
   ServicePoint,
   MicroArea,
   DemoRouteSet,
+  District,
   TimeWindow,
 } from "@/types/safety";
 import type { FeatureCollection, Point, Polygon } from "geojson";
@@ -538,3 +539,40 @@ export const MICRO_HEAT_GEOJSON: FeatureCollection<Point> = {
     geometry: { type: "Point", coordinates: [m.lng, m.lat] },
   })),
 };
+
+/**
+ * Selectable districts. Only a few are seeded with areas / micro data — the
+ * rest are intentionally present so the UI can state, honestly, that
+ * street-level (micro) heat is not yet available there.
+ */
+export const DISTRICTS: District[] = [
+  { id: "dhaka", nameBn: "ঢাকা", nameEn: "Dhaka", divisionBn: "ঢাকা বিভাগ", divisionEn: "Dhaka Division", center: [90.4045, 23.7808], zoom: 11.6, areaIds: ["mirpur-10", "gulshan-2", "dhanmondi", "motijheel", "uttara", "lalbagh"] },
+  { id: "chattogram", nameBn: "চট্টগ্রাম", nameEn: "Chattogram", divisionBn: "চট্টগ্রাম বিভাগ", divisionEn: "Chattogram Division", center: [91.8123, 22.3419], zoom: 11.6, areaIds: ["chattogram"] },
+  { id: "rajshahi", nameBn: "রাজশাহী", nameEn: "Rajshahi", divisionBn: "রাজশাহী বিভাগ", divisionEn: "Rajshahi Division", center: [88.6042, 24.3745], zoom: 11.6, areaIds: ["rajshahi"] },
+  { id: "khulna", nameBn: "খুলনা", nameEn: "Khulna", divisionBn: "খুলনা বিভাগ", divisionEn: "Khulna Division", center: [89.5644, 22.8456], zoom: 11.2, areaIds: [] },
+  { id: "sylhet", nameBn: "সিলেট", nameEn: "Sylhet", divisionBn: "সিলেট বিভাগ", divisionEn: "Sylhet Division", center: [91.8687, 24.8949], zoom: 11.2, areaIds: [] },
+  { id: "barishal", nameBn: "বরিশাল", nameEn: "Barishal", divisionBn: "বরিশাল বিভাগ", divisionEn: "Barishal Division", center: [90.3535, 22.701], zoom: 11.2, areaIds: [] },
+  { id: "rangpur", nameBn: "রংপুর", nameEn: "Rangpur", divisionBn: "রংপুর বিভাগ", divisionEn: "Rangpur Division", center: [89.2447, 25.7439], zoom: 11.2, areaIds: [] },
+  { id: "mymensingh", nameBn: "ময়মনসিংহ", nameEn: "Mymensingh", divisionBn: "ময়মনসিংহ বিভাগ", divisionEn: "Mymensingh Division", center: [90.4203, 24.7471], zoom: 11.2, areaIds: [] },
+  { id: "cumilla", nameBn: "কুমিল্লা", nameEn: "Cumilla", divisionBn: "চট্টগ্রাম বিভাগ", divisionEn: "Chattogram Division", center: [91.1809, 23.4607], zoom: 11.2, areaIds: [] },
+  { id: "coxs-bazar", nameBn: "কক্সবাজার", nameEn: "Cox's Bazar", divisionBn: "চট্টগ্রাম বিভাগ", divisionEn: "Chattogram Division", center: [91.9847, 21.4272], zoom: 11.2, areaIds: [] },
+];
+
+/** Districts keyed by id for O(1) lookup. */
+const DISTRICT_MICRO_COUNTS: Record<string, number> = DISTRICTS.reduce<Record<string, number>>(
+  (acc, d) => {
+    acc[d.id] = MICRO_AREAS.filter((m) => d.areaIds.includes(m.areaId)).length;
+    return acc;
+  },
+  {},
+);
+
+/** How many street/para (micro) units are seeded for a district. */
+export function microCoverageCount(districtId: string): number {
+  return DISTRICT_MICRO_COUNTS[districtId] ?? 0;
+}
+
+/** True when the district can render street-level ambient micro heat. */
+export function hasMicroCoverage(districtId: string): boolean {
+  return microCoverageCount(districtId) > 0;
+}
