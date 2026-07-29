@@ -127,55 +127,114 @@ function MapScreen() {
   const [fabOpen, setFabOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [selectedArea, setSelectedArea] = useState<string>("Shahbag");
+  const [query, setQuery] = useState("");
+  const [layer, setLayer] = useState<"heat" | "clusters" | "safe">("heat");
+  const [offline, setOffline] = useState(false);
+  const [modal, setModal] = useState<null | "report" | "sos" | "vehicle" | "flag" | "photo" | "anon">(null);
+  const [toast, setToast] = useState<{ bn: string; en: string; tone?: string } | null>(null);
+  const [route, setRoute] = useState<string>("safe");
+  const [feed, setFeed] = useState(SEED_REPORTS);
 
-  // Slide-down the live alert after mount for a premium reveal.
   useEffect(() => {
     const t = setTimeout(() => setAlertShown(true), 900);
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2400);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Filtered severities based on timeline (fewer for 24h, more for all-time)
+  const timelineScale =
+    timeline === "24h" ? 0.55 : timeline === "7d" ? 0.8 : timeline === "30d" ? 1 : timeline === "1y" ? 1.1 : 1.2;
+
+  const pushToast = (bn: string, en: string, tone?: string) => setToast({ bn, en, tone });
+
+  const submitReport = (kind: string, anonymous = false) => {
+    const item = {
+      bn: kind === "emergency" ? "জরুরি রিপোর্ট" : "নতুন রিপোর্ট",
+      en: (anonymous ? "Anonymous · " : "") + `${kind[0].toUpperCase()}${kind.slice(1)} reported`,
+      time: "এইমাত্র",
+      dist: "১২০ মি",
+      sev: kind === "emergency" ? 0.9 : 0.6,
+      verified: false,
+      ev: 0,
+      supp: 1,
+    };
+    setFeed((f) => [item, ...f]);
+    setModal(null);
+    setFabOpen(false);
+    pushToast("রিপোর্ট জমা হয়েছে", "Report submitted · pending verification", "verified");
+  };
+
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-surface text-foreground">
-      {/* Map layer — takes full screen behind everything */}
-      <MapCanvas zoom={zoom} onSelectArea={setSelectedArea} />
+      <MapCanvas
+        zoom={zoom}
+        onSelectArea={setSelectedArea}
+        category={category}
+        timelineScale={timelineScale}
+        layer={layer}
+        query={query}
+      />
 
-      {/* Top: search + filters + timeline */}
       <TopOverlay
         category={category}
         setCategory={setCategory}
         timeline={timeline}
         setTimeline={setTimeline}
+        query={query}
+        setQuery={setQuery}
+        onSelectArea={(a) => {
+          setSelectedArea(a);
+          setSheetOpen(true);
+        }}
+        offline={offline}
+        setOffline={setOffline}
       />
 
-      {/* Live alert slide-down */}
-      <LiveAlert
-        visible={alertShown}
-        onClose={() => setAlertShown(false)}
-      />
+      <LiveAlert visible={alertShown} onClose={() => setAlertShown(false)} onSOS={() => setModal("sos")} />
 
-      {/* Right-side floating controls */}
-      <MapControls zoom={zoom} setZoom={setZoom} />
+      <MapControls zoom={zoom} setZoom={setZoom} layer={layer} setLayer={setLayer} />
 
-      {/* Legend (bottom-left, above sheet) */}
       <Legend />
 
-      {/* FAB */}
-      <ReportFab open={fabOpen} setOpen={setFabOpen} />
+      <ReportFab
+        open={fabOpen}
+        setOpen={setFabOpen}
+        onAction={(k) => setModal(k)}
+      />
 
-      {/* Bottom sheet with area info */}
       <AreaSheet
         open={sheetOpen}
         expanded={sheetExpanded}
         onToggleExpand={() => setSheetExpanded((s) => !s)}
         onClose={() => setSheetOpen(false)}
         area={selectedArea}
+        route={route}
+        setRoute={setRoute}
+        feed={feed}
+        onFlag={() => setModal("flag")}
+        onVehicle={() => setModal("vehicle")}
       />
 
-      {/* Bottom navigation */}
-      <BottomNav />
+      <BottomNav onSOS={() => setModal("sos")} />
+
+      {modal === "report" && <ReportModal onClose={() => setModal(null)} onSubmit={() => submitReport("incident")} />}
+      {modal === "photo" && <ReportModal photo onClose={() => setModal(null)} onSubmit={() => submitReport("incident")} />}
+      {modal === "anon" && <ReportModal anonymous onClose={() => setModal(null)} onSubmit={() => submitReport("incident", true)} />}
+      {modal === "sos" && <SOSModal onClose={() => setModal(null)} onConfirm={() => { submitReport("emergency"); }} />}
+      {modal === "vehicle" && <VehicleModal onClose={() => setModal(null)} onDone={(msg) => { setModal(null); pushToast(msg.bn, msg.en, msg.tone); }} />}
+      {modal === "flag" && <FlagModal onClose={() => setModal(null)} onDone={() => { setModal(null); pushToast("তথ্য যাচাই অনুরোধ পাঠানো হয়েছে", "Misinformation flag sent for review", "warning"); }} />}
+
+      {offline && <OfflineBanner />}
+      {toast && <Toast toast={toast} />}
     </div>
   );
 }
+
 
 /* ------------------------------- Map SVG ------------------------------- */
 
