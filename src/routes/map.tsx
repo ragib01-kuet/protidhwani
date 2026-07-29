@@ -411,6 +411,8 @@ function SafetyMapPage() {
             onModeChange={setHeatMode}
             opacity={heatOpacity}
             onOpacityChange={setHeatOpacity}
+            layer={layer}
+            timeWindow={TIME_WINDOWS.find((t) => t.id === timeWindow)}
           />
         </div>
       </div>
