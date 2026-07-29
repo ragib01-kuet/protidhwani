@@ -46,3 +46,29 @@ export async function uploadAvatar(userId: string, file: File): Promise<string> 
   if (error) throw error;
   return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
 }
+
+export interface ProfileStats {
+  posts: number;
+  supports: number;
+  comments: number;
+  complaints: number;
+}
+
+/** Counts of the user's civic contributions (head-only queries, no rows fetched). */
+export async function getProfileStats(userId: string): Promise<ProfileStats> {
+  const count = async (table: string) => {
+    const { count, error } = await supabase
+      .from(table)
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
+    if (error) throw error;
+    return count ?? 0;
+  };
+  const [posts, supports, comments, complaints] = await Promise.all([
+    count("posts"),
+    count("post_supports"),
+    count("post_comments"),
+    count("complaints"),
+  ]);
+  return { posts, supports, comments, complaints };
+}
