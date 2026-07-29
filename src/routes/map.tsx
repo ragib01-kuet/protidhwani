@@ -252,6 +252,8 @@ function SafetyMapPage() {
             latestReport={latestReport}
             heatMode={heatMode}
             heatOpacity={heatOpacity}
+            highlight={highlight}
+
             onMapReady={(map) => {
               mapRef.current = map;
             }}
