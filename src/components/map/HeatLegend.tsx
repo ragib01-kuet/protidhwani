@@ -14,6 +14,9 @@ export interface HeatLegendProps {
   /** Active heat source selection. */
   mode: HeatMode;
   onModeChange: (mode: HeatMode) => void;
+  /** Heat opacity multiplier, 0 → 1. */
+  opacity: number;
+  onOpacityChange: (value: number) => void;
 }
 
 /**
@@ -28,7 +31,7 @@ export interface HeatLegendProps {
  *
  * The segmented switch shows either source alone, or both at once.
  */
-export function HeatLegend({ mode, onModeChange }: HeatLegendProps) {
+export function HeatLegend({ mode, onModeChange, opacity, onOpacityChange }: HeatLegendProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -104,6 +107,37 @@ export function HeatLegend({ mode, onModeChange }: HeatLegendProps) {
             </button>
           );
         })}
+      </div>
+
+      {/* Heat opacity: lets the user fade heat so area polygons and street
+          labels underneath stay readable. */}
+      <div className="mt-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <label
+            htmlFor="heat-opacity"
+            lang="bn"
+            className="text-[11px] font-bold leading-none"
+          >
+            স্বচ্ছতা{" "}
+            <span lang="en" className="font-medium text-muted-foreground">
+              Opacity
+            </span>
+          </label>
+          <span lang="bn" className="text-[11px] font-bold tabular-nums text-primary">
+            {toBnNumber(Math.round(opacity * 100))}%
+          </span>
+        </div>
+        <input
+          id="heat-opacity"
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={Math.round(opacity * 100)}
+          onChange={(e) => onOpacityChange(Number(e.target.value) / 100)}
+          aria-label="তাপের স্বচ্ছতা / Heat opacity"
+          className="mt-1.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
+        />
       </div>
 
 
