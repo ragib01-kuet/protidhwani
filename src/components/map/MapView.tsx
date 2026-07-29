@@ -63,7 +63,11 @@ const Source = (props: React.ComponentProps<typeof MapLibreSource>) =>
 const Layer = (props: React.ComponentProps<typeof MapLibreLayer>) =>
   createElement(MapLibreLayer, stripDevProps(props) as never);
 
-export const BANGLADESH_CENTER = { longitude: 90.3563, latitude: 23.685, zoom: 6 };
+// Opens on Dhaka (the seeded district) so area markers never pile on top of
+// each other at first paint; districts outside Dhaka are reachable via the
+// district selector.
+export const BANGLADESH_CENTER = { longitude: 90.4045, latitude: 23.7808, zoom: 11 };
+
 
 const ROUTE_COLORS: Record<DemoRoute["id"], string> = {
   safest: "#16A34A",
