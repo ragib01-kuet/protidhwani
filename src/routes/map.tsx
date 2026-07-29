@@ -83,6 +83,8 @@ function SafetyMapPage() {
   const [panelsOpen, setPanelsOpen] = useState(true);
   /** Which heat surfaces the map paints — controlled from the legend. */
   const [heatMode, setHeatMode] = useState<HeatMode>("both");
+  /** Heat opacity multiplier (0–1) so users can keep polygons/streets legible. */
+  const [heatOpacity, setHeatOpacity] = useState(1);
 
   const selectedArea = useMemo(
     () => AREAS.find((a) => a.id === selectedAreaId) ?? null,
@@ -226,6 +228,7 @@ function SafetyMapPage() {
             userLocation={userLocation}
             latestReport={latestReport}
             heatMode={heatMode}
+            heatOpacity={heatOpacity}
             onMapReady={(map) => {
               mapRef.current = map;
             }}
@@ -312,7 +315,12 @@ function SafetyMapPage() {
               <InsightCard />
             </div>
           )}
-          <HeatLegend mode={heatMode} onModeChange={setHeatMode} />
+          <HeatLegend
+            mode={heatMode}
+            onModeChange={setHeatMode}
+            opacity={heatOpacity}
+            onOpacityChange={setHeatOpacity}
+          />
         </div>
       </div>
 
