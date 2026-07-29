@@ -135,7 +135,14 @@ export default function MapView({
       style={{ position: "absolute", inset: 0 }}
       interactiveLayerIds={showAreas ? ["areas-fill"] : []}
       onClick={handleClick}
-      onLoad={(e) => onMapReady(e.target as unknown as MapRef)}
+      onLoad={(e) => {
+        const map = e.target as unknown as MapRef;
+        // Dev-only handle so automated checks can inspect live source data.
+        if (import.meta.env.DEV) {
+          (window as unknown as { __safetyMap?: unknown }).__safetyMap = map;
+        }
+        onMapReady(map);
+      }}
       cursor={showAreas ? "pointer" : "grab"}
       attributionControl={false}
       reuseMaps
