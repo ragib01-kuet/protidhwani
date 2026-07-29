@@ -459,12 +459,27 @@ function TopOverlay({
   setCategory,
   timeline,
   setTimeline,
+  query,
+  setQuery,
+  onSelectArea,
+  offline,
+  setOffline,
 }: {
   category: string;
   setCategory: (v: string) => void;
   timeline: string;
   setTimeline: (v: string) => void;
+  query: string;
+  setQuery: (v: string) => void;
+  onSelectArea: (a: string) => void;
+  offline: boolean;
+  setOffline: (b: boolean) => void;
 }) {
+  const [focus, setFocus] = useState(false);
+  const q = query.trim().toLowerCase();
+  const suggestions = q
+    ? Object.keys(AREA_INDEX).filter((k) => k.toLowerCase().includes(q)).slice(0, 5)
+    : [];
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-30 pt-[max(env(safe-area-inset-top),0.75rem)]">
       <div className="pointer-events-auto mx-3 flex items-center gap-2">
@@ -476,20 +491,56 @@ function TopOverlay({
           <ChevronLeft className="h-5 w-5" />
         </Link>
 
-        <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border/70 bg-background/80 px-3 py-2.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="জেলা, এলাকা, থানা…"
-            className="bn min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/80"
-          />
-          <button
-            className="tap grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted"
-            aria-label="Filters"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </button>
+        <div className="relative flex-1">
+          <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-background/80 px-3 py-2.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              placeholder="জেলা, এলাকা, থানা…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setFocus(true)}
+              onBlur={() => setTimeout(() => setFocus(false), 150)}
+              className="bn min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/80"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="tap grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-muted" aria-label="Clear">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <button
+              onClick={() => setOffline(!offline)}
+              className={[
+                "tap grid h-7 w-7 place-items-center rounded-lg transition-colors",
+                offline ? "bg-warning/15 text-warning-foreground" : "text-muted-foreground hover:bg-muted",
+              ].join(" ")}
+              aria-label="Toggle offline mode"
+              title="Offline mode"
+            >
+              {offline ? <WifiOff className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+            </button>
+          </div>
+          {focus && suggestions.length > 0 && (
+            <div className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-2xl border border-border/70 bg-background/95 shadow-lg backdrop-blur-xl animate-fade-in">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setQuery(s);
+                    onSelectArea(s);
+                    setFocus(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] hover:bg-muted"
+                >
+                  <MapPinned className="h-3.5 w-3.5 text-primary" />
+                  <span className="bn font-semibold">{s}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
 
       {/* Title chip */}
       <div className="pointer-events-auto mx-3 mt-2 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 shadow-sm backdrop-blur-xl">
