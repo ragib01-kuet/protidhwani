@@ -269,7 +269,26 @@ function MapScreen() {
 
 /* ------------------------------- Map SVG ------------------------------- */
 
-function MapCanvas({ zoom, onSelectArea }: { zoom: number; onSelectArea: (a: string) => void }) {
+function MapCanvas({
+  zoom,
+  onSelectArea,
+  category,
+  timelineScale,
+  layer,
+  query,
+}: {
+  zoom: number;
+  onSelectArea: (a: string) => void;
+  category: string;
+  timelineScale: number;
+  layer: "heat" | "clusters" | "safe";
+  query: string;
+}) {
+  const q = query.trim().toLowerCase();
+  const matched = q
+    ? HEAT_BLOBS.find((b) => b.label.toLowerCase().includes(q))
+    : null;
+  const catMod = category === "all" ? 1 : category === "harassment" || category === "robbery" ? 1.05 : 0.85;
   // A stylized Bangladesh silhouette (approximate outline in a 100x100 viewBox).
   const bd =
     "M28 12 L36 8 L44 12 L52 10 L58 16 L64 14 L70 18 L74 24 L72 30 L66 30 L64 36 L70 40 L68 46 L74 50 L72 58 L68 60 L70 66 L66 72 L62 72 L64 78 L60 84 L58 90 L54 92 L52 88 L48 86 L44 88 L40 84 L34 82 L30 78 L26 72 L28 66 L24 62 L22 56 L26 50 L22 44 L18 40 L20 34 L24 28 L22 22 L26 16 Z";
