@@ -230,9 +230,10 @@ function SafetyMapPage() {
         </Suspense>
       </ClientOnly>
 
-      {/* Top overlay: back + search, then (optional) filter chips. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4">
-        <div className="pointer-events-auto mx-auto w-full max-w-md space-y-2.5">
+      {/* Top overlay: back + search, then (optional) filter chips.
+          On desktop it becomes the top of a single left-hand control column. */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 p-3 sm:p-4 lg:right-auto lg:w-[24rem]">
+        <div className="pointer-events-auto mx-auto w-full max-w-md space-y-2.5 lg:mx-0 lg:max-w-none">
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2.5">
             <button
               onClick={() => router.history.back()}
@@ -248,7 +249,9 @@ function SafetyMapPage() {
           </div>
 
           {panelsOpen ? (
-            <div className="space-y-2.5 animate-fade-in">
+            /* On desktop the filters sit inside one panel so the wrapped pills
+               read as a grouped sidebar instead of floating chips. */
+            <div className="space-y-2.5 animate-fade-in lg:rounded-3xl lg:border lg:border-border lg:bg-card/90 lg:p-3 lg:shadow-lift lg:backdrop-blur">
               <SafetyLayerToggle value={layerId} onChange={setLayerId} />
               <TimeWindowChips value={timeWindow} onChange={setTimeWindow} />
             </div>
@@ -287,9 +290,11 @@ function SafetyMapPage() {
         <ReportFAB onClick={() => setReportOpen(true)} />
       </div>
 
-      {/* Bottom overlay: one column — routes, insights, then the heat legend. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[55dvh] overflow-y-auto p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pr-24 lg:pb-4">
-        <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2.5">
+      {/* Bottom overlay: one column — routes, insights, then the heat legend.
+          Mobile: centered column above the bottom nav, clear of the FAB.
+          Desktop: bottom of the same left-hand control column. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] overflow-y-auto p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:max-h-[45dvh] lg:w-[24rem] lg:pb-4 lg:pr-4">
+        <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2.5 lg:mx-0 lg:max-w-none">
           <RouteComparisonPanel
             routeSet={routeSet}
             emptyFor={routeEmptyFor}
@@ -297,7 +302,13 @@ function SafetyMapPage() {
             onSelectRoute={setSelectedRouteId}
             onClose={closeRoutes}
           />
-          {panelsOpen && <InsightCard />}
+          {/* Insights are dropped on short desktop windows so the left column
+              never collides with the filter panel above it. */}
+          {panelsOpen && (
+            <div className="lg:[@media(max-height:820px)]:hidden">
+              <InsightCard />
+            </div>
+          )}
           <HeatLegend />
         </div>
       </div>

@@ -10,12 +10,12 @@ const TONE = {
 /** Horizontal strip of pre-written (seeded) community insight cards. */
 export function InsightCard() {
   return (
-    <div className="scrollbar-none flex gap-3 overflow-x-auto pb-1">
+    <div className="scrollbar-none flex snap-x snap-mandatory gap-2.5 overflow-x-auto pb-1 lg:grid lg:grid-cols-2 lg:overflow-x-visible">
       {INSIGHTS.map((insight) => (
         <article
           key={insight.id}
           className={cn(
-            "w-56 shrink-0 rounded-2xl border p-3 transition-transform duration-200 hover:-translate-y-0.5",
+            "w-[13.5rem] shrink-0 snap-start rounded-2xl border p-3 transition-transform duration-200 hover:-translate-y-0.5 lg:w-auto",
             TONE[insight.tone],
           )}
         >
