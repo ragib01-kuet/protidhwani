@@ -674,7 +674,8 @@ function LiveAlert({ visible, onClose, onSOS }: { visible: boolean; onClose: () 
 
 /* --------------------------- Map controls ------------------------------ */
 
-function MapControls({ zoom, setZoom }: { zoom: number; setZoom: (n: number) => void }) {
+function MapControls({ zoom, setZoom, layer, setLayer }: { zoom: number; setZoom: (n: number) => void; layer: "heat" | "clusters" | "safe"; setLayer: (l: "heat" | "clusters" | "safe") => void }) {
+  const cycle = () => setLayer(layer === "heat" ? "clusters" : layer === "clusters" ? "safe" : "heat");
   return (
     <div className="absolute right-3 top-[220px] z-20 flex flex-col gap-2">
       <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/85 shadow-lg backdrop-blur-xl">
