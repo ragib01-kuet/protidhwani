@@ -288,9 +288,11 @@ function SafetyMapPage() {
         <ReportFAB onClick={() => setReportOpen(true)} />
       </div>
 
-      {/* Bottom overlay: one column — routes, insights, then the heat legend. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[55dvh] overflow-y-auto p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pr-24 lg:pb-4">
-        <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2.5">
+      {/* Bottom overlay: one column — routes, insights, then the heat legend.
+          Mobile: centered column above the bottom nav, clear of the FAB.
+          Desktop: bottom of the same left-hand control column. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[52dvh] overflow-y-auto p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:max-h-[60dvh] lg:w-[24rem] lg:pb-4 lg:pr-4">
+        <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2.5 lg:mx-0 lg:max-w-none">
           <RouteComparisonPanel
             routeSet={routeSet}
             emptyFor={routeEmptyFor}
