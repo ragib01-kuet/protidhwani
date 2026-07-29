@@ -75,6 +75,38 @@ export function HeatLegend({ mode, onModeChange }: HeatLegendProps) {
         </span>
       </div>
 
+      {/* Heat source switch: incident only / ambient only / both. */}
+      <div
+        role="group"
+        aria-label="তাপের উৎস / Heat source"
+        className="mt-2.5 grid grid-cols-3 gap-1 rounded-full bg-secondary p-1"
+      >
+        {MODES.map((m) => {
+          const active = m.id === mode;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => onModeChange(m.id)}
+              className={`rounded-full px-1.5 py-1 text-center leading-none transition-all duration-200 active:scale-95 ${
+                active
+                  ? "bg-primary text-primary-foreground shadow-card"
+                  : "text-muted-foreground hover:bg-card"
+              }`}
+            >
+              <span lang="bn" className="block text-[11px] font-bold">
+                {m.bn}
+              </span>
+              <span lang="en" className="block text-[9px] opacity-80">
+                {m.en}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+
       {open && (
         <dl className="mt-3 space-y-2.5 border-t border-border pt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
           <div className="flex gap-2">
