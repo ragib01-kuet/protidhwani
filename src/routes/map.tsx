@@ -28,6 +28,11 @@ import {
   X,
   Check,
   ChevronLeft,
+  WifiOff,
+  Flag,
+  Car,
+  Loader2,
+  PhoneCall,
 } from "lucide-react";
 
 export const Route = createFileRoute("/map")({
@@ -109,7 +114,38 @@ const ROUTES = [
   { id: "safe", bn: "সবচেয়ে নিরাপদ পথ", en: "Safest route", score: 96, time: "২৮ মি", tone: "primary" },
   { id: "balanced", bn: "ভারসাম্যপূর্ণ পথ", en: "Balanced route", score: 84, time: "২২ মি", tone: "warning" },
   { id: "fast", bn: "সবচেয়ে দ্রুত পথ", en: "Fastest route", score: 68, time: "১৭ মি", tone: "emergency" },
+] as const;
+
+type FeedItem = {
+  bn: string;
+  en: string;
+  time: string;
+  dist: string;
+  sev: number;
+  verified: boolean;
+  ev: number;
+  supp: number;
+};
+
+const SEED_REPORTS: FeedItem[] = [
+  { bn: "মোবাইল ছিনতাই", en: "Phone snatching near TSC", time: "২ ঘণ্টা আগে", dist: "৩২০ মি", sev: 0.75, verified: true, ev: 3, supp: 42 },
+  { bn: "রাস্তায় হয়রানি", en: "Street harassment report", time: "৫ ঘণ্টা আগে", dist: "৬১০ মি", sev: 0.55, verified: true, ev: 1, supp: 27 },
+  { bn: "রিকশা দুর্ঘটনা", en: "Rickshaw accident, minor injury", time: "গতকাল", dist: "৯০০ মি", sev: 0.4, verified: false, ev: 0, supp: 12 },
 ];
+
+const AREA_INDEX: Record<string, { cx: number; cy: number }> = {
+  Dhaka: { cx: 44, cy: 46 },
+  Sylhet: { cx: 66, cy: 32 },
+  Chattogram: { cx: 60, cy: 72 },
+  Khulna: { cx: 30, cy: 68 },
+  Rajshahi: { cx: 18, cy: 30 },
+  Rangpur: { cx: 30, cy: 18 },
+  Manikganj: { cx: 38, cy: 52 },
+  Narsingdi: { cx: 55, cy: 40 },
+  Sundarbans: { cx: 22, cy: 82 },
+  "Cox's Bazar": { cx: 70, cy: 88 },
+  Munshiganj: { cx: 50, cy: 60 },
+};
 
 /* ------------------------------- Screen -------------------------------- */
 
@@ -122,59 +158,137 @@ function MapScreen() {
   const [fabOpen, setFabOpen] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [selectedArea, setSelectedArea] = useState<string>("Shahbag");
+  const [query, setQuery] = useState("");
+  const [layer, setLayer] = useState<"heat" | "clusters" | "safe">("heat");
+  const [offline, setOffline] = useState(false);
+  const [modal, setModal] = useState<null | "report" | "sos" | "vehicle" | "flag" | "photo" | "anon">(null);
+  const [toast, setToast] = useState<{ bn: string; en: string; tone?: string } | null>(null);
+  const [route, setRoute] = useState<string>("safe");
+  const [feed, setFeed] = useState(SEED_REPORTS);
 
-  // Slide-down the live alert after mount for a premium reveal.
   useEffect(() => {
     const t = setTimeout(() => setAlertShown(true), 900);
     return () => clearTimeout(t);
   }, []);
 
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2400);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // Filtered severities based on timeline (fewer for 24h, more for all-time)
+  const timelineScale =
+    timeline === "24h" ? 0.55 : timeline === "7d" ? 0.8 : timeline === "30d" ? 1 : timeline === "1y" ? 1.1 : 1.2;
+
+  const pushToast = (bn: string, en: string, tone?: string) => setToast({ bn, en, tone });
+
+  const submitReport = (kind: string, anonymous = false) => {
+    const item = {
+      bn: kind === "emergency" ? "জরুরি রিপোর্ট" : "নতুন রিপোর্ট",
+      en: (anonymous ? "Anonymous · " : "") + `${kind[0].toUpperCase()}${kind.slice(1)} reported`,
+      time: "এইমাত্র",
+      dist: "১২০ মি",
+      sev: kind === "emergency" ? 0.9 : 0.6,
+      verified: false,
+      ev: 0,
+      supp: 1,
+    };
+    setFeed((f) => [item, ...f]);
+    setModal(null);
+    setFabOpen(false);
+    pushToast("রিপোর্ট জমা হয়েছে", "Report submitted · pending verification", "verified");
+  };
+
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden bg-surface text-foreground">
-      {/* Map layer — takes full screen behind everything */}
-      <MapCanvas zoom={zoom} onSelectArea={setSelectedArea} />
+      <MapCanvas
+        zoom={zoom}
+        onSelectArea={setSelectedArea}
+        category={category}
+        timelineScale={timelineScale}
+        layer={layer}
+        query={query}
+      />
 
-      {/* Top: search + filters + timeline */}
       <TopOverlay
         category={category}
         setCategory={setCategory}
         timeline={timeline}
         setTimeline={setTimeline}
+        query={query}
+        setQuery={setQuery}
+        onSelectArea={(a) => {
+          setSelectedArea(a);
+          setSheetOpen(true);
+        }}
+        offline={offline}
+        setOffline={setOffline}
       />
 
-      {/* Live alert slide-down */}
-      <LiveAlert
-        visible={alertShown}
-        onClose={() => setAlertShown(false)}
-      />
+      <LiveAlert visible={alertShown} onClose={() => setAlertShown(false)} onSOS={() => setModal("sos")} />
 
-      {/* Right-side floating controls */}
-      <MapControls zoom={zoom} setZoom={setZoom} />
+      <MapControls zoom={zoom} setZoom={setZoom} layer={layer} setLayer={setLayer} />
 
-      {/* Legend (bottom-left, above sheet) */}
       <Legend />
 
-      {/* FAB */}
-      <ReportFab open={fabOpen} setOpen={setFabOpen} />
+      <ReportFab
+        open={fabOpen}
+        setOpen={setFabOpen}
+        onAction={(k) => setModal(k === "quick" ? "report" : k === "anonymous" ? "anon" : k === "emergency" ? "sos" : "photo")}
+      />
 
-      {/* Bottom sheet with area info */}
       <AreaSheet
         open={sheetOpen}
         expanded={sheetExpanded}
         onToggleExpand={() => setSheetExpanded((s) => !s)}
         onClose={() => setSheetOpen(false)}
         area={selectedArea}
+        route={route}
+        setRoute={setRoute}
+        feed={feed}
+        onFlag={() => setModal("flag")}
+        onVehicle={() => setModal("vehicle")}
       />
 
-      {/* Bottom navigation */}
-      <BottomNav />
+      <BottomNav onSOS={() => setModal("sos")} />
+
+      {modal === "report" && <ReportModal onClose={() => setModal(null)} onSubmit={() => submitReport("incident")} />}
+      {modal === "photo" && <ReportModal photo onClose={() => setModal(null)} onSubmit={() => submitReport("incident")} />}
+      {modal === "anon" && <ReportModal anonymous onClose={() => setModal(null)} onSubmit={() => submitReport("incident", true)} />}
+      {modal === "sos" && <SOSModal onClose={() => setModal(null)} onConfirm={() => { submitReport("emergency"); }} />}
+      {modal === "vehicle" && <VehicleModal onClose={() => setModal(null)} onDone={(msg) => { setModal(null); pushToast(msg.bn, msg.en, msg.tone); }} />}
+      {modal === "flag" && <FlagModal onClose={() => setModal(null)} onDone={() => { setModal(null); pushToast("তথ্য যাচাই অনুরোধ পাঠানো হয়েছে", "Misinformation flag sent for review", "warning"); }} />}
+
+      {offline && <OfflineBanner />}
+      {toast && <Toast toast={toast} />}
     </div>
   );
 }
 
+
 /* ------------------------------- Map SVG ------------------------------- */
 
-function MapCanvas({ zoom, onSelectArea }: { zoom: number; onSelectArea: (a: string) => void }) {
+function MapCanvas({
+  zoom,
+  onSelectArea,
+  category,
+  timelineScale,
+  layer,
+  query,
+}: {
+  zoom: number;
+  onSelectArea: (a: string) => void;
+  category: string;
+  timelineScale: number;
+  layer: "heat" | "clusters" | "safe";
+  query: string;
+}) {
+  const q = query.trim().toLowerCase();
+  const matched = q
+    ? HEAT_BLOBS.find((b) => b.label.toLowerCase().includes(q))
+    : null;
+  const catMod = category === "all" ? 1 : category === "harassment" || category === "robbery" ? 1.05 : 0.85;
   // A stylized Bangladesh silhouette (approximate outline in a 100x100 viewBox).
   const bd =
     "M28 12 L36 8 L44 12 L52 10 L58 16 L64 14 L70 18 L74 24 L72 30 L66 30 L64 36 L70 40 L68 46 L74 50 L72 58 L68 60 L70 66 L66 72 L62 72 L64 78 L60 84 L58 90 L54 92 L52 88 L48 86 L44 88 L40 84 L34 82 L30 78 L26 72 L28 66 L24 62 L22 56 L26 50 L22 44 L18 40 L20 34 L24 28 L22 22 L26 16 Z";
@@ -241,37 +355,63 @@ function MapCanvas({ zoom, onSelectArea }: { zoom: number; onSelectArea: (a: str
         </g>
 
         {/* Heat blobs */}
-        {HEAT_BLOBS.map((b, i) => (
-          <circle
-            key={`h-${i}`}
-            cx={b.cx}
-            cy={b.cy}
-            r={b.r}
-            fill={`url(#heat-${i})`}
-            className="mix-blend-multiply"
-          />
-        ))}
+        {layer !== "clusters" &&
+          HEAT_BLOBS.map((b, i) => {
+            const s = Math.min(1, b.s * timelineScale * catMod);
+            const opacity = layer === "safe" ? 0.35 : 1;
+            return (
+              <circle
+                key={`h-${i}`}
+                cx={b.cx}
+                cy={b.cy}
+                r={b.r * (0.85 + s * 0.35)}
+                fill={`url(#heat-${i})`}
+                className="mix-blend-multiply transition-all duration-500"
+                style={{ opacity }}
+              />
+            );
+          })}
+
+        {/* Safe overlay */}
+        {layer === "safe" &&
+          HEAT_BLOBS.filter((b) => b.s < 0.5).map((b, i) => (
+            <circle
+              key={`safe-${i}`}
+              cx={b.cx}
+              cy={b.cy}
+              r={b.r * 0.8}
+              fill="oklch(0.78 0.15 150 / 0.35)"
+              className="mix-blend-multiply"
+            />
+          ))}
 
         {/* Report clusters */}
-        {HEAT_BLOBS.filter((b) => b.s > 0.55).map((b, i) => (
-          <g
-            key={`c-${i}`}
-            className="cursor-pointer"
-            onClick={() => onSelectArea(b.label)}
-          >
-            <circle cx={b.cx} cy={b.cy} r="2.6" fill="white" stroke={heatColor(b.s)} strokeWidth="0.8" />
-            <text
-              x={b.cx}
-              y={b.cy + 0.9}
-              textAnchor="middle"
-              fontSize="2.2"
-              fontWeight="700"
-              fill="oklch(0.25 0.05 180)"
+        {HEAT_BLOBS.filter((b) => b.s * timelineScale * catMod > 0.55).map((b, i) => {
+          const s = Math.min(1, b.s * timelineScale * catMod);
+          const highlighted = matched?.label === b.label;
+          return (
+            <g
+              key={`c-${i}`}
+              className="cursor-pointer"
+              onClick={() => onSelectArea(b.label)}
             >
-              {clusterCount(b.s)}
-            </text>
-          </g>
-        ))}
+              {highlighted && (
+                <circle cx={b.cx} cy={b.cy} r="5" fill="none" stroke="oklch(0.55 0.2 262)" strokeWidth="0.6" className="animate-ping" />
+              )}
+              <circle cx={b.cx} cy={b.cy} r={highlighted ? 3.2 : 2.6} fill="white" stroke={heatColor(s)} strokeWidth={highlighted ? 1.1 : 0.8} />
+              <text
+                x={b.cx}
+                y={b.cy + 0.9}
+                textAnchor="middle"
+                fontSize="2.2"
+                fontWeight="700"
+                fill="oklch(0.25 0.05 180)"
+              >
+                {clusterCount(s)}
+              </text>
+            </g>
+          );
+        })}
 
         {/* You are here */}
         <g>
@@ -319,12 +459,27 @@ function TopOverlay({
   setCategory,
   timeline,
   setTimeline,
+  query,
+  setQuery,
+  onSelectArea,
+  offline,
+  setOffline,
 }: {
   category: string;
   setCategory: (v: string) => void;
   timeline: string;
   setTimeline: (v: string) => void;
+  query: string;
+  setQuery: (v: string) => void;
+  onSelectArea: (a: string) => void;
+  offline: boolean;
+  setOffline: (b: boolean) => void;
 }) {
+  const [focus, setFocus] = useState(false);
+  const q = query.trim().toLowerCase();
+  const suggestions = q
+    ? Object.keys(AREA_INDEX).filter((k) => k.toLowerCase().includes(q)).slice(0, 5)
+    : [];
   return (
     <div className="pointer-events-none absolute inset-x-0 top-0 z-30 pt-[max(env(safe-area-inset-top),0.75rem)]">
       <div className="pointer-events-auto mx-3 flex items-center gap-2">
@@ -336,20 +491,56 @@ function TopOverlay({
           <ChevronLeft className="h-5 w-5" />
         </Link>
 
-        <div className="flex flex-1 items-center gap-2 rounded-2xl border border-border/70 bg-background/80 px-3 py-2.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
-          <Search className="h-4 w-4 text-muted-foreground" />
-          <input
-            placeholder="জেলা, এলাকা, থানা…"
-            className="bn min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/80"
-          />
-          <button
-            className="tap grid h-7 w-7 place-items-center rounded-lg text-muted-foreground hover:bg-muted"
-            aria-label="Filters"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </button>
+        <div className="relative flex-1">
+          <div className="flex items-center gap-2 rounded-2xl border border-border/70 bg-background/80 px-3 py-2.5 shadow-[0_8px_24px_-12px_rgba(0,0,0,0.25)] backdrop-blur-xl">
+            <Search className="h-4 w-4 text-muted-foreground" />
+            <input
+              placeholder="জেলা, এলাকা, থানা…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => setFocus(true)}
+              onBlur={() => setTimeout(() => setFocus(false), 150)}
+              className="bn min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/80"
+            />
+            {query && (
+              <button onClick={() => setQuery("")} className="tap grid h-6 w-6 place-items-center rounded-full text-muted-foreground hover:bg-muted" aria-label="Clear">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <button
+              onClick={() => setOffline(!offline)}
+              className={[
+                "tap grid h-7 w-7 place-items-center rounded-lg transition-colors",
+                offline ? "bg-warning/15 text-warning-foreground" : "text-muted-foreground hover:bg-muted",
+              ].join(" ")}
+              aria-label="Toggle offline mode"
+              title="Offline mode"
+            >
+              {offline ? <WifiOff className="h-4 w-4" /> : <SlidersHorizontal className="h-4 w-4" />}
+            </button>
+          </div>
+          {focus && suggestions.length > 0 && (
+            <div className="absolute inset-x-0 top-full z-40 mt-1 overflow-hidden rounded-2xl border border-border/70 bg-background/95 shadow-lg backdrop-blur-xl animate-fade-in">
+              {suggestions.map((s) => (
+                <button
+                  key={s}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    setQuery(s);
+                    onSelectArea(s);
+                    setFocus(false);
+                  }}
+                  className="flex w-full items-center gap-2 px-3 py-2 text-left text-[13px] hover:bg-muted"
+                >
+                  <MapPinned className="h-3.5 w-3.5 text-primary" />
+                  <span className="bn font-semibold">{s}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
+
 
       {/* Title chip */}
       <div className="pointer-events-auto mx-3 mt-2 inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 shadow-sm backdrop-blur-xl">
@@ -415,7 +606,7 @@ function TopOverlay({
 
 /* ----------------------------- Live alert ------------------------------ */
 
-function LiveAlert({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+function LiveAlert({ visible, onClose, onSOS }: { visible: boolean; onClose: () => void; onSOS: () => void }) {
   return (
     <div
       className={[
@@ -464,8 +655,9 @@ function LiveAlert({ visible, onClose }: { visible: boolean; onClose: () => void
           ].map((b) => (
             <button
               key={b.l}
+              onClick={b.tone === "emergency" ? onSOS : onClose}
               className={[
-                "tap rounded-lg py-1.5 text-[11.5px] font-semibold",
+                "tap rounded-lg py-1.5 text-[11.5px] font-semibold transition-transform active:scale-[0.97]",
                 b.tone === "emergency"
                   ? "bg-emergency text-emergency-foreground"
                   : "bg-background text-foreground hover:bg-muted",
@@ -482,7 +674,8 @@ function LiveAlert({ visible, onClose }: { visible: boolean; onClose: () => void
 
 /* --------------------------- Map controls ------------------------------ */
 
-function MapControls({ zoom, setZoom }: { zoom: number; setZoom: (n: number) => void }) {
+function MapControls({ zoom, setZoom, layer, setLayer }: { zoom: number; setZoom: (n: number) => void; layer: "heat" | "clusters" | "safe"; setLayer: (l: "heat" | "clusters" | "safe") => void }) {
+  const cycle = () => setLayer(layer === "heat" ? "clusters" : layer === "clusters" ? "safe" : "heat");
   return (
     <div className="absolute right-3 top-[220px] z-20 flex flex-col gap-2">
       <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-background/85 shadow-lg backdrop-blur-xl">
@@ -503,8 +696,15 @@ function MapControls({ zoom, setZoom }: { zoom: number; setZoom: (n: number) => 
         </button>
       </div>
       <button
-        className="tap grid h-10 w-10 place-items-center rounded-2xl border border-border/70 bg-background/85 shadow-lg backdrop-blur-xl"
-        aria-label="Layers"
+        onClick={cycle}
+        className={[
+          "tap grid h-10 w-10 place-items-center rounded-2xl border shadow-lg backdrop-blur-xl transition-colors",
+          layer === "heat" && "border-border/70 bg-background/85",
+          layer === "clusters" && "border-verified/40 bg-verified/10 text-verified",
+          layer === "safe" && "border-primary/40 bg-primary/10 text-primary",
+        ].filter(Boolean).join(" ")}
+        aria-label={`Layer: ${layer}`}
+        title={`Layer: ${layer}`}
       >
         <Layers className="h-4 w-4" />
       </button>
@@ -549,12 +749,12 @@ function Legend() {
 
 /* ---------------------------------- FAB -------------------------------- */
 
-function ReportFab({ open, setOpen }: { open: boolean; setOpen: (b: boolean) => void }) {
+function ReportFab({ open, setOpen, onAction }: { open: boolean; setOpen: (b: boolean) => void; onAction: (k: "photo" | "quick" | "emergency" | "anonymous") => void }) {
   const actions = [
-    { icon: Camera, bn: "ছবি তুলুন", en: "Take photo", tone: "primary" },
-    { icon: FileText, bn: "দ্রুত রিপোর্ট", en: "Quick report", tone: "verified" },
-    { icon: Siren, bn: "জরুরি", en: "Emergency", tone: "emergency" },
-    { icon: UserX, bn: "নাম প্রকাশ ছাড়া", en: "Anonymous", tone: "warning" },
+    { icon: Camera, bn: "ছবি তুলুন", en: "Take photo", tone: "primary", key: "photo" },
+    { icon: FileText, bn: "দ্রুত রিপোর্ট", en: "Quick report", tone: "verified", key: "quick" },
+    { icon: Siren, bn: "জরুরি", en: "Emergency", tone: "emergency", key: "emergency" },
+    { icon: UserX, bn: "নাম প্রকাশ ছাড়া", en: "Anonymous", tone: "warning", key: "anonymous" },
   ] as const;
 
   return (
@@ -575,8 +775,9 @@ function ReportFab({ open, setOpen }: { open: boolean; setOpen: (b: boolean) => 
             <span className="text-[10px] text-muted-foreground">{a.en}</span>
           </div>
           <button
+            onClick={() => onAction(a.key)}
             className={[
-              "tap grid h-10 w-10 place-items-center rounded-full shadow-lg",
+              "tap grid h-10 w-10 place-items-center rounded-full shadow-lg transition-transform active:scale-90",
               a.tone === "emergency" && "bg-emergency text-emergency-foreground",
               a.tone === "primary" && "bg-primary text-primary-foreground",
               a.tone === "verified" && "bg-verified text-verified-foreground",
@@ -613,12 +814,22 @@ function AreaSheet({
   onToggleExpand,
   onClose,
   area,
+  route,
+  setRoute,
+  feed,
+  onFlag,
+  onVehicle,
 }: {
   open: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
   onClose: () => void;
   area: string;
+  route: string;
+  setRoute: (r: string) => void;
+  feed: FeedItem[];
+  onFlag: () => void;
+  onVehicle: () => void;
 }) {
   const info = useMemo(
     () => ({
@@ -1074,13 +1285,13 @@ function toneText(tone: string) {
 
 /* ---------------------------- Bottom nav ------------------------------- */
 
-function BottomNav() {
+function BottomNav({ onSOS }: { onSOS: () => void }) {
   const items = [
-    { id: "home", icon: Home, bn: "হোম", en: "Home", to: "/" },
-    { id: "feed", icon: Newspaper, bn: "ফিড", en: "Feed", to: "/" },
-    { id: "map", icon: MapPinned, bn: "মানচিত্র", en: "Map", to: "/map", active: true },
-    { id: "sos", icon: Siren, bn: "জরুরি", en: "SOS", to: "/" },
-    { id: "me", icon: User, bn: "প্রোফাইল", en: "Profile", to: "/" },
+    { id: "home", icon: Home, bn: "হোম", en: "Home", to: "/" as const },
+    { id: "feed", icon: Newspaper, bn: "ফিড", en: "Feed", to: "/" as const },
+    { id: "map", icon: MapPinned, bn: "মানচিত্র", en: "Map", to: "/map" as const, active: true },
+    { id: "sos", icon: Siren, bn: "জরুরি", en: "SOS", action: true },
+    { id: "me", icon: User, bn: "প্রোফাইল", en: "Profile", to: "/" as const },
   ];
   return (
     <nav
@@ -1091,31 +1302,350 @@ function BottomNav() {
         {items.map((it) => {
           const Icon = it.icon;
           const active = "active" in it && it.active;
-          return (
-            <Link
-              key={it.id}
-              to={it.to}
-              className={[
-                "tap flex flex-col items-center gap-0.5 rounded-xl py-1.5 transition-colors",
-                active ? "text-primary" : "text-muted-foreground",
-              ].join(" ")}
-            >
+          const isSOS = "action" in it && it.action;
+          const inner = (
+            <>
               <span
                 className={[
                   "grid h-8 w-8 place-items-center rounded-xl transition-colors",
-                  active ? "bg-primary/10" : "",
+                  isSOS ? "bg-emergency text-emergency-foreground shadow-[0_8px_20px_-8px_rgba(220,38,38,0.6)]" : active ? "bg-primary/10" : "",
                 ].join(" ")}
               >
                 <Icon className="h-4 w-4" />
               </span>
-              <span className={`bn text-[10px] font-semibold leading-none ${active ? "text-primary" : ""}`}>
+              <span className={`bn text-[10px] font-semibold leading-none ${active ? "text-primary" : isSOS ? "text-emergency" : ""}`}>
                 {it.bn}
               </span>
               <span className="text-[9px] leading-none opacity-60">{it.en}</span>
-            </Link>
+            </>
+          );
+          const cls = [
+            "tap flex flex-col items-center gap-0.5 rounded-xl py-1.5 transition-colors",
+            active ? "text-primary" : isSOS ? "text-emergency" : "text-muted-foreground",
+          ].join(" ");
+          if (isSOS) {
+            return (
+              <button key={it.id} onClick={onSOS} className={cls}>{inner}</button>
+            );
+          }
+          return (
+            <Link key={it.id} to={it.to!} className={cls}>{inner}</Link>
           );
         })}
       </div>
     </nav>
+  );
+}
+
+/* ------------------------------ Modals -------------------------------- */
+
+function ModalShell({ onClose, title, subtitle, tone = "primary", children, footer }: {
+  onClose: () => void;
+  title: string;
+  subtitle: string;
+  tone?: "primary" | "emergency" | "verified" | "warning";
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+}) {
+  const toneRing =
+    tone === "emergency" ? "border-emergency/40" :
+    tone === "verified" ? "border-verified/40" :
+    tone === "warning" ? "border-warning/40" : "border-primary/40";
+  return (
+    <div className="absolute inset-0 z-[60] flex items-end justify-center bg-background/60 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+16px)] pt-6 backdrop-blur-md animate-fade-in">
+      <div className={`w-full max-w-md overflow-hidden rounded-3xl border ${toneRing} bg-background shadow-[0_30px_60px_-20px_rgba(15,23,42,0.4)] animate-scale-in`}>
+        <div className="flex items-start gap-3 border-b border-border/70 p-4">
+          <div className="min-w-0 flex-1">
+            <div className="bn text-[16px] font-bold leading-tight">{title}</div>
+            <div className="text-[12px] text-muted-foreground">{subtitle}</div>
+          </div>
+          <button onClick={onClose} className="tap grid h-8 w-8 place-items-center rounded-full text-muted-foreground hover:bg-muted" aria-label="Close">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="max-h-[60vh] overflow-y-auto p-4">{children}</div>
+        {footer && <div className="border-t border-border/70 bg-surface/50 p-3">{footer}</div>}
+      </div>
+    </div>
+  );
+}
+
+function ReportModal({ onClose, onSubmit, photo, anonymous }: { onClose: () => void; onSubmit: () => void; photo?: boolean; anonymous?: boolean }) {
+  const [cat, setCat] = useState("harassment");
+  const [sev, setSev] = useState(2);
+  const [desc, setDesc] = useState("");
+  const cats = [
+    { k: "harassment", bn: "হয়রানি", en: "Harassment" },
+    { k: "robbery", bn: "ছিনতাই", en: "Robbery" },
+    { k: "accident", bn: "দুর্ঘটনা", en: "Accident" },
+    { k: "vandalism", bn: "ভাঙচুর", en: "Vandalism" },
+  ];
+  return (
+    <ModalShell
+      onClose={onClose}
+      tone={anonymous ? "warning" : "primary"}
+      title={anonymous ? "নাম প্রকাশ ছাড়া রিপোর্ট" : photo ? "ছবি সহ রিপোর্ট" : "নতুন রিপোর্ট"}
+      subtitle={anonymous ? "Anonymous report · location fuzzed by 300m" : photo ? "Photo report · geotag attached" : "Quick incident report"}
+      footer={
+        <div className="flex gap-2">
+          <button onClick={onClose} className="tap flex-1 rounded-xl border border-border/70 bg-background px-4 py-2.5 text-[13px] font-semibold hover:bg-muted">Cancel</button>
+          <button onClick={onSubmit} className="tap flex-[2] rounded-xl bg-primary px-4 py-2.5 text-[13px] font-semibold text-primary-foreground shadow-md active:scale-[0.98]">
+            <span className="bn">রিপোর্ট জমা দিন</span> · Submit
+          </button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Category · <span className="bn">ধরন</span></div>
+          <div className="grid grid-cols-2 gap-2">
+            {cats.map((c) => (
+              <button key={c.k} onClick={() => setCat(c.k)} className={[
+                "tap rounded-xl border px-3 py-2 text-left transition-colors",
+                cat === c.k ? "border-primary bg-primary/10 text-primary" : "border-border/70 hover:bg-muted",
+              ].join(" ")}>
+                <div className="bn text-[13px] font-semibold">{c.bn}</div>
+                <div className="text-[11px] text-muted-foreground">{c.en}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Severity · <span className="bn">তীব্রতা</span></div>
+          <div className="grid grid-cols-3 gap-2">
+            {[1, 2, 3].map((n) => (
+              <button key={n} onClick={() => setSev(n)} className={[
+                "tap rounded-xl border py-2 text-[12px] font-semibold transition-colors",
+                sev === n ? (n === 3 ? "border-emergency bg-emergency/10 text-emergency" : n === 2 ? "border-warning bg-warning/10 text-warning" : "border-primary bg-primary/10 text-primary") : "border-border/70",
+              ].join(" ")}>
+                {n === 1 ? "Low" : n === 2 ? "Medium" : "High"}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Description · <span className="bn">বিবরণ</span></div>
+          <textarea
+            value={desc}
+            onChange={(e) => setDesc(e.target.value)}
+            rows={3}
+            placeholder="সংক্ষিপ্ত বিবরণ লিখুন…"
+            className="bn w-full rounded-xl border border-border/70 bg-background px-3 py-2 text-[13px] outline-none focus:border-primary"
+          />
+        </div>
+        {photo && (
+          <div className="flex items-center gap-2 rounded-xl border border-dashed border-border/70 bg-surface/40 p-3">
+            <Camera className="h-4 w-4 text-primary" />
+            <span className="text-[12px]">Photo attached · <span className="bn">ছবি সংযুক্ত</span></span>
+          </div>
+        )}
+      </div>
+    </ModalShell>
+  );
+}
+
+function SOSModal({ onClose, onConfirm }: { onClose: () => void; onConfirm: () => void }) {
+  const [count, setCount] = useState(5);
+  useEffect(() => {
+    if (count <= 0) {
+      onConfirm();
+      return;
+    }
+    const t = setTimeout(() => setCount((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [count, onConfirm]);
+  return (
+    <ModalShell
+      onClose={onClose}
+      tone="emergency"
+      title="জরুরি সহায়তা"
+      subtitle="Broadcasting SOS to trusted contacts & nearby responders"
+      footer={
+        <div className="flex gap-2">
+          <button onClick={onClose} className="tap flex-1 rounded-xl border border-border/70 bg-background px-4 py-2.5 text-[13px] font-semibold hover:bg-muted">Cancel</button>
+          <a href="tel:999" className="tap flex-[2] grid place-items-center rounded-xl bg-emergency px-4 py-2.5 text-[13px] font-semibold text-emergency-foreground shadow-md active:scale-[0.98]">
+            <span className="inline-flex items-center gap-2"><PhoneCall className="h-4 w-4" /> Call 999 now</span>
+          </a>
+        </div>
+      }
+    >
+      <div className="flex flex-col items-center gap-3 py-2 text-center">
+        <div className="relative grid h-24 w-24 place-items-center rounded-full bg-emergency/10 text-emergency">
+          <div className="absolute inset-0 rounded-full bg-emergency/20 animate-ping" />
+          <Siren className="h-10 w-10" />
+        </div>
+        <div className="text-[32px] font-bold text-emergency tabular-nums">{count}</div>
+        <div className="bn text-[13px] font-semibold">অটো ব্রডকাস্ট শুরু হচ্ছে…</div>
+        <div className="text-[12px] text-muted-foreground">Sharing live location, incident, and photo with 4 trusted contacts.</div>
+        <div className="mt-2 grid w-full grid-cols-3 gap-2 text-left">
+          {[
+            { i: Hospital, bn: "নিকট হাসপাতাল", en: "Nearest hospital" },
+            { i: ShieldCheck, bn: "থানা", en: "Police station" },
+            { i: Users, bn: "নাগরিক দল", en: "Citizen team" },
+          ].map((r) => (
+            <div key={r.en} className="rounded-xl border border-border/70 bg-surface/40 p-2">
+              <r.i className="mb-1 h-4 w-4 text-primary" />
+              <div className="bn text-[11px] font-semibold">{r.bn}</div>
+              <div className="text-[10px] text-muted-foreground">{r.en}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function VehicleModal({ onClose, onDone }: { onClose: () => void; onDone: (msg: { bn: string; en: string; tone?: string }) => void }) {
+  const [plate, setPlate] = useState("");
+  const [state, setState] = useState<"idle" | "loading" | "result">("idle");
+  const [ok, setOk] = useState(true);
+  const verify = () => {
+    setState("loading");
+    setTimeout(() => {
+      const clean = plate.replace(/\s+/g, "").toUpperCase();
+      const valid = clean.length >= 5;
+      setOk(valid);
+      setState("result");
+    }, 900);
+  };
+  return (
+    <ModalShell
+      onClose={onClose}
+      tone="verified"
+      title="গাড়ি যাচাই"
+      subtitle="Vehicle verification · BRTA registry lookup (mock)"
+      footer={
+        state === "result" ? (
+          <button
+            onClick={() =>
+              onDone(
+                ok
+                  ? { bn: "গাড়ি যাচাই সম্পন্ন", en: "Vehicle verified · registered owner match", tone: "verified" }
+                  : { bn: "সতর্কতা: গাড়ি মিলছে না", en: "Warning: plate not found in registry", tone: "warning" }
+              )
+            }
+            className="tap w-full rounded-xl bg-primary px-4 py-2.5 text-[13px] font-semibold text-primary-foreground shadow-md active:scale-[0.98]"
+          >
+            Done
+          </button>
+        ) : (
+          <button
+            onClick={verify}
+            disabled={!plate || state === "loading"}
+            className="tap w-full rounded-xl bg-verified px-4 py-2.5 text-[13px] font-semibold text-verified-foreground shadow-md active:scale-[0.98] disabled:opacity-50"
+          >
+            {state === "loading" ? (
+              <span className="inline-flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</span>
+            ) : (
+              <span>Verify · <span className="bn">যাচাই করুন</span></span>
+            )}
+          </button>
+        )
+      }
+    >
+      <div className="space-y-3">
+        <div className="flex items-center gap-2 rounded-xl border border-border/70 bg-surface/50 p-3">
+          <Car className="h-5 w-5 text-verified" />
+          <input
+            value={plate}
+            onChange={(e) => setPlate(e.target.value)}
+            placeholder="DHK-METRO-GA-11-2345"
+            className="min-w-0 flex-1 bg-transparent text-[14px] font-semibold tracking-wider outline-none placeholder:text-muted-foreground/70"
+          />
+        </div>
+        {state === "result" && (
+          <div className={[
+            "rounded-2xl border p-3 animate-fade-in",
+            ok ? "border-verified/40 bg-verified/5" : "border-warning/40 bg-warning/5",
+          ].join(" ")}>
+            <div className="flex items-center gap-2">
+              {ok ? <Check className="h-4 w-4 text-verified" /> : <AlertTriangle className="h-4 w-4 text-warning" />}
+              <div className="bn text-[13px] font-bold">{ok ? "যাচাই সফল" : "যাচাই ব্যর্থ"}</div>
+            </div>
+            <div className="mt-1 text-[12px] text-muted-foreground">
+              {ok
+                ? "Registered owner: M. Rahman · Class: private car · Last renewed 2025"
+                : "Plate not found in registry. Report if suspected forgery."}
+            </div>
+          </div>
+        )}
+        <div className="text-[11px] text-muted-foreground">
+          <span className="bn">গাড়ির প্লেট নম্বর দিন এবং যাচাই করুন</span> · Cross-checked against community reports and BRTA registry.
+        </div>
+      </div>
+    </ModalShell>
+  );
+}
+
+function FlagModal({ onClose, onDone }: { onClose: () => void; onDone: () => void }) {
+  const [reason, setReason] = useState("misleading");
+  const reasons = [
+    { k: "misleading", bn: "বিভ্রান্তিকর", en: "Misleading claim" },
+    { k: "fake", bn: "ভুয়া তথ্য", en: "Fabricated content" },
+    { k: "duplicate", bn: "নকল রিপোর্ট", en: "Duplicate report" },
+    { k: "outdated", bn: "পুরানো তথ্য", en: "Outdated info" },
+  ];
+  return (
+    <ModalShell
+      onClose={onClose}
+      tone="warning"
+      title="তথ্য যাচাই অনুরোধ"
+      subtitle="Flag for community verification"
+      footer={
+        <button onClick={onDone} className="tap w-full rounded-xl bg-warning px-4 py-2.5 text-[13px] font-semibold text-warning-foreground shadow-md active:scale-[0.98]">
+          <span className="inline-flex items-center gap-2"><Flag className="h-4 w-4" /> <span className="bn">অনুরোধ পাঠান</span> · Submit flag</span>
+        </button>
+      }
+    >
+      <div className="space-y-2">
+        {reasons.map((r) => (
+          <button
+            key={r.k}
+            onClick={() => setReason(r.k)}
+            className={[
+              "tap flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors",
+              reason === r.k ? "border-warning bg-warning/10" : "border-border/70 hover:bg-muted",
+            ].join(" ")}
+          >
+            <div>
+              <div className="bn text-[13px] font-semibold">{r.bn}</div>
+              <div className="text-[11px] text-muted-foreground">{r.en}</div>
+            </div>
+            {reason === r.k && <Check className="h-4 w-4 text-warning" />}
+          </button>
+        ))}
+      </div>
+    </ModalShell>
+  );
+}
+
+function OfflineBanner() {
+  return (
+    <div className="pointer-events-none absolute inset-x-0 z-[55] flex justify-center px-3" style={{ top: "calc(env(safe-area-inset-top,0px) + 128px)" }}>
+      <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-warning/40 bg-warning/10 px-3 py-1.5 text-[11.5px] font-semibold text-warning shadow-sm backdrop-blur-xl animate-fade-in">
+        <WifiOff className="h-3.5 w-3.5" />
+        <span className="bn">অফলাইন মোড</span>
+        <span className="opacity-70">· Cached data · reports will sync</span>
+      </div>
+    </div>
+  );
+}
+
+function Toast({ toast }: { toast: { bn: string; en: string; tone?: string } }) {
+  const tone =
+    toast.tone === "emergency" ? "border-emergency/40 bg-emergency text-emergency-foreground" :
+    toast.tone === "warning" ? "border-warning/40 bg-warning text-warning-foreground" :
+    toast.tone === "verified" ? "border-verified/40 bg-verified text-verified-foreground" :
+    "border-primary/40 bg-primary text-primary-foreground";
+  return (
+    <div className="pointer-events-none absolute inset-x-0 z-[70] flex justify-center px-3" style={{ bottom: "calc(env(safe-area-inset-bottom,0px) + 88px)" }}>
+      <div className={`pointer-events-auto flex max-w-md items-center gap-2 rounded-2xl border px-3.5 py-2.5 shadow-[0_16px_36px_-14px_rgba(15,23,42,0.45)] animate-scale-in ${tone}`}>
+        <Check className="h-4 w-4" />
+        <div>
+          <div className="bn text-[13px] font-bold leading-tight">{toast.bn}</div>
+          <div className="text-[11px] opacity-90">{toast.en}</div>
+        </div>
+      </div>
+    </div>
   );
 }
