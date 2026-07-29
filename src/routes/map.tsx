@@ -94,6 +94,8 @@ function SafetyMapPage() {
   const [heatMode, setHeatMode] = useState<HeatMode>("both");
   /** Heat opacity multiplier (0–1) so users can keep polygons/streets legible. */
   const [heatOpacity, setHeatOpacity] = useState(1);
+  /** How visible the always-on all-areas overlay stays under category layers. */
+  const [areaOpacity, setAreaOpacity] = useState(1);
 
   const selectedArea = useMemo(
     () => AREAS.find((a) => a.id === selectedAreaId) ?? null,
@@ -300,6 +302,7 @@ function SafetyMapPage() {
             latestReport={latestReport}
             heatMode={heatMode}
             heatOpacity={heatOpacity}
+            areaOpacity={areaOpacity}
             highlight={highlight}
 
             onMapReady={(map) => {
@@ -412,6 +415,8 @@ function SafetyMapPage() {
             onModeChange={setHeatMode}
             opacity={heatOpacity}
             onOpacityChange={setHeatOpacity}
+            areaOpacity={areaOpacity}
+            onAreaOpacityChange={setAreaOpacity}
             layer={layer}
             timeWindow={TIME_WINDOWS.find((t) => t.id === timeWindow)}
           />
