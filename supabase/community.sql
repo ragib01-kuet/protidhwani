@@ -170,6 +170,12 @@ create policy "users delete own community images" on storage.objects
   using (bucket_id = 'community-images' and (storage.foldername(name))[1] = auth.uid()::text);
 
 -- ---------- realtime ----------
-alter publication supabase_realtime add table public.posts;
-alter publication supabase_realtime add table public.post_comments;
-alter publication supabase_realtime add table public.post_supports;
+do $$ begin
+  alter publication supabase_realtime add table public.posts;
+exception when duplicate_object then null; end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.post_comments;
+exception when duplicate_object then null; end $$;
+do $$ begin
+  alter publication supabase_realtime add table public.post_supports;
+exception when duplicate_object then null; end $$;
