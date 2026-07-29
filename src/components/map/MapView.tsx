@@ -2,7 +2,6 @@ import { createElement, useCallback, useMemo } from "react";
 import Map, {
   Layer as MapLibreLayer,
   Marker,
-  NavigationControl,
   Source as MapLibreSource,
   type MapLayerMouseEvent,
   type MapRef,
@@ -147,7 +146,6 @@ export default function MapView({
       attributionControl={false}
       reuseMaps
     >
-      <NavigationControl position="bottom-right" showCompass={false} />
 
       {/* Community safety choropleth — opacity is animated so layer swaps crossfade. */}
       <Source id="areas" type="geojson" data={AREAS_GEOJSON}>
