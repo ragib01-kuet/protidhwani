@@ -218,7 +218,7 @@ export default function MapView({
           paint={{
             "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.25, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.1, 11, 1.6],
-            "heatmap-radius": ["interpolate", ["exponential", 1.8], ["zoom"], 5, 45, 9, 110, 12, 260],
+            "heatmap-radius": ["interpolate", ["exponential", 1.8], ["zoom"], 5, 45, 9, 110, 12, 260, 16, 520],
             "heatmap-opacity": [
               "interpolate",
               ["linear"],
@@ -227,8 +227,10 @@ export default function MapView({
               (areaFocused ? 0.75 : 0.5) * areaDim,
               10.5,
               (areaFocused ? 0.55 : 0.35) * areaDim,
-              12.5,
-              0,
+              13,
+              (areaFocused ? 0.35 : 0.22) * areaDim,
+              17,
+              (areaFocused ? 0.28 : 0.18) * areaDim,
             ],
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
@@ -267,7 +269,7 @@ export default function MapView({
             "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.18, 5, 0.85],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.4, 13, 2.2],
             // Exponential growth keeps blobs geographically stable while zooming.
-            "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 26, 11, 55, 15, 130],
+            "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 26, 11, 55, 15, 130, 18, 300],
             // Hidden (opacity 0) rather than unmounted, so mode swaps crossfade.
             "heatmap-opacity": showAmbientHeat
               ? [
@@ -279,7 +281,9 @@ export default function MapView({
                   13,
                   (areaFocused ? 0.5 : 0.3) * dim,
                   15.5,
-                  0,
+                  (areaFocused ? 0.42 : 0.26) * dim,
+                  18,
+                  (areaFocused ? 0.38 : 0.24) * dim,
                 ]
               : 0,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
@@ -315,7 +319,7 @@ export default function MapView({
           paint={{
             "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.3, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1, 14, 2.6],
-            "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 20, 11, 42, 15, 95],
+            "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 20, 11, 42, 15, 95, 18, 220],
             "heatmap-opacity": showIncidentHeat
               ? [
                   "interpolate",
@@ -326,7 +330,9 @@ export default function MapView({
                   14,
                   (areaFocused ? 0.55 : 0.85) * dim,
                   15.5,
-                  0,
+                  (areaFocused ? 0.45 : 0.6) * dim,
+                  18,
+                  (areaFocused ? 0.4 : 0.5) * dim,
                 ]
               : 0,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
