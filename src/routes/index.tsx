@@ -259,46 +259,111 @@ const pillars = [
     tone: "emergency",
     title: "Incident Reporting",
     bn: "ঘটনা রিপোর্ট করুন",
-    desc: "Photo, video, geo-tagged reports with anonymous options.",
+    desc: "Photo, video, geo-tagged reports with anonymous options for citizens who need to be heard without being exposed.",
+    stat: "৪২k+ reports this month",
+    cta: "File a report",
   },
   {
     icon: Scale,
     tone: "primary",
     title: "Know Your Rights",
     bn: "আপনার অধিকার",
-    desc: "Plain-language legal explainers and citizen protections.",
+    desc: "Plain-language legal explainers and citizen protections written by lawyers, translated for everyone.",
+    stat: "১২০+ rights explained",
+    cta: "Read explainers",
   },
   {
     icon: ShieldCheck,
     tone: "verified",
     title: "Fact-check",
     bn: "তথ্য যাচাই",
-    desc: "Community & editor verified — misinformation flagged.",
+    desc: "Community and editor verified — misinformation flagged, sources shown, receipts always attached.",
+    stat: "98% verification rate",
+    cta: "Verify a claim",
   },
   {
     icon: Radio,
     tone: "warning",
     title: "Crisis Alerts",
     bn: "সংকট সতর্কতা",
-    desc: "SOS, floods, curfews, road & weather advisories.",
+    desc: "SOS, floods, curfews, road and weather advisories delivered by district, in Bangla and English.",
+    stat: "৬৪ districts covered",
+    cta: "See live alerts",
   },
   {
     icon: Users,
     tone: "primary",
     title: "Community",
     bn: "কমিউনিটি",
-    desc: "Local circles by district, campus and cause.",
+    desc: "Local circles by district, campus and cause — organize, discuss, and act with neighbours you trust.",
+    stat: "৯০০+ active circles",
+    cta: "Join a circle",
   },
   {
     icon: Landmark,
     tone: "verified",
     title: "Public Info",
     bn: "সরকারি তথ্য",
-    desc: "Trusted directories, hotlines, and official notices.",
+    desc: "Trusted directories, hotlines, and official notices, updated and cross-checked by public servants.",
+    stat: "২.১k official sources",
+    cta: "Browse directory",
   },
 ];
 
+const toneStyles: Record<
+  string,
+  { chip: string; ring: string; glow: string; bar: string; text: string }
+> = {
+  emergency: {
+    chip: "bg-emergency/10 text-emergency",
+    ring: "ring-emergency/40",
+    glow: "from-emergency/25 via-emergency/5",
+    bar: "bg-emergency",
+    text: "text-emergency",
+  },
+  primary: {
+    chip: "bg-primary/10 text-primary",
+    ring: "ring-primary/40",
+    glow: "from-primary/25 via-primary/5",
+    bar: "bg-primary",
+    text: "text-primary",
+  },
+  verified: {
+    chip: "bg-verified/10 text-verified",
+    ring: "ring-verified/40",
+    glow: "from-verified/25 via-verified/5",
+    bar: "bg-verified",
+    text: "text-verified",
+  },
+  warning: {
+    chip: "bg-warning/20 text-warning-foreground",
+    ring: "ring-warning/50",
+    glow: "from-warning/25 via-warning/5",
+    bar: "bg-warning",
+    text: "text-warning-foreground",
+  },
+};
+
 function PillarGrid() {
+  const [active, setActive] = useState(0);
+  const [locked, setLocked] = useState(false);
+  const total = pillars.length;
+
+  useEffect(() => {
+    if (locked) return;
+    const id = window.setInterval(() => setActive((i) => (i + 1) % total), 4200);
+    return () => window.clearInterval(id);
+  }, [locked, total]);
+
+  const go = (i: number) => {
+    setLocked(true);
+    setActive(((i % total) + total) % total);
+  };
+
+  const current = pillars[active];
+  const tone = toneStyles[current.tone];
+  const ActiveIcon = current.icon;
+
   return (
     <section className="mt-20">
       <SectionHead
@@ -306,46 +371,148 @@ function PillarGrid() {
         title="Six pillars, one civic space"
         bn="ছয় স্তম্ভ, এক নাগরিক প্ল্যাটফর্ম"
       />
-      <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {pillars.map((p) => (
-          <PillarCard key={p.title} {...p} />
-        ))}
-      </div>
-    </section>
-  );
-}
 
-function PillarCard({
-  icon: Icon,
-  tone,
-  title,
-  bn,
-  desc,
-}: {
-  icon: any;
-  tone: string;
-  title: string;
-  bn: string;
-  desc: string;
-}) {
-  const toneMap: Record<string, string> = {
-    emergency: "bg-emergency/10 text-emergency",
-    primary: "bg-primary/10 text-primary",
-    verified: "bg-verified/10 text-verified",
-    warning: "bg-warning/15 text-warning-foreground",
-  };
-  return (
-    <div className="card-soft tap group relative overflow-hidden p-5 hover:-translate-y-0.5">
-      <div className={`grid h-11 w-11 place-items-center rounded-2xl ${toneMap[tone]}`}>
-        <Icon className="h-5 w-5" />
+      <div className="mt-8 grid gap-6 lg:grid-cols-[1.15fr_1fr]">
+        {/* Featured slide */}
+        <div
+          key={active}
+          className="relative overflow-hidden rounded-[28px] border border-border bg-surface-elevated p-6 sm:p-8"
+          style={{ animation: "fade-in 0.45s ease-out" }}
+        >
+          <div
+            aria-hidden
+            className={`pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-gradient-to-br ${tone.glow} to-transparent blur-3xl transition-all duration-700`}
+          />
+          <div className="relative flex items-start justify-between gap-4">
+            <div
+              className={`grid h-14 w-14 place-items-center rounded-2xl ring-1 ${tone.chip} ${tone.ring} transition-transform duration-500`}
+              style={{ animation: "scale-in 0.4s ease-out" }}
+            >
+              <ActiveIcon className="h-6 w-6" />
+            </div>
+            <div className="text-right">
+              <div className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                Pillar {String(active + 1).padStart(2, "0")} / 0{total}
+              </div>
+              <div className={`bn mt-1 text-xs font-semibold ${tone.text}`}>{current.bn}</div>
+            </div>
+          </div>
+
+          <h3 className="mt-6 text-2xl font-bold tracking-tight sm:text-3xl">{current.title}</h3>
+          <p className="mt-3 max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-[15px]">
+            {current.desc}
+          </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              className={`tap inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-primary-foreground ${tone.bar} shadow-[0_8px_24px_-10px_currentColor]`}
+            >
+              {current.cta}
+              <ArrowUpRight className="h-3.5 w-3.5" />
+            </button>
+            <span className="bn inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              <span className={`h-1.5 w-1.5 rounded-full ${tone.bar}`} />
+              {current.stat}
+            </span>
+          </div>
+
+          {/* Controls */}
+          <div className="mt-8 flex items-center justify-between border-t border-border/70 pt-5">
+            <div className="flex items-center gap-1.5">
+              {pillars.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => go(i)}
+                  aria-label={`Go to pillar ${i + 1}`}
+                  className={`h-1.5 rounded-full transition-all duration-500 ${
+                    i === active ? `w-8 ${tone.bar}` : "w-2 bg-border hover:bg-muted-foreground/50"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => go(active - 1)}
+                aria-label="Previous"
+                className="tap grid h-9 w-9 place-items-center rounded-full border border-border bg-background text-foreground/70 hover:text-foreground"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => go(active + 1)}
+                aria-label="Next"
+                className="tap grid h-9 w-9 place-items-center rounded-full border border-border bg-background text-foreground/70 hover:text-foreground"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Progress bar */}
+          {!locked && (
+            <div className="absolute inset-x-0 bottom-0 h-0.5 overflow-hidden bg-border/70">
+              <div
+                key={`p-${active}`}
+                className={`h-full ${tone.bar}`}
+                style={{ animation: "pillar-progress 4200ms linear forwards" }}
+              />
+            </div>
+          )}
+        </div>
+
+        {/* Thumbnail grid */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-2">
+          {pillars.map((p, i) => {
+            const t = toneStyles[p.tone];
+            const Icon = p.icon;
+            const isActive = i === active;
+            return (
+              <button
+                key={p.title}
+                onClick={() => go(i)}
+                className={`group relative overflow-hidden rounded-2xl border p-4 text-left transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_30px_-15px_rgba(0,0,0,0.25)] active:scale-[0.98] ${
+                  isActive
+                    ? `border-transparent bg-background ring-2 ${t.ring} shadow-[0_10px_30px_-18px_rgba(0,0,0,0.4)]`
+                    : "border-border bg-surface hover:border-transparent hover:ring-1 hover:ring-border"
+                }`}
+              >
+                <span
+                  aria-hidden
+                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${t.glow} to-transparent opacity-0 transition-opacity duration-500 ${
+                    isActive ? "opacity-100" : "group-hover:opacity-60"
+                  }`}
+                />
+                <div className="relative flex items-start gap-3">
+                  <div
+                    className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl transition-all duration-300 ${t.chip} ${
+                      isActive ? "scale-110" : "group-hover:scale-105"
+                    }`}
+                  >
+                    <Icon className="h-4.5 w-4.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-semibold tracking-tight">{p.title}</div>
+                    <div className="bn mt-0.5 truncate text-[11px] text-muted-foreground">{p.bn}</div>
+                  </div>
+                </div>
+                <div
+                  className={`relative mt-3 h-0.5 rounded-full ${t.bar} origin-left transition-transform duration-500 ${
+                    isActive ? "scale-x-100" : "scale-x-0 group-hover:scale-x-50"
+                  }`}
+                />
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <h3 className="mt-4 text-base font-semibold tracking-tight">{title}</h3>
-      <p className="bn mt-0.5 text-xs text-muted-foreground">{bn}</p>
-      <p className="mt-3 text-sm text-muted-foreground">{desc}</p>
-      <div className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-primary opacity-0 transition-opacity group-hover:opacity-100">
-        Learn more <ChevronRight className="h-3.5 w-3.5" />
-      </div>
-    </div>
+
+      <style>{`
+        @keyframes pillar-progress {
+          from { width: 0% }
+          to { width: 100% }
+        }
+      `}</style>
+    </section>
   );
 }
 
