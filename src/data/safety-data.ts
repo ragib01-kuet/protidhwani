@@ -596,3 +596,96 @@ export function microCoverageCount(districtId: string): number {
 export function hasMicroCoverage(districtId: string): boolean {
   return microCoverageCount(districtId) > 0;
 }
+
+/* ------------------------------------------------------------------ */
+/* Route fallback                                                      */
+/* ------------------------------------------------------------------ */
+
+/** Rough great-circle distance in km (equirectangular approximation). */
+function distanceKm(a: [number, number], b: [number, number]): number {
+  const x = (b[0] - a[0]) * Math.cos(((a[1] + b[1]) / 2) * (Math.PI / 180));
+  const y = b[1] - a[1];
+  return Math.sqrt(x * x + y * y) * 111.32;
+}
+
+/** Bends a straight origin→destination line sideways by `offset` degrees. */
+function bendPath(
+  origin: [number, number],
+  destination: [number, number],
+  offset: number,
+): [number, number][] {
+  const dx = destination[0] - origin[0];
+  const dy = destination[1] - origin[1];
+  const len = Math.hypot(dx, dy) || 1;
+  // Unit normal to the origin→destination vector.
+  const nx = -dy / len;
+  const ny = dx / len;
+  const mid = (t: number, k: number): [number, number] => [
+    origin[0] + dx * t + nx * offset * k,
+    origin[1] + dy * t + ny * offset * k,
+  ];
+  return [origin, mid(0.33, 1), mid(0.66, 1), destination];
+}
+
+/**
+ * Derives a three-way route comparison for any origin/destination pair when no
+ * hand-seeded set exists, so "compare safer routes" always has an answer.
+ * Deterministic: identical inputs always yield identical routes.
+ */
+export function buildRouteSet(originId: string, destinationId: string): DemoRouteSet | null {
+  const origin = AREAS.find((a) => a.id === originId);
+  const destination = AREAS.find((a) => a.id === destinationId);
+  if (!origin || !destination || origin.id === destination.id) return null;
+
+  const km = distanceKm(origin.center, destination.center);
+  const base = Math.max(8, Math.round(km * 2.6)); // ~23 km/h city average
+  const dest = destination.safetyScore;
+  const clamp = (n: number) => Math.max(12, Math.min(96, Math.round(n)));
+  const offset = Math.max(0.006, Math.min(0.03, km * 0.0035));
+
+  return {
+    id: `derived-${originId}-${destinationId}`,
+    originId,
+    destinationId,
+    routes: [
+      {
+        id: "safest",
+        travelTimeMin: base + Math.round(base * 0.25),
+        safetyScore: clamp(dest * 0.5 + 48),
+        incidentDensity: "low",
+        lightingAvailable: true,
+        policeCoverage: "high",
+        path: bendPath(origin.center, destination.center, offset),
+      },
+      {
+        id: "balanced",
+        travelTimeMin: base + Math.round(base * 0.08),
+        safetyScore: clamp(dest * 0.5 + 28),
+        incidentDensity: "medium",
+        lightingAvailable: true,
+        policeCoverage: "medium",
+        path: bendPath(origin.center, destination.center, 0),
+      },
+      {
+        id: "fastest",
+        travelTimeMin: base,
+        safetyScore: clamp(dest * 0.45 + 8),
+        incidentDensity: "high",
+        lightingAvailable: false,
+        policeCoverage: "low",
+        path: bendPath(origin.center, destination.center, -offset),
+      },
+    ],
+  };
+}
+
+/** Nearest seeded area to `destinationId`, used as an implicit route origin. */
+export function nearestAreaId(destinationId: string): string | null {
+  const destination = AREAS.find((a) => a.id === destinationId);
+  if (!destination) return null;
+  const others = AREAS.filter((a) => a.id !== destinationId);
+  if (!others.length) return null;
+  return others.reduce((best, a) =>
+    distanceKm(a.center, destination.center) < distanceKm(best.center, destination.center) ? a : best,
+  ).id;
+}
