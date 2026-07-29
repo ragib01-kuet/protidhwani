@@ -67,6 +67,9 @@ function SafetyMapPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [routeSetId, setRouteSetId] = useState<string | null>(null);
+  /** Destination that has no seeded route pair — drives the empty state. */
+  const [routeEmptyFor, setRouteEmptyFor] = useState<{ bn: string; en: string } | null>(null);
+
   const [selectedRouteId, setSelectedRouteId] = useState<DemoRoute["id"]>("safest");
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [latestReport, setLatestReport] = useState<Incident | null>(null);
@@ -116,17 +119,17 @@ function SafetyMapPage() {
 
   const handleDirections = useCallback(
     (areaId: string) => {
-      const set = DEMO_ROUTES.find((r) => r.destinationId === areaId) ?? DEMO_ROUTES[0] ?? null;
+      const area = AREAS.find((a) => a.id === areaId) ?? null;
+      // Only an exact seeded origin→destination pair may render routes. Falling
+      // back to "the first demo set" would show a route to the wrong place.
+      const set = DEMO_ROUTES.find((r) => r.destinationId === areaId) ?? null;
       setSheetOpen(false);
       if (!set) {
-        setAdvisory({
-          id: Date.now(),
-          tone: "caution",
-          bn: "এই এলাকার জন্য ডেমো রুট নেই।",
-          en: "No demo route is available for this area.",
-        });
+        setRouteSetId(null);
+        setRouteEmptyFor(area ? { bn: area.nameBn, en: area.nameEn } : { bn: "এই এলাকা", en: "this area" });
         return;
       }
+      setRouteEmptyFor(null);
       setRouteSetId(set.id);
       setSelectedRouteId("safest");
       const first = set.routes[0]?.path[0];
@@ -135,31 +138,53 @@ function SafetyMapPage() {
     [flyTo],
   );
 
-  /** Uses the browser location when granted; falls back to central Dhaka. */
-  const locateMe = useCallback(() => {
-    const apply = (lng: number, lat: number, fallback: boolean) => {
-      setUserLocation({ lng, lat });
-      flyTo(lng, lat, 13.5);
-      if (fallback) {
-        setAdvisory({
-          id: Date.now(),
-          tone: "caution",
-          bn: "অবস্থান পাওয়া যায়নি — ঢাকা কেন্দ্র দেখানো হচ্ছে।",
-          en: "Location unavailable — showing central Dhaka instead.",
-        });
-      }
-    };
+  const closeRoutes = useCallback(() => {
+    setRouteSetId(null);
+    setRouteEmptyFor(null);
+  }, []);
 
-    if (!("geolocation" in navigator)) {
-      apply(DHAKA_FALLBACK.lng, DHAKA_FALLBACK.lat, true);
-      return;
+  /**
+   * Resolves the browser location, falling back to central Dhaka when the
+   * permission is denied, unavailable, or times out. Never rejects.
+   */
+  const requestLocation = useCallback(
+    () =>
+      new Promise<{ lng: number; lat: number; fallback: boolean }>((resolve) => {
+        const fallback = { lng: DHAKA_FALLBACK.lng, lat: DHAKA_FALLBACK.lat, fallback: true };
+        if (typeof navigator === "undefined" || !("geolocation" in navigator)) {
+          resolve(fallback);
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          (pos) => resolve({ lng: pos.coords.longitude, lat: pos.coords.latitude, fallback: false }),
+          () => resolve(fallback),
+          { timeout: 6000 },
+        );
+      }),
+    [],
+  );
+
+  /** Uses the browser location when granted; falls back to central Dhaka. */
+  const locateMe = useCallback(async () => {
+    const { lng, lat, fallback } = await requestLocation();
+    setUserLocation({ lng, lat });
+    flyTo(lng, lat, 13.5);
+    if (fallback) {
+      setAdvisory({
+        id: Date.now(),
+        tone: "caution",
+        bn: "অবস্থান পাওয়া যায়নি — ঢাকা কেন্দ্র দেখানো হচ্ছে।",
+        en: "Location unavailable — showing central Dhaka instead.",
+      });
     }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => apply(pos.coords.longitude, pos.coords.latitude, false),
-      () => apply(DHAKA_FALLBACK.lng, DHAKA_FALLBACK.lat, true),
-      { timeout: 6000 },
-    );
-  }, [flyTo]);
+  }, [flyTo, requestLocation]);
+
+  /** Called from the report modal's "use my location" control. */
+  const handleReportLocation = useCallback(async () => {
+    const result = await requestLocation();
+    setUserLocation({ lng: result.lng, lat: result.lat });
+    return result;
+  }, [requestLocation]);
 
   const handleReportSubmit = useCallback(
     (incident: Incident) => {
@@ -176,6 +201,7 @@ function SafetyMapPage() {
   );
 
   const reportLocation = userLocation ?? DHAKA_FALLBACK;
+
 
   return (
     <main className="relative h-dvh w-full overflow-hidden bg-secondary">
@@ -199,7 +225,7 @@ function SafetyMapPage() {
       </ClientOnly>
 
       {/* Top overlay: search, layers, advisories. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 space-y-3 p-4">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 space-y-3 p-4">
         <div className="pointer-events-auto mx-auto max-w-xl space-y-3">
           <SearchBar onSelect={handleSearchSelect} />
           {panelsOpen && <SafetyLayerToggle value={layerId} onChange={setLayerId} />}
@@ -208,7 +234,7 @@ function SafetyMapPage() {
       </div>
 
       {/* Right controls. */}
-      <div className="absolute right-4 top-1/2 z-20 flex -translate-y-1/2 flex-col gap-2">
+      <div className="absolute right-4 top-[38%] z-30 flex -translate-y-1/2 flex-col gap-2">
         <button
           onClick={locateMe}
           aria-label="আমার অবস্থান / My location"
@@ -227,16 +253,18 @@ function SafetyMapPage() {
       </div>
 
       {/* Bottom overlay: insights, time slider, routes, FAB. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 space-y-3 p-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[62dvh] space-y-3 overflow-y-auto p-4">
         <div className="pointer-events-auto mx-auto max-w-xl space-y-3">
           {panelsOpen && (
             <>
               <RouteComparisonPanel
                 routeSet={routeSet}
+                emptyFor={routeEmptyFor}
                 selectedRouteId={selectedRouteId}
                 onSelectRoute={setSelectedRouteId}
-                onClose={() => setRouteSetId(null)}
+                onClose={closeRoutes}
               />
+
               <InsightCard />
               <TimeSlider value={timeWindow} onChange={setTimeWindow} />
             </>
@@ -260,6 +288,7 @@ function SafetyMapPage() {
         location={reportLocation}
         areaId={selectedAreaId ?? "dhaka-motijheel"}
         onSubmit={handleReportSubmit}
+        onRequestLocation={handleReportLocation}
       />
     </main>
   );
