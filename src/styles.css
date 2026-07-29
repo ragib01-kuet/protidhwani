@@ -147,3 +147,8 @@
   transition: transform 150ms ease, box-shadow 150ms ease, background-color 150ms ease;
   &:active { transform: scale(0.97); }
 }
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
+}
