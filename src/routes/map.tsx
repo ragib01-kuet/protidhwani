@@ -814,12 +814,22 @@ function AreaSheet({
   onToggleExpand,
   onClose,
   area,
+  route,
+  setRoute,
+  feed,
+  onFlag,
+  onVehicle,
 }: {
   open: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
   onClose: () => void;
   area: string;
+  route: string;
+  setRoute: (r: string) => void;
+  feed: FeedItem[];
+  onFlag: () => void;
+  onVehicle: () => void;
 }) {
   const info = useMemo(
     () => ({
