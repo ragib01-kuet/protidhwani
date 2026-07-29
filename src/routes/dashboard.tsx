@@ -1,0 +1,127 @@
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Search, TrendingUp } from "lucide-react";
+import { AppShell } from "@/components/AppShell";
+import { PostCard } from "@/components/PostCard";
+import { posts, quickActions } from "@/lib/civic";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "প্রতিধ্বনি · Protidhwani — Civic Network for Bangladesh" },
+      {
+        name: "description",
+        content:
+          "Report incidents, verify information, request emergency help and protect rights with Protidhwani, a citizen-powered civic network for Bangladesh.",
+      },
+      { property: "og:title", content: "প্রতিধ্বনি · Protidhwani" },
+      {
+        property: "og:description",
+        content: "A citizen-powered civic network for Bangladesh — report, verify, organise, stay safe.",
+      },
+    ],
+  }),
+  component: Home,
+});
+
+const toneRing = {
+  emergency: "bg-emergency-soft text-emergency",
+  brand: "bg-brand-soft text-primary",
+  verified: "bg-verified-soft text-verified",
+  warning: "bg-warning-soft text-warning",
+} as const;
+
+function Home() {
+  return (
+    <AppShell title={{ bn: "প্রতিধ্বনি", en: "Protidhwani" }} showSearch={false}>
+      <section className="rounded-[2rem] border border-border bg-card p-6 shadow-card">
+        <p lang="bn" className="text-2xl font-bold tracking-tight">
+          শুভ সকাল, নাগরিক
+        </p>
+        <p lang="en" className="mt-1 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          Good morning, citizen
+        </p>
+
+        <label className="mt-5 flex items-center gap-3 rounded-2xl border border-border bg-surface px-4 py-3.5 focus-within:border-primary/50">
+          <Search className="size-5 shrink-0 text-muted-foreground" />
+          <input
+            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            placeholder="এলাকা, ঘটনা বা যানবাহন খুঁজুন · Search"
+            lang="bn"
+          />
+        </label>
+
+        <div className="mt-5 grid grid-cols-3 gap-3">
+          {[
+            { bn: "আজকের রিপোর্ট", en: "Reports today", v: "১,২৪৮" },
+            { bn: "যাচাইকৃত", en: "Verified", v: "৮৯%" },
+            { bn: "সক্রিয় সতর্কতা", en: "Active alerts", v: "১৭" },
+          ].map((s) => (
+            <div key={s.en} className="rounded-2xl bg-surface px-3 py-3 text-center">
+              <span lang="bn" className="block text-lg font-bold text-primary tabular-nums">
+                {s.v}
+              </span>
+              <span lang="bn" className="block text-[11px] font-semibold">{s.bn}</span>
+              <span lang="en" className="block text-[9px] uppercase tracking-wider text-muted-foreground">
+                {s.en}
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-7">
+        <h2 lang="bn" className="text-base font-bold">দ্রুত পদক্ষেপ</h2>
+        <p lang="en" className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          Quick Actions
+        </p>
+
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {quickActions.map((a) => (
+            <Link
+              key={a.en}
+              to={a.to}
+              className="group flex min-h-28 flex-col justify-between rounded-3xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift active:scale-95"
+            >
+              <span
+                className={cn(
+                  "grid size-10 place-items-center rounded-2xl text-lg transition-transform group-hover:scale-110",
+                  toneRing[a.tone],
+                )}
+              >
+                {a.icon}
+              </span>
+              <span className="mt-3 block min-w-0">
+                <span lang="bn" className="block truncate text-sm font-bold">{a.bn}</span>
+                <span lang="en" className="block truncate text-[9px] uppercase tracking-wider text-muted-foreground">
+                  {a.en}
+                </span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-8">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+          <div className="min-w-0">
+            <h2 lang="bn" className="text-base font-bold">কমিউনিটি ফিড</h2>
+            <p lang="en" className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+              Community Feed
+            </p>
+          </div>
+          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1.5 text-[11px] font-semibold text-primary">
+            <TrendingUp className="size-3.5" />
+            <span lang="bn">সরাসরি</span>
+          </span>
+        </div>
+
+        <div className="mt-4 space-y-4">
+          {posts.map((p) => (
+            <PostCard key={p.id} post={p} />
+          ))}
+        </div>
+      </section>
+    </AppShell>
+  );
+}
