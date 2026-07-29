@@ -67,9 +67,13 @@ export function AreaInfoSheet({ area, open, onOpenChange, onDirections }: AreaIn
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side={isMobile ? "bottom" : "right"}
-        className="flex max-h-[88vh] flex-col gap-0 overflow-y-auto rounded-t-3xl p-0 sm:max-w-[26rem]"
+        className={
+          isMobile
+            ? "flex max-h-[88vh] flex-col gap-0 overflow-y-auto rounded-t-3xl p-0"
+            : "flex h-dvh max-h-dvh w-[26rem] flex-col gap-0 overflow-hidden p-0 sm:max-w-[26rem]"
+        }
       >
-        <SheetHeader className="gap-1 border-b border-border px-5 pb-4 pt-5 text-left">
+        <SheetHeader className="shrink-0 gap-1 border-b border-border px-5 pb-4 pt-5 text-left">
           <SheetTitle asChild>
             <div className="pr-8">
               <span lang="bn" className="block text-2xl font-bold leading-tight">
@@ -90,7 +94,8 @@ export function AreaInfoSheet({ area, open, onOpenChange, onDirections }: AreaIn
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-5 px-5 pb-8 pt-5">
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-5 lg:justify-between">
+
           <div
             className="flex items-center gap-4 rounded-3xl border p-4"
             style={{ borderColor: `${band.color}33`, backgroundColor: `${band.color}0f` }}
