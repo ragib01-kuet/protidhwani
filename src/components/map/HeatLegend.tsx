@@ -18,6 +18,9 @@ export interface HeatLegendProps {
   /** Heat opacity multiplier, 0 → 1. */
   opacity: number;
   onOpacityChange: (value: number) => void;
+  /** All-areas overlay opacity multiplier, 0 → 1. */
+  areaOpacity: number;
+  onAreaOpacityChange: (value: number) => void;
   /** Active category/layer filter, shown so the heat is self-explanatory. */
   layer?: { bn: string; en: string };
   /** Active time window, shown alongside the layer. */
@@ -41,6 +44,8 @@ export function HeatLegend({
   onModeChange,
   opacity,
   onOpacityChange,
+  areaOpacity,
+  onAreaOpacityChange,
   layer,
   timeWindow,
 }: HeatLegendProps) {
@@ -187,6 +192,35 @@ export function HeatLegend({
           className="mt-1.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
         />
       </div>
+
+      {/* All-areas overlay opacity: controls how dimmed the polygons get when
+          a category layer takes focus over the choropleth. */}
+      <div className="mt-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <label htmlFor="area-opacity" lang="bn" className="text-[11px] font-bold leading-none">
+            এলাকা স্তর{" "}
+            <span lang="en" className="font-medium text-muted-foreground">
+              Area overlay
+            </span>
+          </label>
+          <span lang="bn" className="text-[11px] font-bold tabular-nums text-primary">
+            {toBnNumber(Math.round(areaOpacity * 100))}%
+          </span>
+        </div>
+        <input
+          id="area-opacity"
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={Math.round(areaOpacity * 100)}
+          onChange={(e) => onAreaOpacityChange(Number(e.target.value) / 100)}
+          aria-label="এলাকা স্তরের স্বচ্ছতা / Area overlay opacity"
+          className="mt-1.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
+        />
+      </div>
+
+
 
 
       {open && (
