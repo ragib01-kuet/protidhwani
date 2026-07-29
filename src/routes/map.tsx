@@ -4,6 +4,7 @@ import { ChevronLeft, Loader2, MapPin } from "lucide-react";
 import type { MapRef } from "react-map-gl/maplibre";
 
 import { AdvisoryToast, type Advisory } from "@/components/alerts/AdvisoryToast";
+import { BottomNav } from "@/components/BottomNav";
 import { HeatLegend } from "@/components/map/HeatLegend";
 import { MapControls } from "@/components/map/MapControls";
 import { SafetyLayerToggle } from "@/components/map/SafetyLayerToggle";
@@ -282,12 +283,12 @@ function SafetyMapPage() {
       </div>
 
       {/* Primary report action, anchored bottom-right above the legend row. */}
-      <div className="pointer-events-none absolute bottom-4 right-3 z-30 sm:right-4">
+      <div className="pointer-events-none absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-3 z-30 sm:right-4 lg:bottom-4">
         <ReportFAB onClick={() => setReportOpen(true)} />
       </div>
 
       {/* Bottom overlay: one column — routes, insights, then the heat legend. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[55dvh] overflow-y-auto p-3 pr-24 sm:p-4 sm:pr-24">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[55dvh] overflow-y-auto p-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(6rem+env(safe-area-inset-bottom))] sm:pr-24 lg:pb-4">
         <div className="pointer-events-auto mx-auto flex w-full max-w-md flex-col gap-2.5">
           <RouteComparisonPanel
             routeSet={routeSet}
@@ -309,6 +310,8 @@ function SafetyMapPage() {
         onOpenChange={setSheetOpen}
         onDirections={handleDirections}
       />
+
+      <BottomNav />
 
       <ReportModal
         open={reportOpen}
