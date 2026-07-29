@@ -85,6 +85,12 @@ export interface MapViewProps {
   heatMode: HeatMode;
   /** User-tuned heat opacity multiplier, 0 (transparent) → 1 (full). */
   heatOpacity: number;
+  /**
+   * Transient highlight target set when a search result is selected.
+   * `id` changes on every selection so repeat picks re-trigger the pulse.
+   * `null` clears the pulse.
+   */
+  highlight: { id: number; lng: number; lat: number; areaId: string | null } | null;
   onMapReady: (map: MapRef) => void;
 }
 
@@ -98,8 +104,10 @@ export default function MapView({
   latestReport,
   heatMode,
   heatOpacity,
+  highlight,
   onMapReady,
 }: MapViewProps) {
+
   /** The community layer emphasises the choropleth; others emphasise heat. */
   const areaFocused = layer.categories.length === 0;
   const showIncidentHeat = heatMode !== "ambient";
