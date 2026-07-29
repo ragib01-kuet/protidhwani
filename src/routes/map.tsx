@@ -305,7 +305,7 @@ function SafetyMapPage() {
           {/* Insights are dropped on short desktop windows so the left column
               never collides with the filter panel above it. */}
           {panelsOpen && (
-            <div className="lg:max-[calc(100vh_-_0px)]:block lg:[@media(max-height:820px)]:hidden">
+            <div className="lg:[@media(max-height:820px)]:hidden">
               <InsightCard />
             </div>
           )}
