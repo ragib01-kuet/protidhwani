@@ -302,6 +302,7 @@ function SafetyMapPage() {
             latestReport={latestReport}
             heatMode={heatMode}
             heatOpacity={heatOpacity}
+            areaOpacity={areaOpacity}
             highlight={highlight}
 
             onMapReady={(map) => {
