@@ -1,11 +1,12 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClientOnly, createFileRoute, useRouter } from "@tanstack/react-router";
-import { ChevronLeft, Loader2, MapPin, TriangleAlert } from "lucide-react";
+import { ChevronLeft, Loader2, SlidersHorizontal, X } from "lucide-react";
 import type { MapRef } from "react-map-gl/maplibre";
 
 import { AdvisoryToast, type Advisory } from "@/components/alerts/AdvisoryToast";
 import { BottomNav } from "@/components/BottomNav";
-import { HeatLegend } from "@/components/map/HeatLegend";
+import { MapMenu } from "@/components/map/MapMenu";
+import { TemperatureScale } from "@/components/map/TemperatureScale";
 import { MapControls } from "@/components/map/MapControls";
 import { SafetyLayerToggle } from "@/components/map/SafetyLayerToggle";
 import { TimeWindowChips } from "@/components/map/TimeWindowChips";
@@ -14,8 +15,6 @@ import { SearchBar } from "@/components/navigation/SearchBar";
 import { ReportFAB } from "@/components/reports/ReportFAB";
 import { ReportModal } from "@/components/reports/ReportModal";
 import { AreaInfoSheet } from "@/components/safety/AreaInfoSheet";
-import { InsightCard } from "@/components/safety/InsightCard";
-import { DistrictSelector } from "@/components/map/DistrictSelector";
 import {
   AREAS,
   DEMO_ROUTES,
@@ -89,7 +88,8 @@ function SafetyMapPage() {
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
   const [latestReport, setLatestReport] = useState<Incident | null>(null);
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
-  const [panelsOpen, setPanelsOpen] = useState(true);
+  /** Single menubar panel holding every map control. */
+  const [menuOpen, setMenuOpen] = useState(false);
   /** Which heat surfaces the map paints — controlled from the legend. */
   const [heatMode, setHeatMode] = useState<HeatMode>("both");
   /** Heat opacity multiplier (0–1) so users can keep polygons/streets legible. */
@@ -281,6 +281,11 @@ function SafetyMapPage() {
       });
     },
     [addIncident],
+  );
+
+  const activeWindow = useMemo(
+    () => TIME_WINDOWS.find((t) => t.id === timeWindow),
+    [timeWindow],
   );
 
   const reportLocation = userLocation ?? DHAKA_FALLBACK;
