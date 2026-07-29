@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { Clock, MapPin, Search, X } from "lucide-react";
+import { Clock, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 
 import { searchEntries, useRecentSearches, useSearchIndex } from "@/hooks/useSafetyLayer";
 import type { SearchEntry } from "@/types/safety";
@@ -7,10 +7,12 @@ import type { SearchEntry } from "@/types/safety";
 export interface SearchBarProps {
   /** Fired when a suggestion is chosen — the page flies the map and opens the sheet. */
   onSelect: (entry: SearchEntry) => void;
+  /** Optional trailing filter affordance (shows/hides the layer + time panels). */
+  onFilter?: () => void;
 }
 
 /** Fully client-side fuzzy search over seeded areas + services. No geocoding API. */
-export function SearchBar({ onSelect }: SearchBarProps) {
+export function SearchBar({ onSelect, onFilter }: SearchBarProps) {
   const index = useSearchIndex();
   const { recent, pushRecent } = useRecentSearches();
   const [query, setQuery] = useState("");
@@ -30,8 +32,8 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-2 rounded-2xl border border-border bg-card/95 px-3 shadow-card backdrop-blur">
-        <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <div className="flex items-center gap-2 rounded-full border border-border bg-card/95 px-4 shadow-lift backdrop-blur">
+        <Search className="size-5 shrink-0 text-muted-foreground" aria-hidden />
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -43,20 +45,31 @@ export function SearchBar({ onSelect }: SearchBarProps) {
           onBlur={() => {
             blurTimer.current = setTimeout(() => setFocused(false), 120);
           }}
-          placeholder="এলাকা বা সেবা খুঁজুন · Search area or service"
+          placeholder="জেলা, এলাকা, থানা…"
           aria-label="এলাকা বা সেবা খুঁজুন / Search area or service"
-          className="min-h-11 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          className="min-h-14 w-full bg-transparent text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-muted-foreground"
         />
-        {query && (
+        {query ? (
           <button
             onClick={() => setQuery("")}
             aria-label="খোঁজ মুছুন / Clear search"
-            className="grid size-8 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
+            className="grid size-9 shrink-0 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
           >
             <X className="size-4" />
           </button>
+        ) : (
+          onFilter && (
+            <button
+              onClick={onFilter}
+              aria-label="ফিল্টার দেখান বা লুকান / Toggle filters"
+              className="grid size-9 shrink-0 place-items-center rounded-full text-foreground hover:bg-secondary"
+            >
+              <SlidersHorizontal className="size-5" />
+            </button>
+          )
         )}
       </div>
+
 
       {(showResults || showRecents) && (
         <ul className="absolute inset-x-0 top-full z-30 mt-2 overflow-hidden rounded-2xl border border-border bg-card shadow-lift">
