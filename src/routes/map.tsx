@@ -28,6 +28,11 @@ import {
   X,
   Check,
   ChevronLeft,
+  WifiOff,
+  Flag,
+  Car,
+  Loader2,
+  PhoneCall,
 } from "lucide-react";
 
 export const Route = createFileRoute("/map")({
