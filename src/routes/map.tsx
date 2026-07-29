@@ -430,8 +430,9 @@ function SafetyMapPage() {
 
 
       {/* Bottom-left: route comparison (when active) + the temperature scale. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2.5 p-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:w-[23rem] lg:pb-4">
-        <div className="pointer-events-auto mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex max-h-[calc(100dvh-10.5rem)] flex-col justify-end gap-2.5 p-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:w-[23rem] lg:pb-4">
+        <div className="pointer-events-auto mx-auto w-full max-w-md overflow-y-auto lg:mx-0 lg:max-w-none">
+
           <RouteComparisonPanel
             routeSet={routeSet}
             emptyFor={routeEmptyFor}
