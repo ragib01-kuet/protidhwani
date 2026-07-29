@@ -1,0 +1,138 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  AREAS,
+  INCIDENTS_BY_WINDOW,
+  SAFETY_LAYERS,
+  SERVICES,
+} from "@/data/safety-data";
+import type {
+  Incident,
+  SafetyLayerId,
+  SearchEntry,
+  TimeWindow,
+} from "@/types/safety";
+
+const RECENT_SEARCH_KEY = "protidhwani.safety-map.recent-searches";
+const RECENT_LIMIT = 5;
+
+/**
+ * Central state for the safety map: active layer, time window, and the
+ * user-submitted (session-only) incidents. Kept in one hook so the map,
+ * the chips, the slider and the report flow never drift apart.
+ */
+export function useSafetyLayer() {
+  const [layerId, setLayerId] = useState<SafetyLayerId>("community");
+  const [timeWindow, setTimeWindow] = useState<TimeWindow>("week");
+  /** Reports created during this session — never written back to seed data. */
+  const [userIncidents, setUserIncidents] = useState<Incident[]>([]);
+
+  const layer = useMemo(
+    () => SAFETY_LAYERS.find((l) => l.id === layerId) ?? SAFETY_LAYERS[0],
+    [layerId],
+  );
+
+  const seeded = INCIDENTS_BY_WINDOW[timeWindow] ?? [];
+
+  /** Incidents visible for the current layer + window (user reports always shown). */
+  const visibleIncidents = useMemo(() => {
+    const all = [...seeded, ...userIncidents];
+    if (layer.categories.length === 0) return all;
+    const allowed = new Set<string>(layer.categories);
+    return all.filter((i) => allowed.has(i.category));
+  }, [seeded, userIncidents, layer]);
+
+  const addIncident = useCallback((incident: Incident) => {
+    setUserIncidents((prev) => [...prev, incident]);
+  }, []);
+
+  return {
+    layerId,
+    setLayerId,
+    layer,
+    timeWindow,
+    setTimeWindow,
+    visibleIncidents,
+    userIncidents,
+    addIncident,
+  };
+}
+
+/** Flat, memoised search index over seeded areas + service points. */
+export function useSearchIndex(): SearchEntry[] {
+  return useMemo(
+    () => [
+      ...AREAS.map<SearchEntry>((a) => ({
+        id: `area-${a.id}`,
+        kind: "area",
+        areaId: a.id,
+        nameBn: a.nameBn,
+        nameEn: a.nameEn,
+        subtitleBn: a.level === "division" ? "বিভাগ" : "এলাকা",
+        subtitleEn: a.level === "division" ? "Division" : "Area",
+        lng: a.center[0],
+        lat: a.center[1],
+      })),
+      ...SERVICES.map<SearchEntry>((s) => ({
+        id: `svc-${s.id}`,
+        kind: "service",
+        nameBn: s.nameBn,
+        nameEn: s.nameEn,
+        subtitleBn: "সেবা কেন্দ্র",
+        subtitleEn: "Service point",
+        lng: s.lng,
+        lat: s.lat,
+      })),
+    ],
+    [],
+  );
+}
+
+/** localStorage-backed recent searches; degrades silently when storage is blocked. */
+export function useRecentSearches() {
+  const [recent, setRecent] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(RECENT_SEARCH_KEY);
+      if (raw) {
+        const parsed: unknown = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setRecent(parsed.filter((v): v is string => typeof v === "string").slice(0, RECENT_LIMIT));
+        }
+      }
+    } catch {
+      // Private mode / disabled storage — recents are a nicety, not a requirement.
+    }
+  }, []);
+
+  const pushRecent = useCallback((term: string) => {
+    const clean = term.trim();
+    if (!clean) return;
+    setRecent((prev) => {
+      const next = [clean, ...prev.filter((t) => t !== clean)].slice(0, RECENT_LIMIT);
+      try {
+        window.localStorage.setItem(RECENT_SEARCH_KEY, JSON.stringify(next));
+      } catch {
+        // Ignore quota / privacy errors.
+      }
+      return next;
+    });
+  }, []);
+
+  return { recent, pushRecent };
+}
+
+/** Case-insensitive substring match across both languages, ranked by match position. */
+export function searchEntries(index: SearchEntry[], query: string, limit = 6): SearchEntry[] {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  return index
+    .map((entry) => {
+      const hay = `${entry.nameBn} ${entry.nameEn}`.toLowerCase();
+      return { entry, rank: hay.indexOf(q) };
+    })
+    .filter((r) => r.rank >= 0)
+    .sort((a, b) => a.rank - b.rank)
+    .slice(0, limit)
+    .map((r) => r.entry);
+}
