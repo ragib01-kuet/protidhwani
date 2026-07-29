@@ -15,7 +15,7 @@ export function HeatLegend() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="pointer-events-auto w-56 rounded-2xl border border-border bg-card/95 p-3 shadow-lift backdrop-blur">
+    <div className="pointer-events-auto w-56 rounded-2xl border border-border bg-card/95 p-3 shadow-lift backdrop-blur lg:w-full">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
