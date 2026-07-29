@@ -288,6 +288,7 @@ function SafetyMapPage() {
         location={reportLocation}
         areaId={selectedAreaId ?? "dhaka-motijheel"}
         onSubmit={handleReportSubmit}
+        onRequestLocation={handleReportLocation}
       />
     </main>
   );
