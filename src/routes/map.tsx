@@ -65,7 +65,9 @@ function SafetyMapPage() {
   const { layerId, setLayerId, layer, timeWindow, setTimeWindow, visibleIncidents, addIncident } =
     useSafetyLayer();
 
+  const router = useRouter();
   const mapRef = useRef<MapRef | null>(null);
+
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
