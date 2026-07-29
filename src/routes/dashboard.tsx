@@ -5,7 +5,7 @@ import { PostCard } from "@/components/PostCard";
 import { posts, quickActions } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
       { title: "প্রতিধ্বনি · Protidhwani — Civic Network for Bangladesh" },
