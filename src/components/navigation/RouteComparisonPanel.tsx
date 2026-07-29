@@ -6,6 +6,8 @@ import { safetyBand, toBnNumber } from "@/utils/safetyColor";
 
 export interface RouteComparisonPanelProps {
   routeSet: DemoRouteSet | null;
+  /** Destination requested that has no seeded route pair. Renders an empty state. */
+  emptyFor?: { bn: string; en: string } | null;
   selectedRouteId: DemoRoute["id"];
   onSelectRoute: (id: DemoRoute["id"]) => void;
   onClose: () => void;
@@ -26,11 +28,43 @@ const DENSITY: Record<DemoRoute["incidentDensity"], { bn: string; en: string }> 
 /** Static, pre-computed route comparison — no routing API is called. */
 export function RouteComparisonPanel({
   routeSet,
+  emptyFor = null,
   selectedRouteId,
   onSelectRoute,
   onClose,
 }: RouteComparisonPanelProps) {
-  if (!routeSet) return null;
+  if (!routeSet) {
+    if (!emptyFor) return null;
+    return (
+      <section className="rounded-3xl border border-border bg-card/95 p-4 shadow-lift backdrop-blur animate-in slide-in-from-bottom-4 duration-300">
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <h2 lang="bn" className="text-sm font-bold">
+              রুট তথ্য নেই
+            </h2>
+            <p lang="en" className="text-[9px] uppercase tracking-wider text-muted-foreground">
+              No route data available
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="বন্ধ করুন / Close"
+            className="grid size-9 place-items-center rounded-full text-muted-foreground hover:bg-secondary"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+        <p className="mt-3 rounded-2xl border border-dashed border-border bg-surface p-3">
+          <span lang="bn" className="block text-xs font-bold">
+            {emptyFor.bn} এর জন্য এখনো ডেমো রুট যোগ করা হয়নি।
+          </span>
+          <span lang="en" className="mt-0.5 block text-[10px] text-muted-foreground">
+            No demo route pair is seeded for {emptyFor.en} yet. Try Gulshan 2 from Mirpur 10.
+          </span>
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-3xl border border-border bg-card/95 p-4 shadow-lift backdrop-blur animate-in slide-in-from-bottom-4 duration-300">
