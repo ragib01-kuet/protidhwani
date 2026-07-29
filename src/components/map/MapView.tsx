@@ -106,6 +106,7 @@ export default function MapView({
   latestReport,
   heatMode,
   heatOpacity,
+  areaOpacity,
   highlight,
   onMapReady,
 }: MapViewProps) {
