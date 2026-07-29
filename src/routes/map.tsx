@@ -225,7 +225,7 @@ function SafetyMapPage() {
       </ClientOnly>
 
       {/* Top overlay: search, layers, advisories. */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-20 space-y-3 p-4">
+      <div className="pointer-events-none absolute inset-x-0 top-0 z-30 space-y-3 p-4">
         <div className="pointer-events-auto mx-auto max-w-xl space-y-3">
           <SearchBar onSelect={handleSearchSelect} />
           {panelsOpen && <SafetyLayerToggle value={layerId} onChange={setLayerId} />}
@@ -253,7 +253,7 @@ function SafetyMapPage() {
       </div>
 
       {/* Bottom overlay: insights, time slider, routes, FAB. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 space-y-3 p-4">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 max-h-[62dvh] space-y-3 overflow-y-auto p-4">
         <div className="pointer-events-auto mx-auto max-w-xl space-y-3">
           {panelsOpen && (
             <>
