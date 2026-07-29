@@ -696,8 +696,15 @@ function MapControls({ zoom, setZoom, layer, setLayer }: { zoom: number; setZoom
         </button>
       </div>
       <button
-        className="tap grid h-10 w-10 place-items-center rounded-2xl border border-border/70 bg-background/85 shadow-lg backdrop-blur-xl"
-        aria-label="Layers"
+        onClick={cycle}
+        className={[
+          "tap grid h-10 w-10 place-items-center rounded-2xl border shadow-lg backdrop-blur-xl transition-colors",
+          layer === "heat" && "border-border/70 bg-background/85",
+          layer === "clusters" && "border-verified/40 bg-verified/10 text-verified",
+          layer === "safe" && "border-primary/40 bg-primary/10 text-primary",
+        ].filter(Boolean).join(" ")}
+        aria-label={`Layer: ${layer}`}
+        title={`Layer: ${layer}`}
       >
         <Layers className="h-4 w-4" />
       </button>
