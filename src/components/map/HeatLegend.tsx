@@ -193,6 +193,35 @@ export function HeatLegend({
         />
       </div>
 
+      {/* All-areas overlay opacity: controls how dimmed the polygons get when
+          a category layer takes focus over the choropleth. */}
+      <div className="mt-2.5">
+        <div className="flex items-baseline justify-between gap-2">
+          <label htmlFor="area-opacity" lang="bn" className="text-[11px] font-bold leading-none">
+            এলাকা স্তর{" "}
+            <span lang="en" className="font-medium text-muted-foreground">
+              Area overlay
+            </span>
+          </label>
+          <span lang="bn" className="text-[11px] font-bold tabular-nums text-primary">
+            {toBnNumber(Math.round(areaOpacity * 100))}%
+          </span>
+        </div>
+        <input
+          id="area-opacity"
+          type="range"
+          min={0}
+          max={100}
+          step={5}
+          value={Math.round(areaOpacity * 100)}
+          onChange={(e) => onAreaOpacityChange(Number(e.target.value) / 100)}
+          aria-label="এলাকা স্তরের স্বচ্ছতা / Area overlay opacity"
+          className="mt-1.5 h-1.5 w-full cursor-pointer appearance-none rounded-full bg-secondary accent-primary"
+        />
+      </div>
+
+
+
 
       {open && (
         <dl className="mt-3 space-y-2.5 border-t border-border pt-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
