@@ -2,6 +2,42 @@
 @source "../src";
 @import "tw-animate-css";
 
+@font-face {
+  font-family: "Li Ador Noirrit";
+  src: url("/__l5e/assets-v1/f6c85193-8f28-491f-ba6e-07b0e7ca05a0/LiAdorNoirrit-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Li Ador Noirrit";
+  src: url("/__l5e/assets-v1/86ea3108-4a3e-48e3-a902-03765b827aa1/LiAdorNoirrit-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Li Ador Noirrit";
+  src: url("/__l5e/assets-v1/43f95a78-636e-4660-9742-008fbc06136f/LiAdorNoirrit-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Li Ador Noirrit";
+  src: url("/__l5e/assets-v1/2c490671-63ff-4a95-9c4a-0350a617ab78/LiAdorNoirrit-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Li Ador Noirrit";
+  src: url("/__l5e/assets-v1/ba260eba-79a5-45ce-aa88-90c7c97d5b0e/LiAdorNoirrit-BoldItalic.ttf") format("truetype");
+  font-weight: 700;
+  font-style: italic;
+  font-display: swap;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
