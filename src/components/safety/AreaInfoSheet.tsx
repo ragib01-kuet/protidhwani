@@ -1,6 +1,12 @@
 import { ArrowDownRight, ArrowRight, ArrowUpRight, Building2, HeartPulse, ShieldCheck, Users } from "lucide-react";
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { CATEGORY_LABELS } from "@/data/safety-data";
 import { useIsMobile } from "@/hooks/use-mobile";
 import type { AreaProperties } from "@/types/safety";
@@ -70,6 +76,17 @@ export function AreaInfoSheet({ area, open, onOpenChange, onDirections }: AreaIn
               </span>
             </div>
           </SheetTitle>
+          {/* Radix requires a description for accessible dialogs. */}
+          <SheetDescription asChild>
+            <p>
+              <span lang="bn" className="block text-xs">
+                এলাকার নিরাপত্তা স্কোর, ঘটনা ও সেবা কেন্দ্রের তথ্য।
+              </span>
+              <span lang="en" className="block text-[10px] text-muted-foreground">
+                Safety score, incidents and service points for this area.
+              </span>
+            </p>
+          </SheetDescription>
         </SheetHeader>
 
         <div className="space-y-5 px-4 pb-8">
