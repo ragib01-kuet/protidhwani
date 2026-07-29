@@ -36,7 +36,14 @@ export interface HeatLegendProps {
  *
  * The segmented switch shows either source alone, or both at once.
  */
-export function HeatLegend({ mode, onModeChange, opacity, onOpacityChange }: HeatLegendProps) {
+export function HeatLegend({
+  mode,
+  onModeChange,
+  opacity,
+  onOpacityChange,
+  layer,
+  timeWindow,
+}: HeatLegendProps) {
   const [open, setOpen] = useState(false);
 
   return (
