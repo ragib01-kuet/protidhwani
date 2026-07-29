@@ -1,4 +1,4 @@
-import { createElement, useCallback, useMemo } from "react";
+import { createElement, useCallback, useMemo, useState } from "react";
 import Map, {
   Layer as MapLibreLayer,
   Marker,
@@ -10,9 +10,15 @@ import type { FeatureCollection, LineString, Point } from "geojson";
 import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { AREAS_GEOJSON } from "@/data/safety-data";
+import {
+  AREAS,
+  AREAS_GEOJSON,
+  MICRO_AREAS,
+  MICRO_HEAT_GEOJSON,
+} from "@/data/safety-data";
 import type { DemoRoute, Incident, SafetyLayerDef } from "@/types/safety";
 import { safetyColor } from "@/utils/safetyColor";
+import { toBnNumber } from "@/utils/bn";
 
 /**
  * Key-less raster basemap (OpenStreetMap). Swap in a vector style URL from a
@@ -147,8 +153,9 @@ export default function MapView({
       initialViewState={BANGLADESH_CENTER}
       mapStyle={MAP_STYLE}
       style={{ position: "absolute", inset: 0 }}
-      interactiveLayerIds={showAreas ? ["areas-fill"] : []}
+      interactiveLayerIds={["areas-fill"]}
       onClick={handleClick}
+      onMove={(e) => setZoom(e.viewState.zoom)}
       onLoad={(e) => {
         const map = e.target as unknown as MapRef;
         // Dev-only handle so automated checks can inspect live source data.
@@ -157,7 +164,7 @@ export default function MapView({
         }
         onMapReady(map);
       }}
-      cursor={showAreas ? "pointer" : "grab"}
+      cursor="pointer"
       attributionControl={false}
       reuseMaps
     >
@@ -181,9 +188,17 @@ export default function MapView({
               80,
               safetyColor(80),
             ],
-            "fill-opacity": showAreas ? 0.55 : 0,
+            "fill-opacity": areaFocused ? 0.5 : 0.22,
             "fill-opacity-transition": { duration: 300, delay: 0 },
             "fill-outline-color": "rgba(255,255,255,0.35)",
+          }}
+        />
+        <Layer
+          id="areas-outline"
+          type="line"
+          paint={{
+            "line-color": "rgba(15,118,110,0.55)",
+            "line-width": 1.2,
           }}
         />
         <Layer
@@ -193,13 +208,42 @@ export default function MapView({
           paint={{
             "line-color": "#0F766E",
             "line-width": 2.5,
-            "line-opacity": showAreas ? 0.9 : 0,
+            "line-opacity": 0.9,
             "line-opacity-transition": { duration: 300, delay: 0 },
           }}
         />
       </Source>
 
-      {/* Incident heatmap for every non-community layer. */}
+      {/* Ambient street-level heat so the overlay covers every area. */}
+      <Source id="micro-heat" type="geojson" data={MICRO_HEAT_GEOJSON}>
+        <Layer
+          id="micro-heat-layer"
+          type="heatmap"
+          paint={{
+            "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.2, 5, 0.9],
+            "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 6, 0.8, 14, 2.4],
+            "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 6, 26, 14, 70],
+            "heatmap-opacity": 0.45,
+            "heatmap-color": [
+              "interpolate",
+              ["linear"],
+              ["heatmap-density"],
+              0,
+              "rgba(74,222,128,0)",
+              0.3,
+              "rgba(163,230,53,0.45)",
+              0.55,
+              "rgba(250,204,21,0.6)",
+              0.75,
+              "rgba(251,146,60,0.7)",
+              1,
+              "rgba(239,68,68,0.8)",
+            ],
+          }}
+        />
+      </Source>
+
+      {/* Incident heatmap — always visible, weighted by severity. */}
       <Source id="incidents" type="geojson" data={incidentGeoJSON}>
         <Layer
           id="incidents-heat"
@@ -208,7 +252,7 @@ export default function MapView({
             "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.25, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 6, 1, 14, 3],
             "heatmap-radius": ["interpolate", ["linear"], ["zoom"], 6, 18, 14, 48],
-            "heatmap-opacity": showAreas ? 0 : 0.75,
+            "heatmap-opacity": areaFocused ? 0.55 : 0.85,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
@@ -243,6 +287,44 @@ export default function MapView({
           }}
         />
       </Source>
+
+      {/* Per-area report count badges (Bangla numerals), as in the reference UI. */}
+      {areaCounts.map(({ area, count }) => (
+        <Marker
+          key={area.id}
+          longitude={area.center[0]}
+          latitude={area.center[1]}
+          anchor="center"
+          onClick={() => onSelectArea(area.id)}
+        >
+          <button
+            aria-label={`${area.nameBn} — ${count} রিপোর্ট`}
+            className="grid min-w-9 place-items-center rounded-full border-2 border-white bg-warning px-2 py-1 text-[12px] font-bold tabular-nums text-white shadow-lift transition-transform hover:scale-110"
+          >
+            <span lang="bn">{toBnNumber(count)}</span>
+          </button>
+        </Marker>
+      ))}
+
+      {/* Street / para precision markers appear once the user zooms in. */}
+      {showMicro &&
+        MICRO_AREAS.map((m) => (
+          <Marker key={m.id} longitude={m.lng} latitude={m.lat} anchor="center">
+            <span className="flex items-center gap-1.5 rounded-full border border-border bg-card/95 px-2 py-1 shadow-card backdrop-blur">
+              <span
+                aria-hidden
+                className="size-2 rounded-full"
+                style={{ background: safetyColor(m.safetyScore) }}
+              />
+              <span lang="bn" className="text-[11px] font-bold leading-none">
+                {m.nameBn}
+              </span>
+              <span lang="bn" className="text-[10px] leading-none text-muted-foreground">
+                {toBnNumber(m.reportCount)}
+              </span>
+            </span>
+          </Marker>
+        ))}
 
       {userLocation && (
         <Marker longitude={userLocation.lng} latitude={userLocation.lat} anchor="center">
