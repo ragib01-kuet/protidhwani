@@ -43,6 +43,9 @@ import {
 } from "@/services/community";
 
 export const Route = createFileRoute("/community")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    post: typeof search.post === "string" ? search.post : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "কমিউনিটি · Community — Protidhwani" },
@@ -79,6 +82,7 @@ const FLAG_REASONS = [
 function Community() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { post: sharedPostId } = Route.useSearch();
   const queryClient = useQueryClient();
   const searchRef = useRef<HTMLInputElement>(null);
 
@@ -271,6 +275,17 @@ function Community() {
   };
 
   const posts = feed.data ?? [];
+
+  // Deep link from a shared URL: scroll to and highlight the post.
+  useEffect(() => {
+    if (!sharedPostId || !posts.some((p) => p.id === sharedPostId)) return;
+    const el = document.getElementById(`post-${sharedPostId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("ring-2", "ring-primary");
+    const timer = setTimeout(() => el.classList.remove("ring-2", "ring-primary"), 2600);
+    return () => clearTimeout(timer);
+  }, [sharedPostId, posts]);
   const supportedIds = new Set(supports.data ?? []);
   const flaggedIds = new Set(flags.data ?? []);
   const activeFilters = (kind !== "all" ? 1 : 0) + (district ? 1 : 0) + (mineOnly ? 1 : 0);
