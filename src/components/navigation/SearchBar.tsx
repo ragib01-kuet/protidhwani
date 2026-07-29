@@ -4,6 +4,16 @@ import { Clock, MapPin, Search, SlidersHorizontal, X } from "lucide-react";
 import { searchEntries, useRecentSearches, useSearchIndex } from "@/hooks/useSafetyLayer";
 import type { SearchEntry } from "@/types/safety";
 
+/**
+ * Bilingual group labels for the fixed result order:
+ * area (১) → street/para (২) → service (৩).
+ */
+const KIND_LABELS: Record<SearchEntry["kind"], { bn: string; en: string; step: string }> = {
+  area: { bn: "এলাকা", en: "Area", step: "১" },
+  street: { bn: "সড়ক / পাড়া", en: "Street / Para", step: "২" },
+  service: { bn: "সেবা", en: "Service", step: "৩" },
+};
+
 export interface SearchBarProps {
   /** Fired when a suggestion is chosen — the page flies the map and opens the sheet. */
   onSelect: (entry: SearchEntry) => void;
