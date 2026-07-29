@@ -118,14 +118,18 @@ function SafetyMapPage() {
 
   const handleSearchSelect = useCallback(
     (entry: SearchEntry) => {
+      // Auto-pan: micro (street/para/service) hits deserve a tighter zoom.
       flyTo(entry.lng, entry.lat, entry.kind === "area" ? 12.5 : 14);
       if (entry.areaId) {
         setSelectedAreaId(entry.areaId);
         setSheetOpen(true);
       }
+      // Brief highlight pulse on the matching polygon + marker.
+      pulse({ lng: entry.lng, lat: entry.lat, areaId: entry.areaId ?? null });
     },
-    [flyTo],
+    [flyTo, pulse],
   );
+
 
   const handleDirections = useCallback(
     (areaId: string) => {
