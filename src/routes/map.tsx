@@ -8,8 +8,6 @@ import { BottomNav } from "@/components/BottomNav";
 import { MapMenu } from "@/components/map/MapMenu";
 import { TemperatureScale } from "@/components/map/TemperatureScale";
 import { MapControls } from "@/components/map/MapControls";
-import { SafetyLayerToggle } from "@/components/map/SafetyLayerToggle";
-import { TimeWindowChips } from "@/components/map/TimeWindowChips";
 import { RouteComparisonPanel } from "@/components/navigation/RouteComparisonPanel";
 import { SearchBar } from "@/components/navigation/SearchBar";
 import { ReportFAB } from "@/components/reports/ReportFAB";
