@@ -438,6 +438,23 @@ export default function MapView({
         </Marker>
       )}
 
+      {highlight && (
+        <Marker
+          // Keying on the selection id remounts the node so the CSS
+          // animation restarts even when the same result is picked twice.
+          key={highlight.id}
+          longitude={highlight.lng}
+          latitude={highlight.lat}
+          anchor="center"
+        >
+          <span className="pointer-events-none relative block size-6">
+            <span className="absolute -inset-3 animate-ping rounded-full bg-warning/40" />
+            <span className="absolute inset-0 animate-ping rounded-full bg-warning/60" />
+            <span className="absolute inset-1.5 rounded-full border-2 border-white bg-warning shadow-lg" />
+          </span>
+        </Marker>
+      )}
+
       {latestReport && (
         <Marker longitude={latestReport.lng} latitude={latestReport.lat} anchor="bottom">
           <span className="relative block size-5 animate-in zoom-in duration-500">
@@ -446,6 +463,7 @@ export default function MapView({
           </span>
         </Marker>
       )}
+
     </Map>
   );
 }
