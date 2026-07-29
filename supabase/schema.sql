@@ -195,11 +195,13 @@ drop policy if exists "users delete own notifications" on public.notifications;
 create policy "users delete own notifications" on public.notifications for delete to authenticated using (auth.uid() = user_id);
 
 -- ============================================================
--- Storage: create the buckets in Dashboard → Storage first
---   1. avatars           (public)
---   2. complaint-images  (public)
--- Then run these object policies.
+-- Storage buckets (safe to re-run)
 -- ============================================================
+
+insert into storage.buckets (id, name, public)
+values ('avatars', 'avatars', true), ('complaint-images', 'complaint-images', true)
+on conflict (id) do update set public = true;
+
 
 drop policy if exists "public read avatars" on storage.objects;
 create policy "public read avatars" on storage.objects
