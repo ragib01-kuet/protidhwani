@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ClientOnly, createFileRoute, useRouter } from "@tanstack/react-router";
 import { ChevronLeft, Loader2, MapPin } from "lucide-react";
 import type { MapRef } from "react-map-gl/maplibre";
@@ -101,9 +101,28 @@ function SafetyMapPage() {
     [routeSet],
   );
 
+  /** Transient search highlight; cleared automatically after the pulse. */
+  const [highlight, setHighlight] = useState<
+    { id: number; lng: number; lat: number; areaId: string | null } | null
+  >(null);
+  const pulseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  /** Triggers a ~1.8s highlight pulse, replacing any pulse already running. */
+  const pulse = useCallback((target: { lng: number; lat: number; areaId: string | null }) => {
+    if (pulseTimer.current) clearTimeout(pulseTimer.current);
+    setHighlight({ id: Date.now(), ...target });
+    pulseTimer.current = setTimeout(() => setHighlight(null), 1800);
+  }, []);
+
+  // Avoid a state update after unmount if the user navigates mid-pulse.
+  useEffect(() => () => {
+    if (pulseTimer.current) clearTimeout(pulseTimer.current);
+  }, []);
+
   const flyTo = useCallback((lng: number, lat: number, zoom = 12.5) => {
     mapRef.current?.flyTo({ center: [lng, lat], zoom, duration: 1200, essential: true });
   }, []);
+
 
   const handleSelectArea = useCallback(
     (areaId: string) => {
@@ -118,14 +137,18 @@ function SafetyMapPage() {
 
   const handleSearchSelect = useCallback(
     (entry: SearchEntry) => {
+      // Auto-pan: micro (street/para/service) hits deserve a tighter zoom.
       flyTo(entry.lng, entry.lat, entry.kind === "area" ? 12.5 : 14);
       if (entry.areaId) {
         setSelectedAreaId(entry.areaId);
         setSheetOpen(true);
       }
+      // Brief highlight pulse on the matching polygon + marker.
+      pulse({ lng: entry.lng, lat: entry.lat, areaId: entry.areaId ?? null });
     },
-    [flyTo],
+    [flyTo, pulse],
   );
+
 
   const handleDirections = useCallback(
     (areaId: string) => {
@@ -229,6 +252,8 @@ function SafetyMapPage() {
             latestReport={latestReport}
             heatMode={heatMode}
             heatOpacity={heatOpacity}
+            highlight={highlight}
+
             onMapReady={(map) => {
               mapRef.current = map;
             }}
