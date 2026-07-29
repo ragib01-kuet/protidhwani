@@ -88,7 +88,11 @@ export default function MapView({
   latestReport,
   onMapReady,
 }: MapViewProps) {
-  const showAreas = layer.categories.length === 0;
+  /** The community layer emphasises the choropleth; others emphasise heat. */
+  const areaFocused = layer.categories.length === 0;
+  /** Live zoom drives micro (street/para) precision. */
+  const [zoom, setZoom] = useState(BANGLADESH_CENTER.zoom);
+  const showMicro = zoom >= 11.5;
 
   /** Incident points fed to the MapLibre heatmap layer. */
   const incidentGeoJSON = useMemo<FeatureCollection<Point>>(
@@ -104,6 +108,16 @@ export default function MapView({
     [incidents],
   );
 
+  /** Report counts per area — rendered as the badge pills on the reference UI. */
+  const areaCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const i of incidents) counts.set(i.areaId, (counts.get(i.areaId) ?? 0) + 1);
+    return AREAS.filter((a) => counts.has(a.id)).map((a) => ({
+      area: a,
+      count: counts.get(a.id) as number,
+    }));
+  }, [incidents]);
+
   const routeGeoJSON = useMemo<FeatureCollection<LineString>>(
     () => ({
       type: "FeatureCollection",
@@ -116,6 +130,7 @@ export default function MapView({
     }),
     [routes],
   );
+
 
   const handleClick = useCallback(
     (event: MapLayerMouseEvent) => {
