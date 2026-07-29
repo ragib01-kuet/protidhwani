@@ -69,6 +69,7 @@ export function CommunityPostCard({
 
   return (
     <article
+      id={`post-${post.id}`}
       data-testid="community-post"
       className={cn(
         "group rounded-[1.75rem] border border-border bg-card p-5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift",
