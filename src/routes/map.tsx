@@ -8,8 +8,6 @@ import { BottomNav } from "@/components/BottomNav";
 import { MapMenu } from "@/components/map/MapMenu";
 import { TemperatureScale } from "@/components/map/TemperatureScale";
 import { MapControls } from "@/components/map/MapControls";
-import { SafetyLayerToggle } from "@/components/map/SafetyLayerToggle";
-import { TimeWindowChips } from "@/components/map/TimeWindowChips";
 import { RouteComparisonPanel } from "@/components/navigation/RouteComparisonPanel";
 import { SearchBar } from "@/components/navigation/SearchBar";
 import { ReportFAB } from "@/components/reports/ReportFAB";
@@ -17,14 +15,24 @@ import { ReportModal } from "@/components/reports/ReportModal";
 import { AreaInfoSheet } from "@/components/safety/AreaInfoSheet";
 import {
   AREAS,
+  buildRouteSet,
   DEMO_ROUTES,
   DHAKA_FALLBACK,
   DISTRICTS,
   hasMicroCoverage,
+  nearestAreaId,
   TIME_WINDOWS,
 } from "@/data/safety-data";
 import { useSafetyLayer } from "@/hooks/useSafetyLayer";
-import type { DemoRoute, District, HeatMode, Incident, SearchEntry } from "@/types/safety";
+import type {
+  DemoRoute,
+  DemoRouteSet,
+  District,
+  HeatMode,
+  Incident,
+  SearchEntry,
+} from "@/types/safety";
+
 
 
 // MapLibre touches `window` at import time, so it must never load during SSR.
@@ -80,9 +88,10 @@ function SafetyMapPage() {
   const [selectedAreaId, setSelectedAreaId] = useState<string | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const [routeSetId, setRouteSetId] = useState<string | null>(null);
-  /** Destination that has no seeded route pair — drives the empty state. */
+  const [routeSet, setRouteSet] = useState<DemoRouteSet | null>(null);
+  /** Destination that has no route pair at all — drives the empty state. */
   const [routeEmptyFor, setRouteEmptyFor] = useState<{ bn: string; en: string } | null>(null);
+
 
   const [selectedRouteId, setSelectedRouteId] = useState<DemoRoute["id"]>("safest");
   const [userLocation, setUserLocation] = useState<{ lng: number; lat: number } | null>(null);
@@ -102,10 +111,8 @@ function SafetyMapPage() {
     [selectedAreaId],
   );
 
-  const routeSet = useMemo(
-    () => DEMO_ROUTES.find((r) => r.id === routeSetId) ?? null,
-    [routeSetId],
-  );
+
+
 
   const activeRoutes = useMemo(
     () => (routeSet ? routeSet.routes : []),
@@ -203,17 +210,19 @@ function SafetyMapPage() {
   const handleDirections = useCallback(
     (areaId: string) => {
       const area = AREAS.find((a) => a.id === areaId) ?? null;
-      // Only an exact seeded origin→destination pair may render routes. Falling
-      // back to "the first demo set" would show a route to the wrong place.
-      const set = DEMO_ROUTES.find((r) => r.destinationId === areaId) ?? null;
+      // Prefer a hand-seeded pair; otherwise derive a comparison from the
+      // nearest seeded area so every destination can be compared.
+      const seeded = DEMO_ROUTES.find((r) => r.destinationId === areaId) ?? null;
+      const originId = nearestAreaId(areaId);
+      const set = seeded ?? (originId ? buildRouteSet(originId, areaId) : null);
       setSheetOpen(false);
       if (!set) {
-        setRouteSetId(null);
+        setRouteSet(null);
         setRouteEmptyFor(area ? { bn: area.nameBn, en: area.nameEn } : { bn: "এই এলাকা", en: "this area" });
         return;
       }
       setRouteEmptyFor(null);
-      setRouteSetId(set.id);
+      setRouteSet(set);
       setSelectedRouteId("safest");
       const first = set.routes[0]?.path[0];
       if (first) flyTo(first[0], first[1], 12.5);
@@ -222,7 +231,8 @@ function SafetyMapPage() {
   );
 
   const closeRoutes = useCallback(() => {
-    setRouteSetId(null);
+    setRouteSet(null);
+
     setRouteEmptyFor(null);
   }, []);
 
@@ -389,10 +399,17 @@ function SafetyMapPage() {
             areaOpacity={areaOpacity}
             onAreaOpacityChange={setAreaOpacity}
           />
+        </div>
+      </div>
 
+      {/* Advisories live in their own layer so a tall controls panel can never
+          push them off-screen or behind the bottom navigation. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-3 sm:px-4 lg:bottom-4">
+        <div className="pointer-events-auto w-full max-w-md">
           <AdvisoryToast advisory={advisory} onDismiss={() => setAdvisory(null)} />
         </div>
       </div>
+
 
       {/* Right rail: zoom + locate. */}
       <div className="pointer-events-none absolute right-3 top-1/2 z-20 flex -translate-y-1/2 flex-col items-end gap-3 sm:right-4">
@@ -413,8 +430,9 @@ function SafetyMapPage() {
 
 
       {/* Bottom-left: route comparison (when active) + the temperature scale. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2.5 p-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:w-[23rem] lg:pb-4">
-        <div className="pointer-events-auto mx-auto w-full max-w-md lg:mx-0 lg:max-w-none">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex max-h-[calc(100dvh-10.5rem)] flex-col justify-end gap-2.5 p-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:w-[23rem] lg:pb-4">
+        <div className="pointer-events-auto mx-auto w-full max-w-md overflow-y-auto lg:mx-0 lg:max-w-none">
+
           <RouteComparisonPanel
             routeSet={routeSet}
             emptyFor={routeEmptyFor}
