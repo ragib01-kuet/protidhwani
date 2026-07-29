@@ -281,17 +281,19 @@ export default function MapView({
             "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.3, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1, 14, 2.6],
             "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 20, 11, 42, 15, 95],
-            "heatmap-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              5,
-              areaFocused ? 0.6 : 0.9,
-              14,
-              areaFocused ? 0.55 : 0.85,
-              15.5,
-              0,
-            ],
+            "heatmap-opacity": showIncidentHeat
+              ? [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  5,
+                  areaFocused ? 0.6 : 0.9,
+                  14,
+                  areaFocused ? 0.55 : 0.85,
+                  15.5,
+                  0,
+                ]
+              : 0,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
