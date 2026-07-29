@@ -90,6 +90,42 @@ export function HeatLegend({
         </span>
       </div>
 
+      {/* What the heat currently represents: active filter + time window. */}
+      {(layer || timeWindow) && (
+        <div className="mt-2.5 rounded-xl bg-secondary/70 p-2">
+          <p lang="bn" className="text-[10px] font-semibold leading-none text-muted-foreground">
+            এখন দেখাচ্ছে{" "}
+            <span lang="en" className="font-medium">
+              Showing now
+            </span>
+          </p>
+          <div className="mt-1.5 flex flex-wrap gap-1">
+            {layer && (
+              <span className="inline-flex items-baseline gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                <span lang="bn" className="text-[11px] font-bold leading-tight">
+                  {layer.bn}
+                </span>
+                <span lang="en" className="text-[9px] opacity-80">
+                  {layer.en}
+                </span>
+              </span>
+            )}
+            {timeWindow && (
+              <span className="inline-flex items-baseline gap-1 rounded-full bg-card px-2 py-0.5 text-foreground">
+                <span lang="bn" className="text-[11px] font-bold leading-tight">
+                  {timeWindow.bn}
+                </span>
+                <span lang="en" className="text-[9px] text-muted-foreground">
+                  {timeWindow.en}
+                </span>
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+
+
       {/* Heat source switch: incident only / ambient only / both. */}
       <div
         role="group"
