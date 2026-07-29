@@ -249,7 +249,9 @@ function SafetyMapPage() {
           </div>
 
           {panelsOpen ? (
-            <div className="space-y-2.5 animate-fade-in">
+            /* On desktop the filters sit inside one panel so the wrapped pills
+               read as a grouped sidebar instead of floating chips. */
+            <div className="space-y-2.5 animate-fade-in lg:rounded-3xl lg:border lg:border-border lg:bg-card/90 lg:p-3 lg:shadow-lift lg:backdrop-blur">
               <SafetyLayerToggle value={layerId} onChange={setLayerId} />
               <TimeWindowChips value={timeWindow} onChange={setTimeWindow} />
             </div>
