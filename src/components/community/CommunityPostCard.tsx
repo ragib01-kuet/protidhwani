@@ -142,7 +142,10 @@ export function CommunityPostCard({
                       Edit
                     </span>
                   </DropdownMenuItem>
-                  <DropdownMenuItem variant="destructive" onSelect={() => onDelete(post)}>
+                  <DropdownMenuItem
+                    onSelect={() => onDelete(post)}
+                    className="text-emergency focus:text-emergency"
+                  >
                     <Trash2 className="size-4" />
                     <span lang="bn">মুছে ফেলুন</span>
                     <span lang="en" className="ml-auto text-[10px] opacity-70">
