@@ -19,10 +19,13 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
+import { Route as AuthenticatedComplaintsRouteImport } from './routes/_authenticated/complaints'
+import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 
 const VehicleRoute = VehicleRouteImport.update({
   id: '/vehicle',
@@ -74,6 +77,10 @@ const CommunityRoute = CommunityRouteImport.update({
   path: '/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -94,6 +101,16 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedComplaintsRoute = AuthenticatedComplaintsRouteImport.update({
+  id: '/complaints',
+  path: '/complaints',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAccountRoute = AuthenticatedAccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -107,6 +124,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
   '/vehicle': typeof VehicleRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/complaints': typeof AuthenticatedComplaintsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -123,6 +142,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
   '/vehicle': typeof VehicleRoute
+  '/account': typeof AuthenticatedAccountRoute
+  '/complaints': typeof AuthenticatedComplaintsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -130,6 +151,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/community': typeof CommunityRoute
   '/dashboard': typeof DashboardRoute
   '/emergency': typeof EmergencyRoute
@@ -140,6 +162,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
   '/vehicle': typeof VehicleRoute
+  '/_authenticated/account': typeof AuthenticatedAccountRoute
+  '/_authenticated/complaints': typeof AuthenticatedComplaintsRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -158,6 +182,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/rights'
     | '/vehicle'
+    | '/account'
+    | '/complaints'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -174,12 +200,15 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/rights'
     | '/vehicle'
+    | '/account'
+    | '/complaints'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/community'
     | '/dashboard'
     | '/emergency'
@@ -190,6 +219,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/rights'
     | '/vehicle'
+    | '/_authenticated/account'
+    | '/_authenticated/complaints'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -197,6 +228,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   CommunityRoute: typeof CommunityRoute
   DashboardRoute: typeof DashboardRoute
   EmergencyRoute: typeof EmergencyRoute
@@ -284,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -312,11 +351,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/complaints': {
+      id: '/_authenticated/complaints'
+      path: '/complaints'
+      fullPath: '/complaints'
+      preLoaderRoute: typeof AuthenticatedComplaintsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/account': {
+      id: '/_authenticated/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AuthenticatedAccountRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
+  AuthenticatedComplaintsRoute: typeof AuthenticatedComplaintsRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountRoute: AuthenticatedAccountRoute,
+  AuthenticatedComplaintsRoute: AuthenticatedComplaintsRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   CommunityRoute: CommunityRoute,
   DashboardRoute: DashboardRoute,
   EmergencyRoute: EmergencyRoute,
