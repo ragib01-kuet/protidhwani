@@ -339,11 +339,13 @@ export default function MapView({
             ],
             "circle-stroke-width": 1.5,
             "circle-stroke-color": "#ffffff",
+            // Precise dots dim with the slider but keep a floor so exact
+            // incident locations never disappear entirely.
             "circle-opacity": showIncidentHeat
-              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95]
+              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95 * (0.4 + 0.6 * dim)]
               : 0,
             "circle-stroke-opacity": showIncidentHeat
-              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95]
+              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95 * (0.4 + 0.6 * dim)]
               : 0,
             "circle-opacity-transition": { duration: 300, delay: 0 },
           }}
