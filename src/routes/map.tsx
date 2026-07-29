@@ -15,9 +15,17 @@ import { ReportFAB } from "@/components/reports/ReportFAB";
 import { ReportModal } from "@/components/reports/ReportModal";
 import { AreaInfoSheet } from "@/components/safety/AreaInfoSheet";
 import { InsightCard } from "@/components/safety/InsightCard";
-import { AREAS, DEMO_ROUTES, DHAKA_FALLBACK } from "@/data/safety-data";
+import { DistrictSelector } from "@/components/map/DistrictSelector";
+import {
+  AREAS,
+  DEMO_ROUTES,
+  DHAKA_FALLBACK,
+  DISTRICTS,
+  hasMicroCoverage,
+} from "@/data/safety-data";
 import { useSafetyLayer } from "@/hooks/useSafetyLayer";
-import type { DemoRoute, HeatMode, Incident, SearchEntry } from "@/types/safety";
+import type { DemoRoute, District, HeatMode, Incident, SearchEntry } from "@/types/safety";
+
 
 // MapLibre touches `window` at import time, so it must never load during SSR.
 const MapView = lazy(() => import("@/components/map/MapView"));
