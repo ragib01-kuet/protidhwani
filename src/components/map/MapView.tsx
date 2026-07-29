@@ -13,6 +13,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import {
   AREAS,
   AREAS_GEOJSON,
+  AREA_HEAT_GEOJSON,
   MICRO_AREAS,
   MICRO_HEAT_GEOJSON,
 } from "@/data/safety-data";
