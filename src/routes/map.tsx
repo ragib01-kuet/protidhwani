@@ -775,8 +775,9 @@ function ReportFab({ open, setOpen, onAction }: { open: boolean; setOpen: (b: bo
             <span className="text-[10px] text-muted-foreground">{a.en}</span>
           </div>
           <button
+            onClick={() => onAction(a.key)}
             className={[
-              "tap grid h-10 w-10 place-items-center rounded-full shadow-lg",
+              "tap grid h-10 w-10 place-items-center rounded-full shadow-lg transition-transform active:scale-90",
               a.tone === "emergency" && "bg-emergency text-emergency-foreground",
               a.tone === "primary" && "bg-primary text-primary-foreground",
               a.tone === "verified" && "bg-verified text-verified-foreground",
