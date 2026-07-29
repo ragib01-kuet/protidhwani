@@ -218,7 +218,7 @@ export default function MapView({
           paint={{
             "heatmap-weight": ["interpolate", ["linear"], ["get", "weight"], 1, 0.25, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.1, 11, 1.6],
-            "heatmap-radius": ["interpolate", ["exponential", 1.8], ["zoom"], 5, 45, 9, 110, 12, 260],
+            "heatmap-radius": ["interpolate", ["exponential", 1.8], ["zoom"], 5, 45, 9, 110, 12, 260, 16, 520],
             "heatmap-opacity": [
               "interpolate",
               ["linear"],
@@ -227,8 +227,10 @@ export default function MapView({
               (areaFocused ? 0.75 : 0.5) * areaDim,
               10.5,
               (areaFocused ? 0.55 : 0.35) * areaDim,
-              12.5,
-              0,
+              13,
+              (areaFocused ? 0.35 : 0.22) * areaDim,
+              17,
+              (areaFocused ? 0.28 : 0.18) * areaDim,
             ],
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
