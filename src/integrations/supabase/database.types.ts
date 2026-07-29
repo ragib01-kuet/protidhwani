@@ -69,6 +69,62 @@ export interface Notification {
   created_at: string;
 }
 
+/** Community feed */
+export type CommunityPostKind =
+  | "report"
+  | "emergency"
+  | "verified"
+  | "discussion"
+  | "rights"
+  | "missing"
+  | "poll"
+  | "event";
+export type CommunityPostStatus = "pending" | "verified" | "disputed";
+export type CommunityPostLevel = "critical" | "high" | "moderate";
+
+export interface CommunityPost {
+  id: string;
+  user_id: string;
+  kind: CommunityPostKind;
+  title: string;
+  title_en: string | null;
+  body: string;
+  body_en: string | null;
+  location: string | null;
+  district: string | null;
+  tags: string[];
+  image_urls: string[];
+  level: CommunityPostLevel | null;
+  status: CommunityPostStatus;
+  support_count: number;
+  comment_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PostSupport {
+  id: string;
+  post_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string;
+  body: string;
+  created_at: string;
+}
+
+export interface PostFlag {
+  id: string;
+  post_id: string;
+  user_id: string;
+  reason: string;
+  created_at: string;
+}
+
 type Row<T> = { Row: T; Insert: Partial<T>; Update: Partial<T>; Relationships: [] };
 
 export interface Database {
@@ -80,10 +136,20 @@ export interface Database {
       votes: Row<Vote>;
       comments: Row<Comment>;
       notifications: Row<Notification>;
+      posts: Row<CommunityPost>;
+      post_supports: Row<PostSupport>;
+      post_comments: Row<PostComment>;
+      post_flags: Row<PostFlag>;
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
-    Enums: { complaint_status: ComplaintStatus };
+    Enums: {
+      complaint_status: ComplaintStatus;
+      post_kind: CommunityPostKind;
+      post_status: CommunityPostStatus;
+      post_level: CommunityPostLevel;
+    };
     CompositeTypes: Record<string, never>;
   };
 }
+
