@@ -235,7 +235,7 @@ function MapScreen() {
       <ReportFab
         open={fabOpen}
         setOpen={setFabOpen}
-        onAction={(k) => setModal(k === "quick" ? "report" : k === "anonymous" ? "anon" : k)}
+        onAction={(k) => setModal(k === "quick" ? "report" : k === "anonymous" ? "anon" : k === "emergency" ? "sos" : "photo")}
       />
 
       <AreaSheet
