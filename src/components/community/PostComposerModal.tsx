@@ -89,11 +89,18 @@ export function PostComposerModal({
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!form.title.trim() || !form.body.trim()) {
-      setError("বাংলা শিরোনাম ও বিবরণ আবশ্যক · Bangla title and description are required");
+    const title = form.title.trim();
+    const body = form.body.trim();
+    if (title.length < 3 || title.length > 200) {
+      setError("শিরোনাম ৩–২০০ অক্ষরের হতে হবে · Title must be 3–200 characters");
+      return;
+    }
+    if (body.length < 5 || body.length > 5000) {
+      setError("বিবরণ কমপক্ষে ৫ অক্ষর (সর্বোচ্চ ৫০০০) · Description must be 5–5000 characters");
       return;
     }
     setError(null);
+
     await onSubmit(
       {
         kind,
