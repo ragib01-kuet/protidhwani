@@ -18,6 +18,10 @@ export interface HeatLegendProps {
   /** Heat opacity multiplier, 0 → 1. */
   opacity: number;
   onOpacityChange: (value: number) => void;
+  /** Active category/layer filter, shown so the heat is self-explanatory. */
+  layer?: { bn: string; en: string };
+  /** Active time window, shown alongside the layer. */
+  timeWindow?: { bn: string; en: string };
 }
 
 /**
