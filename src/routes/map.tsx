@@ -114,7 +114,38 @@ const ROUTES = [
   { id: "safe", bn: "সবচেয়ে নিরাপদ পথ", en: "Safest route", score: 96, time: "২৮ মি", tone: "primary" },
   { id: "balanced", bn: "ভারসাম্যপূর্ণ পথ", en: "Balanced route", score: 84, time: "২২ মি", tone: "warning" },
   { id: "fast", bn: "সবচেয়ে দ্রুত পথ", en: "Fastest route", score: 68, time: "১৭ মি", tone: "emergency" },
+] as const;
+
+type FeedItem = {
+  bn: string;
+  en: string;
+  time: string;
+  dist: string;
+  sev: number;
+  verified: boolean;
+  ev: number;
+  supp: number;
+};
+
+const SEED_REPORTS: FeedItem[] = [
+  { bn: "মোবাইল ছিনতাই", en: "Phone snatching near TSC", time: "২ ঘণ্টা আগে", dist: "৩২০ মি", sev: 0.75, verified: true, ev: 3, supp: 42 },
+  { bn: "রাস্তায় হয়রানি", en: "Street harassment report", time: "৫ ঘণ্টা আগে", dist: "৬১০ মি", sev: 0.55, verified: true, ev: 1, supp: 27 },
+  { bn: "রিকশা দুর্ঘটনা", en: "Rickshaw accident, minor injury", time: "গতকাল", dist: "৯০০ মি", sev: 0.4, verified: false, ev: 0, supp: 12 },
 ];
+
+const AREA_INDEX: Record<string, { cx: number; cy: number }> = {
+  Dhaka: { cx: 44, cy: 46 },
+  Sylhet: { cx: 66, cy: 32 },
+  Chattogram: { cx: 60, cy: 72 },
+  Khulna: { cx: 30, cy: 68 },
+  Rajshahi: { cx: 18, cy: 30 },
+  Rangpur: { cx: 30, cy: 18 },
+  Manikganj: { cx: 38, cy: 52 },
+  Narsingdi: { cx: 55, cy: 40 },
+  Sundarbans: { cx: 22, cy: 82 },
+  "Cox's Bazar": { cx: 70, cy: 88 },
+  Munshiganj: { cx: 50, cy: 60 },
+};
 
 /* ------------------------------- Screen -------------------------------- */
 
