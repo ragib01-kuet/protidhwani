@@ -17,7 +17,7 @@ import { AreaInfoSheet } from "@/components/safety/AreaInfoSheet";
 import { InsightCard } from "@/components/safety/InsightCard";
 import { AREAS, DEMO_ROUTES, DHAKA_FALLBACK } from "@/data/safety-data";
 import { useSafetyLayer } from "@/hooks/useSafetyLayer";
-import type { DemoRoute, Incident, SearchEntry } from "@/types/safety";
+import type { DemoRoute, HeatMode, Incident, SearchEntry } from "@/types/safety";
 
 // MapLibre touches `window` at import time, so it must never load during SSR.
 const MapView = lazy(() => import("@/components/map/MapView"));
@@ -81,6 +81,8 @@ function SafetyMapPage() {
   const [latestReport, setLatestReport] = useState<Incident | null>(null);
   const [advisory, setAdvisory] = useState<Advisory | null>(null);
   const [panelsOpen, setPanelsOpen] = useState(true);
+  /** Which heat surfaces the map paints — controlled from the legend. */
+  const [heatMode, setHeatMode] = useState<HeatMode>("both");
 
   const selectedArea = useMemo(
     () => AREAS.find((a) => a.id === selectedAreaId) ?? null,
@@ -223,6 +225,7 @@ function SafetyMapPage() {
             routes={activeRoutes}
             userLocation={userLocation}
             latestReport={latestReport}
+            heatMode={heatMode}
             onMapReady={(map) => {
               mapRef.current = map;
             }}
@@ -309,7 +312,7 @@ function SafetyMapPage() {
               <InsightCard />
             </div>
           )}
-          <HeatLegend />
+          <HeatLegend mode={heatMode} onModeChange={setHeatMode} />
         </div>
       </div>
 
