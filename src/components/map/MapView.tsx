@@ -293,9 +293,9 @@ export default function MapView({
                   ["linear"],
                   ["zoom"],
                   5,
-                  areaFocused ? 0.6 : 0.9,
+                  (areaFocused ? 0.6 : 0.9) * dim,
                   14,
-                  areaFocused ? 0.55 : 0.85,
+                  (areaFocused ? 0.55 : 0.85) * dim,
                   15.5,
                   0,
                 ]
