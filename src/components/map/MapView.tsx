@@ -214,7 +214,7 @@ export default function MapView({
               80,
               safetyColor(80),
             ],
-            "fill-opacity": areaFocused ? 0.5 : 0.22,
+            "fill-opacity": (areaFocused ? 0.5 : 0.22) * areaDim,
             "fill-opacity-transition": { duration: 300, delay: 0 },
             "fill-outline-color": "rgba(255,255,255,0.35)",
           }}
@@ -225,8 +225,12 @@ export default function MapView({
           paint={{
             "line-color": "rgba(15,118,110,0.55)",
             "line-width": 1.2,
+            // Keep a visible floor so area boundaries never fully disappear.
+            "line-opacity": 0.25 + 0.75 * areaDim,
+            "line-opacity-transition": { duration: 300, delay: 0 },
           }}
         />
+
         <Layer
           id="areas-selected"
           type="line"
