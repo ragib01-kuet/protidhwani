@@ -193,7 +193,6 @@ function SafetyMapPage() {
             latestReport={latestReport}
             onMapReady={(map) => {
               mapRef.current = map;
-              (window as unknown as Record<string, unknown>).__map = map;
             }}
           />
         </Suspense>

@@ -8,14 +8,32 @@ import Map, {
   type MapRef,
 } from "react-map-gl/maplibre";
 import type { FeatureCollection, LineString, Point } from "geojson";
+import type { StyleSpecification } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 import { AREAS_GEOJSON } from "@/data/safety-data";
 import type { DemoRoute, Incident, SafetyLayerDef } from "@/types/safety";
 import { safetyColor } from "@/utils/safetyColor";
 
-/** Free, key-less demo style. Swap for a MapTiler style URL when a key exists. */
-const MAP_STYLE = "https://demotiles.maplibre.org/style.json";
+/**
+ * Key-less raster basemap (OpenStreetMap). Swap in a vector style URL from a
+ * tile provider when an API key becomes available.
+ */
+const MAP_STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+      tileSize: 256,
+      maxzoom: 19,
+      attribution: "\u00a9 OpenStreetMap contributors",
+    },
+  },
+  layers: [
+    { id: "osm", type: "raster", source: "osm", paint: { "raster-saturation": -0.35 } },
+  ],
+};
 
 
 /**
