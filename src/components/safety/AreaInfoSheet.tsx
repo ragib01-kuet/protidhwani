@@ -94,7 +94,7 @@ export function AreaInfoSheet({ area, open, onOpenChange, onDirections }: AreaIn
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-5 lg:justify-between">
+        <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-5 pb-6 pt-5">
 
           <div
             className="flex items-center gap-4 rounded-3xl border p-4"
@@ -131,7 +131,7 @@ export function AreaInfoSheet({ area, open, onOpenChange, onDirections }: AreaIn
             <StatChip Icon={Users} bn="স্বেচ্ছাসেবক" en="Volunteers" value={area.volunteerCount} />
           </div>
 
-          <section>
+          <section className="shrink-0">
             <h3 lang="bn" className="text-[15px] font-bold">
               শীর্ষ রিপোর্ট ধরন
             </h3>
@@ -179,7 +179,7 @@ export function AreaInfoSheet({ area, open, onOpenChange, onDirections }: AreaIn
 
           <button
             onClick={() => onDirections(area.id)}
-            className="min-h-12 w-full rounded-2xl bg-primary px-4 py-3 text-primary-foreground transition-transform active:scale-[0.98]"
+            className="mt-auto min-h-12 w-full shrink-0 rounded-2xl bg-primary px-4 py-3 text-primary-foreground transition-transform active:scale-[0.98]"
           >
             <span lang="bn" className="block text-[15px] font-bold">
               নিরাপদ পথ দেখুন
