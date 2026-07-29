@@ -116,11 +116,12 @@ export default function MapView({
 
   /** Report counts per area — rendered as the badge pills on the reference UI. */
   const areaCounts = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const i of incidents) counts.set(i.areaId, (counts.get(i.areaId) ?? 0) + 1);
-    return AREAS.filter((a) => counts.has(a.id)).map((a) => ({
+    // `Map` is the react-map-gl component here, so use a plain record.
+    const counts: Record<string, number> = {};
+    for (const i of incidents) counts[i.areaId] = (counts[i.areaId] ?? 0) + 1;
+    return AREAS.filter((a) => counts[a.id] > 0).map((a) => ({
       area: a,
-      count: counts.get(a.id) as number,
+      count: counts[a.id],
     }));
   }, [incidents]);
 
