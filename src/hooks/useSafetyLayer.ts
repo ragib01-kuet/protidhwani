@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AREAS,
   INCIDENTS_BY_WINDOW,
+  MICRO_AREAS,
+  MICRO_AREA_KIND_LABELS,
   SAFETY_LAYERS,
   SERVICES,
 } from "@/data/safety-data";
