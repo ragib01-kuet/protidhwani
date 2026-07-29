@@ -104,9 +104,9 @@ export function PostComposerModal({
     await onSubmit(
       {
         kind,
-        title: form.title.trim(),
+        title,
         title_en: form.title_en.trim() || null,
-        body: form.body.trim(),
+        body,
         body_en: form.body_en.trim() || null,
         location: form.location.trim() || null,
         district: form.district || null,
