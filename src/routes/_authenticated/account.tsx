@@ -88,8 +88,14 @@ function AccountPage() {
       setForm((prev) => ({ ...prev, avatar_url: url }));
       toast.success("ছবি আপলোড হয়েছে — Image uploaded");
     } catch (error) {
-      toast.error(getErrorMessage(error));
+      const message = getErrorMessage(error);
+      toast.error(
+        /bucket not found/i.test(message)
+          ? "ছবি স্টোরেজ প্রস্তুত নয় · Image storage is not set up yet (avatars bucket missing)"
+          : message,
+      );
     } finally {
+
       setUploading(false);
       event.target.value = "";
     }
