@@ -1,6 +1,21 @@
 import { useState } from "react";
 import { ChevronDown, Info } from "lucide-react";
 
+import type { HeatMode } from "@/types/safety";
+
+/** Segmented switch options — Bangla dominant, English secondary. */
+const MODES: { id: HeatMode; bn: string; en: string }[] = [
+  { id: "incident", bn: "ঘটনা", en: "Incident" },
+  { id: "ambient", bn: "পটভূমি", en: "Ambient" },
+  { id: "both", bn: "উভয়", en: "Both" },
+];
+
+export interface HeatLegendProps {
+  /** Active heat source selection. */
+  mode: HeatMode;
+  onModeChange: (mode: HeatMode) => void;
+}
+
 /**
  * Floating heat legend.
  *
@@ -10,12 +25,15 @@ import { ChevronDown, Info } from "lucide-react";
  *
  *  1. Incident heat  — density of actual reports in the selected time window.
  *  2. Ambient heat   — baseline risk derived from street/para safety scores.
+ *
+ * The segmented switch shows either source alone, or both at once.
  */
-export function HeatLegend() {
+export function HeatLegend({ mode, onModeChange }: HeatLegendProps) {
   const [open, setOpen] = useState(false);
 
   return (
     <div className="pointer-events-auto w-56 rounded-2xl border border-border bg-card/95 p-3 shadow-lift backdrop-blur lg:w-full">
+
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
