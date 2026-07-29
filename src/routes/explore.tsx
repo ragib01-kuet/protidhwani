@@ -1,0 +1,85 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
+import { AppShell } from "@/components/AppShell";
+import { PostCard } from "@/components/PostCard";
+import { posts } from "@/lib/civic";
+import { cn } from "@/lib/utils";
+
+export const Route = createFileRoute("/explore")({
+  head: () => ({
+    meta: [
+      { title: "অন্বেষণ · Explore — Protidhwani" },
+      { name: "description", content: "Explore verified civic reports, alerts and misinformation checks across Bangladesh." },
+      { property: "og:title", content: "অন্বেষণ · Explore — Protidhwani" },
+      { property: "og:description", content: "Verified civic reports, nearby alerts and misinformation checks." },
+    ],
+  }),
+  component: Explore,
+});
+
+const chips = [
+  { bn: "সব", en: "All" },
+  { bn: "যাচাইকৃত", en: "Verified" },
+  { bn: "জরুরি", en: "Emergency" },
+  { bn: "ভুল তথ্য", en: "Misinformation" },
+  { bn: "অধিকার", en: "Rights" },
+  { bn: "নিখোঁজ", en: "Missing" },
+];
+
+function Explore() {
+  const [active, setActive] = useState("All");
+  return (
+    <AppShell title={{ bn: "অন্বেষণ", en: "Explore" }}>
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
+        {chips.map((c) => (
+          <button
+            key={c.en}
+            onClick={() => setActive(c.en)}
+            className={cn(
+              "shrink-0 rounded-full border px-4 py-2 text-left transition-all active:scale-95",
+              active === c.en
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card hover:border-primary/40",
+            )}
+          >
+            <span lang="bn" className="block text-xs font-bold leading-none">{c.bn}</span>
+            <span lang="en" className="block text-[9px] uppercase tracking-wider opacity-70">{c.en}</span>
+          </button>
+        ))}
+      </div>
+
+      <section className="mt-5 rounded-[2rem] border border-border bg-card p-5 shadow-card">
+        <h2 lang="bn" className="text-base font-bold">কাছের সতর্কতা</h2>
+        <p lang="en" className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">Nearby Alerts</p>
+        <div className="mt-4 space-y-3">
+          {[
+            { bn: "ধানমন্ডিতে জলাবদ্ধতা", en: "Waterlogging in Dhanmondi", tone: "warning" },
+            { bn: "উত্তরায় ছিনতাইয়ের রিপোর্ট", en: "Snatching reported in Uttara", tone: "emergency" },
+            { bn: "সদরঘাটে যাচাইকৃত ত্রাণ কেন্দ্র", en: "Verified relief centre at Sadarghat", tone: "verified" },
+          ].map((a) => (
+            <div key={a.en} className="flex items-center gap-3 rounded-2xl bg-surface px-4 py-3">
+              <span
+                className={cn(
+                  "size-2.5 shrink-0 rounded-full",
+                  a.tone === "warning" && "bg-warning",
+                  a.tone === "emergency" && "bg-emergency pulse-ring",
+                  a.tone === "verified" && "bg-verified",
+                )}
+              />
+              <span className="min-w-0">
+                <span lang="bn" className="block truncate text-sm font-semibold">{a.bn}</span>
+                <span lang="en" className="block truncate text-[10px] uppercase tracking-wider text-muted-foreground">{a.en}</span>
+              </span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <div className="mt-5 space-y-4">
+        {posts.map((p) => (
+          <PostCard key={p.id} post={p} />
+        ))}
+      </div>
+    </AppShell>
+  );
+}
