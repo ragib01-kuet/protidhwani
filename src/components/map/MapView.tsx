@@ -85,6 +85,8 @@ export interface MapViewProps {
   heatMode: HeatMode;
   /** User-tuned heat opacity multiplier, 0 (transparent) → 1 (full). */
   heatOpacity: number;
+  /** User-tuned all-areas overlay opacity multiplier, 0 → 1. */
+  areaOpacity: number;
   /**
    * Transient highlight target set when a search result is selected.
    * `id` changes on every selection so repeat picks re-trigger the pulse.
