@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VehicleRouteImport } from './routes/vehicle'
 import { Route as RightsRouteImport } from './routes/rights'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProtestRouteImport } from './routes/protest'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MapRouteImport } from './routes/map'
@@ -19,6 +20,9 @@ import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CommunityRouteImport } from './routes/community'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthSignupRouteImport } from './routes/auth.signup'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 
 const VehicleRoute = VehicleRouteImport.update({
   id: '/vehicle',
@@ -28,6 +32,11 @@ const VehicleRoute = VehicleRouteImport.update({
 const RightsRoute = RightsRouteImport.update({
   id: '/rights',
   path: '/rights',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProtestRoute = ProtestRouteImport.update({
@@ -70,6 +79,21 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthSignupRoute = AuthSignupRouteImport.update({
+  id: '/auth/signup',
+  path: '/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,8 +104,12 @@ export interface FileRoutesByFullPath {
   '/map': typeof MapRoute
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
   '/vehicle': typeof VehicleRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -92,8 +120,12 @@ export interface FileRoutesByTo {
   '/map': typeof MapRoute
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
   '/vehicle': typeof VehicleRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -105,8 +137,12 @@ export interface FileRoutesById {
   '/map': typeof MapRoute
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
   '/vehicle': typeof VehicleRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/signup': typeof AuthSignupRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -119,8 +155,12 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/protest'
+    | '/reset-password'
     | '/rights'
     | '/vehicle'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/signup'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,8 +171,12 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/protest'
+    | '/reset-password'
     | '/rights'
     | '/vehicle'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/signup'
   id:
     | '__root__'
     | '/'
@@ -143,8 +187,12 @@ export interface FileRouteTypes {
     | '/map'
     | '/profile'
     | '/protest'
+    | '/reset-password'
     | '/rights'
     | '/vehicle'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/signup'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -156,8 +204,12 @@ export interface RootRouteChildren {
   MapRoute: typeof MapRoute
   ProfileRoute: typeof ProfileRoute
   ProtestRoute: typeof ProtestRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   RightsRoute: typeof RightsRoute
   VehicleRoute: typeof VehicleRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthSignupRoute: typeof AuthSignupRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -174,6 +226,13 @@ declare module '@tanstack/react-router' {
       path: '/rights'
       fullPath: '/rights'
       preLoaderRoute: typeof RightsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/protest': {
@@ -232,6 +291,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/signup': {
+      id: '/auth/signup'
+      path: '/auth/signup'
+      fullPath: '/auth/signup'
+      preLoaderRoute: typeof AuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -244,8 +324,12 @@ const rootRouteChildren: RootRouteChildren = {
   MapRoute: MapRoute,
   ProfileRoute: ProfileRoute,
   ProtestRoute: ProtestRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   RightsRoute: RightsRoute,
   VehicleRoute: VehicleRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthSignupRoute: AuthSignupRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
