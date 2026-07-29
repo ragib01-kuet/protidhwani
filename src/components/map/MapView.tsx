@@ -232,7 +232,22 @@ export default function MapView({
             "line-opacity-transition": { duration: 300, delay: 0 },
           }}
         />
+        {/* Transient highlight ring around the polygon matched by search. */}
+        <Layer
+          id="areas-highlight"
+          type="line"
+          filter={["==", ["get", "id"], highlight?.areaId ?? "__none__"]}
+          paint={{
+            "line-color": "#F59E0B",
+            "line-width": highlight ? 6 : 0,
+            "line-blur": 2,
+            "line-opacity": highlight ? 0.95 : 0,
+            "line-width-transition": { duration: 400, delay: 0 },
+            "line-opacity-transition": { duration: 400, delay: 0 },
+          }}
+        />
       </Source>
+
 
       {/*
         Ambient street-level heat: a soft baseline that covers every area.
