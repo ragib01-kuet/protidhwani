@@ -16,7 +16,7 @@ import {
   MICRO_AREAS,
   MICRO_HEAT_GEOJSON,
 } from "@/data/safety-data";
-import type { DemoRoute, Incident, SafetyLayerDef } from "@/types/safety";
+import type { DemoRoute, HeatMode, Incident, SafetyLayerDef } from "@/types/safety";
 import { safetyColor } from "@/utils/safetyColor";
 import { toBnNumber } from "@/utils/bn";
 
@@ -81,6 +81,8 @@ export interface MapViewProps {
   userLocation: { lng: number; lat: number } | null;
   /** Most recent user-submitted report, animated in. */
   latestReport: Incident | null;
+  /** Which heat surfaces to paint. */
+  heatMode: HeatMode;
   onMapReady: (map: MapRef) => void;
 }
 
@@ -92,10 +94,13 @@ export default function MapView({
   routes,
   userLocation,
   latestReport,
+  heatMode,
   onMapReady,
 }: MapViewProps) {
   /** The community layer emphasises the choropleth; others emphasise heat. */
   const areaFocused = layer.categories.length === 0;
+  const showIncidentHeat = heatMode !== "ambient";
+  const showAmbientHeat = heatMode !== "incident";
   /** Live zoom drives micro (street/para) precision. */
   const [zoom, setZoom] = useState(BANGLADESH_CENTER.zoom);
   const showMicro = zoom >= 11.5;
@@ -228,17 +233,20 @@ export default function MapView({
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.4, 13, 2.2],
             // Exponential growth keeps blobs geographically stable while zooming.
             "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 26, 11, 55, 15, 130],
-            "heatmap-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              5,
-              areaFocused ? 0.6 : 0.4,
-              13,
-              areaFocused ? 0.5 : 0.3,
-              15.5,
-              0,
-            ],
+            // Hidden (opacity 0) rather than unmounted, so mode swaps crossfade.
+            "heatmap-opacity": showAmbientHeat
+              ? [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  5,
+                  areaFocused ? 0.6 : 0.4,
+                  13,
+                  areaFocused ? 0.5 : 0.3,
+                  15.5,
+                  0,
+                ]
+              : 0,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
@@ -273,17 +281,19 @@ export default function MapView({
             "heatmap-weight": ["interpolate", ["linear"], ["get", "severity"], 1, 0.3, 5, 1],
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1, 14, 2.6],
             "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 20, 11, 42, 15, 95],
-            "heatmap-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              5,
-              areaFocused ? 0.6 : 0.9,
-              14,
-              areaFocused ? 0.55 : 0.85,
-              15.5,
-              0,
-            ],
+            "heatmap-opacity": showIncidentHeat
+              ? [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  5,
+                  areaFocused ? 0.6 : 0.9,
+                  14,
+                  areaFocused ? 0.55 : 0.85,
+                  15.5,
+                  0,
+                ]
+              : 0,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
@@ -323,8 +333,13 @@ export default function MapView({
             ],
             "circle-stroke-width": 1.5,
             "circle-stroke-color": "#ffffff",
-            "circle-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95],
-            "circle-stroke-opacity": ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95],
+            "circle-opacity": showIncidentHeat
+              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95]
+              : 0,
+            "circle-stroke-opacity": showIncidentHeat
+              ? ["interpolate", ["linear"], ["zoom"], 13.5, 0, 15.5, 0.95]
+              : 0,
+            "circle-opacity-transition": { duration: 300, delay: 0 },
           }}
         />
       </Source>

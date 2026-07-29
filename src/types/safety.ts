@@ -149,3 +149,11 @@ export interface SearchEntry {
   areaId?: string;
 }
 
+
+/**
+ * Which heat sources are painted on the map.
+ *  - "incident": only reported-incident density for the active time window
+ *  - "ambient" : only the baseline street/para risk surface
+ *  - "both"    : incident heat layered over the ambient baseline (default)
+ */
+export type HeatMode = "incident" | "ambient" | "both";
