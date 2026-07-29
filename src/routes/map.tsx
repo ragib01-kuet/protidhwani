@@ -1,11 +1,13 @@
 import { Suspense, lazy, useCallback, useMemo, useRef, useState } from "react";
-import { ClientOnly, createFileRoute } from "@tanstack/react-router";
-import { Crosshair, Layers, Loader2 } from "lucide-react";
+import { ClientOnly, createFileRoute, useRouter } from "@tanstack/react-router";
+import { ChevronLeft, Loader2, MapPin } from "lucide-react";
 import type { MapRef } from "react-map-gl/maplibre";
 
 import { AdvisoryToast, type Advisory } from "@/components/alerts/AdvisoryToast";
+import { HeatLegend } from "@/components/map/HeatLegend";
+import { MapControls } from "@/components/map/MapControls";
 import { SafetyLayerToggle } from "@/components/map/SafetyLayerToggle";
-import { TimeSlider } from "@/components/map/TimeSlider";
+import { TimeWindowChips } from "@/components/map/TimeWindowChips";
 import { RouteComparisonPanel } from "@/components/navigation/RouteComparisonPanel";
 import { SearchBar } from "@/components/navigation/SearchBar";
 import { ReportFAB } from "@/components/reports/ReportFAB";
@@ -18,6 +20,7 @@ import type { DemoRoute, Incident, SearchEntry } from "@/types/safety";
 
 // MapLibre touches `window` at import time, so it must never load during SSR.
 const MapView = lazy(() => import("@/components/map/MapView"));
+
 
 export const Route = createFileRoute("/map")({
   ssr: false,
