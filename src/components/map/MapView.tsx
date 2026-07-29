@@ -233,17 +233,20 @@ export default function MapView({
             "heatmap-intensity": ["interpolate", ["linear"], ["zoom"], 5, 1.4, 13, 2.2],
             // Exponential growth keeps blobs geographically stable while zooming.
             "heatmap-radius": ["interpolate", ["exponential", 1.7], ["zoom"], 5, 26, 11, 55, 15, 130],
-            "heatmap-opacity": [
-              "interpolate",
-              ["linear"],
-              ["zoom"],
-              5,
-              areaFocused ? 0.6 : 0.4,
-              13,
-              areaFocused ? 0.5 : 0.3,
-              15.5,
-              0,
-            ],
+            // Hidden (opacity 0) rather than unmounted, so mode swaps crossfade.
+            "heatmap-opacity": showAmbientHeat
+              ? [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  5,
+                  areaFocused ? 0.6 : 0.4,
+                  13,
+                  areaFocused ? 0.5 : 0.3,
+                  15.5,
+                  0,
+                ]
+              : 0,
             "heatmap-opacity-transition": { duration: 300, delay: 0 },
             "heatmap-color": [
               "interpolate",
