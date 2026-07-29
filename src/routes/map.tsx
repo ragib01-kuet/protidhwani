@@ -606,7 +606,7 @@ function TopOverlay({
 
 /* ----------------------------- Live alert ------------------------------ */
 
-function LiveAlert({ visible, onClose }: { visible: boolean; onClose: () => void }) {
+function LiveAlert({ visible, onClose, onSOS }: { visible: boolean; onClose: () => void; onSOS: () => void }) {
   return (
     <div
       className={[
