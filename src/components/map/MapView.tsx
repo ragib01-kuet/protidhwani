@@ -16,7 +16,7 @@ import {
   MICRO_AREAS,
   MICRO_HEAT_GEOJSON,
 } from "@/data/safety-data";
-import type { DemoRoute, Incident, SafetyLayerDef } from "@/types/safety";
+import type { DemoRoute, HeatMode, Incident, SafetyLayerDef } from "@/types/safety";
 import { safetyColor } from "@/utils/safetyColor";
 import { toBnNumber } from "@/utils/bn";
 
@@ -81,6 +81,8 @@ export interface MapViewProps {
   userLocation: { lng: number; lat: number } | null;
   /** Most recent user-submitted report, animated in. */
   latestReport: Incident | null;
+  /** Which heat surfaces to paint. */
+  heatMode: HeatMode;
   onMapReady: (map: MapRef) => void;
 }
 
@@ -92,10 +94,13 @@ export default function MapView({
   routes,
   userLocation,
   latestReport,
+  heatMode,
   onMapReady,
 }: MapViewProps) {
   /** The community layer emphasises the choropleth; others emphasise heat. */
   const areaFocused = layer.categories.length === 0;
+  const showIncidentHeat = heatMode !== "ambient";
+  const showAmbientHeat = heatMode !== "incident";
   /** Live zoom drives micro (street/para) precision. */
   const [zoom, setZoom] = useState(BANGLADESH_CENTER.zoom);
   const showMicro = zoom >= 11.5;
