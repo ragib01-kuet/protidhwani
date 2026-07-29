@@ -326,6 +326,25 @@ function SafetyMapPage() {
             />
           </div>
 
+          {/* District switcher + honest coverage state for unseeded districts. */}
+          <DistrictSelector value={districtId} onChange={handleSelectDistrict} />
+
+          {!districtCovered && (
+            <div className="flex items-start gap-2 rounded-2xl border border-warning/40 bg-warning-soft px-3 py-2 shadow-card animate-fade-in">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0 text-warning" aria-hidden />
+              <p className="min-w-0">
+                <span lang="bn" className="block text-[13px] font-bold leading-snug text-foreground">
+                  {district.nameBn}-এ মাইক্রো তাপ এখনো নেই — শুধু সাধারণ মানচিত্র দেখা যাবে।
+                </span>
+                <span lang="en" className="block text-[11px] leading-snug text-muted-foreground">
+                  Micro heat unavailable for {district.nameEn} — base map only until data is seeded.
+                </span>
+              </p>
+            </div>
+          )}
+
+
+
           {panelsOpen ? (
             /* On desktop the filters sit inside one panel so the wrapped pills
                read as a grouped sidebar instead of floating chips. */
