@@ -751,10 +751,10 @@ function Legend() {
 
 function ReportFab({ open, setOpen, onAction }: { open: boolean; setOpen: (b: boolean) => void; onAction: (k: "photo" | "quick" | "emergency" | "anonymous") => void }) {
   const actions = [
-    { icon: Camera, bn: "ছবি তুলুন", en: "Take photo", tone: "primary" },
-    { icon: FileText, bn: "দ্রুত রিপোর্ট", en: "Quick report", tone: "verified" },
-    { icon: Siren, bn: "জরুরি", en: "Emergency", tone: "emergency" },
-    { icon: UserX, bn: "নাম প্রকাশ ছাড়া", en: "Anonymous", tone: "warning" },
+    { icon: Camera, bn: "ছবি তুলুন", en: "Take photo", tone: "primary", key: "photo" },
+    { icon: FileText, bn: "দ্রুত রিপোর্ট", en: "Quick report", tone: "verified", key: "quick" },
+    { icon: Siren, bn: "জরুরি", en: "Emergency", tone: "emergency", key: "emergency" },
+    { icon: UserX, bn: "নাম প্রকাশ ছাড়া", en: "Anonymous", tone: "warning", key: "anonymous" },
   ] as const;
 
   return (
