@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VehicleRouteImport } from './routes/vehicle'
-import { Route as SafetyMapRouteImport } from './routes/safety-map'
 import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ProtestRouteImport } from './routes/protest'
 import { Route as ProfileRouteImport } from './routes/profile'
@@ -24,11 +23,6 @@ import { Route as IndexRouteImport } from './routes/index'
 const VehicleRoute = VehicleRouteImport.update({
   id: '/vehicle',
   path: '/vehicle',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SafetyMapRoute = SafetyMapRouteImport.update({
-  id: '/safety-map',
-  path: '/safety-map',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RightsRoute = RightsRouteImport.update({
@@ -87,7 +81,6 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
   '/rights': typeof RightsRoute
-  '/safety-map': typeof SafetyMapRoute
   '/vehicle': typeof VehicleRoute
 }
 export interface FileRoutesByTo {
@@ -100,7 +93,6 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
   '/rights': typeof RightsRoute
-  '/safety-map': typeof SafetyMapRoute
   '/vehicle': typeof VehicleRoute
 }
 export interface FileRoutesById {
@@ -114,7 +106,6 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
   '/rights': typeof RightsRoute
-  '/safety-map': typeof SafetyMapRoute
   '/vehicle': typeof VehicleRoute
 }
 export interface FileRouteTypes {
@@ -129,7 +120,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/protest'
     | '/rights'
-    | '/safety-map'
     | '/vehicle'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -142,7 +132,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/protest'
     | '/rights'
-    | '/safety-map'
     | '/vehicle'
   id:
     | '__root__'
@@ -155,7 +144,6 @@ export interface FileRouteTypes {
     | '/profile'
     | '/protest'
     | '/rights'
-    | '/safety-map'
     | '/vehicle'
   fileRoutesById: FileRoutesById
 }
@@ -169,7 +157,6 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   ProtestRoute: typeof ProtestRoute
   RightsRoute: typeof RightsRoute
-  SafetyMapRoute: typeof SafetyMapRoute
   VehicleRoute: typeof VehicleRoute
 }
 
@@ -180,13 +167,6 @@ declare module '@tanstack/react-router' {
       path: '/vehicle'
       fullPath: '/vehicle'
       preLoaderRoute: typeof VehicleRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/safety-map': {
-      id: '/safety-map'
-      path: '/safety-map'
-      fullPath: '/safety-map'
-      preLoaderRoute: typeof SafetyMapRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rights': {
@@ -265,9 +245,18 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   ProtestRoute: ProtestRoute,
   RightsRoute: RightsRoute,
-  SafetyMapRoute: SafetyMapRoute,
   VehicleRoute: VehicleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
