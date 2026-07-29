@@ -57,10 +57,17 @@ export function useSafetyLayer() {
   };
 }
 
-/** Flat, memoised search index over seeded areas + service points. */
+/**
+ * Flat, memoised search index over areas, their street/para micro units, and
+ * service points — ordered area → street → service so broad matches surface
+ * first and precise ones sit right beneath their parent.
+ */
 export function useSearchIndex(): SearchEntry[] {
-  return useMemo(
-    () => [
+  return useMemo(() => {
+    const areaNameBn = new Map(AREAS.map((a) => [a.id, a.nameBn]));
+    const areaNameEn = new Map(AREAS.map((a) => [a.id, a.nameEn]));
+
+    return [
       ...AREAS.map<SearchEntry>((a) => ({
         id: `area-${a.id}`,
         kind: "area",
@@ -72,6 +79,17 @@ export function useSearchIndex(): SearchEntry[] {
         lng: a.center[0],
         lat: a.center[1],
       })),
+      ...MICRO_AREAS.map<SearchEntry>((m) => ({
+        id: `micro-${m.id}`,
+        kind: "street",
+        areaId: m.areaId,
+        nameBn: m.nameBn,
+        nameEn: m.nameEn,
+        subtitleBn: `${MICRO_AREA_KIND_LABELS[m.kind].bn} · ${areaNameBn.get(m.areaId) ?? ""}`,
+        subtitleEn: `${MICRO_AREA_KIND_LABELS[m.kind].en} · ${areaNameEn.get(m.areaId) ?? ""}`,
+        lng: m.lng,
+        lat: m.lat,
+      })),
       ...SERVICES.map<SearchEntry>((s) => ({
         id: `svc-${s.id}`,
         kind: "service",
@@ -82,10 +100,10 @@ export function useSearchIndex(): SearchEntry[] {
         lng: s.lng,
         lat: s.lat,
       })),
-    ],
-    [],
-  );
+    ];
+  }, []);
 }
+
 
 /** localStorage-backed recent searches; degrades silently when storage is blocked. */
 export function useRecentSearches() {
