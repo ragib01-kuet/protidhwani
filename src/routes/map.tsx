@@ -403,10 +403,14 @@ function SafetyMapPage() {
         />
       </div>
 
-      {/* Primary report action. */}
-      <div className="pointer-events-none absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-3 z-30 sm:right-4 lg:bottom-4">
-        <ReportFAB onClick={() => setReportOpen(true)} />
-      </div>
+      {/* Primary report action — hidden while the controls menu is open so it
+          never sits on top of the panel. */}
+      {!menuOpen && (
+        <div className="pointer-events-none absolute bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-3 z-30 sm:right-4 lg:bottom-4">
+          <ReportFAB onClick={() => setReportOpen(true)} />
+        </div>
+      )}
+
 
       {/* Bottom-left: route comparison (when active) + the temperature scale. */}
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 flex flex-col gap-2.5 p-3 pb-[calc(5.5rem+env(safe-area-inset-bottom))] pr-24 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] sm:pr-24 lg:right-auto lg:w-[23rem] lg:pb-4">
