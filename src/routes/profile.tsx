@@ -172,7 +172,7 @@ function Profile() {
     queryClient.clear();
     await supabase.auth.signOut();
     toast.success("লগআউট হয়েছে · Signed out");
-    navigate({ to: "/auth/login", replace: true });
+    navigate({ to: "/", replace: true });
   }
 
   if (authLoading) {
