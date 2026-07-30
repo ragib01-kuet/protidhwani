@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
 import { personName, type PersonCard } from "@/services/social";
@@ -73,9 +72,9 @@ export function SchemaNotice() {
         Run <code className="rounded bg-background px-1">supabase/social.sql</code> in your Supabase
         SQL editor to enable friends and messaging.
       </p>
-      <Link to="/community" className="mt-3 inline-block text-xs font-semibold text-primary">
+      <a href="/community" className="mt-3 inline-block text-xs font-semibold text-primary">
         কমিউনিটিতে ফিরুন · Back to community
-      </Link>
+      </a>
     </div>
   );
 }
