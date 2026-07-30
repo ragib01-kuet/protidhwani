@@ -887,12 +887,13 @@ function Footer() {
             {
               h: "About",
               l: [
-                { x: "Mission", to: "/rights" as const },
-                { x: "Editors", to: "/community" as const },
-                { x: "Trust & safety", to: "/map" as const },
-                { x: "Contact", to: "/messages" as const },
+                { x: "Mission", to: "/about" as const },
+                { x: "Editors", to: "/editors" as const },
+                { x: "Trust & safety", to: "/trust-safety" as const },
+                { x: "Contact", to: "/contact" as const },
               ],
             },
+
           ].map((c) => (
             <div key={c.h}>
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -903,8 +904,8 @@ function Footer() {
                   <li key={item.x}>
                     <Link
                       to={item.to}
-                      search={item.to === "/messages" ? {} : undefined}
                       className="text-foreground/80 hover:text-foreground"
+
                     >
                       {item.x}
                     </Link>
