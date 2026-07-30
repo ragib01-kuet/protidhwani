@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         await router.navigate({ to: "/", replace: true });
       },
     }),
-    [session, loading],
+    [session, loading, router],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
