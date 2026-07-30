@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/integrations/supabase/client";
-import { REPORT_KINDS, type VehicleReportRecord } from "@/data/vehicles";
+import { DEMO_VEHICLES, REPORT_KINDS, type VehicleReportRecord } from "@/data/vehicles";
 import { lookupVehicle, submitVehicleReport, suggestPlates } from "@/services/vehicles";
 import { toBnNumber } from "@/utils/bn";
 
@@ -314,12 +314,11 @@ function ReportDialog({
   const [note, setNote] = useState("");
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      if (!userId) throw new Error("রিপোর্ট করতে সাইন ইন করুন · Sign in to report");
-      await submitVehicleReport({ plate, kind, noteBn: note }, userId);
-    },
-    onSuccess: () => {
-      toast.success("রিপোর্ট জমা হয়েছে", { description: "Report submitted" });
+    mutationFn: () => submitVehicleReport({ plate, kind, noteBn: note }, userId),
+    onSuccess: (result) => {
+      toast.success("রিপোর্ট জমা হয়েছে", {
+        description: result.stored === "live" ? "Report submitted" : "Saved in demo mode (this session)",
+      });
       onDone();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -367,14 +366,18 @@ function ReportDialog({
 
         {!userId ? (
           <p className="mt-3 rounded-2xl bg-warning-soft px-4 py-3">
-            <span lang="bn" className="block text-xs font-bold text-warning">রিপোর্ট করতে সাইন ইন করুন</span>
-            <span lang="en" className="block text-[10px] uppercase tracking-wider text-warning/80">Sign in to submit a report</span>
+            <span lang="bn" className="block text-xs font-bold text-warning">
+              সাইন ইন ছাড়া রিপোর্টটি শুধু এই সেশনে ডেমো হিসেবে থাকবে
+            </span>
+            <span lang="en" className="block text-[10px] uppercase tracking-wider text-warning/80">
+              Not signed in — the report is kept as a demo for this session
+            </span>
           </p>
         ) : null}
 
         <button
           onClick={() => mutation.mutate()}
-          disabled={note.trim().length < 3 || mutation.isPending || !userId}
+          disabled={note.trim().length < 3 || mutation.isPending}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-emergency px-6 py-3.5 text-emergency-foreground disabled:opacity-60"
         >
           {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
