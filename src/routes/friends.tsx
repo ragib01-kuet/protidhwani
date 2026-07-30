@@ -21,7 +21,7 @@ import {
   type PersonCard,
 } from "@/services/social";
 
-export const Route = createFileRoute("/_authenticated/friends")({
+export const Route = createFileRoute("/friends")({
   head: () => ({
     meta: [
       { title: "বন্ধুরা Friends — Protidhwani" },

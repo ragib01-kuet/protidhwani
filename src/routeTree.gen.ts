@@ -14,8 +14,10 @@ import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProtestRouteImport } from './routes/protest'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CommunityRouteImport } from './routes/community'
@@ -27,8 +29,6 @@ import { Route as ExplorePostIdRouteImport } from './routes/explore.$postId'
 import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
-import { Route as AuthenticatedMessagesRouteImport } from './routes/_authenticated/messages'
-import { Route as AuthenticatedFriendsRouteImport } from './routes/_authenticated/friends'
 import { Route as AuthenticatedComplaintsRouteImport } from './routes/_authenticated/complaints'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
@@ -61,6 +61,11 @@ const ProfileRoute = ProfileRouteImport.update({
   path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -69,6 +74,11 @@ const McpRoute = McpRouteImport.update({
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FriendsRoute = FriendsRouteImport.update({
+  id: '/friends',
+  path: '/friends',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmergencyRoute = EmergencyRouteImport.update({
@@ -125,16 +135,6 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedMessagesRoute = AuthenticatedMessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedFriendsRoute = AuthenticatedFriendsRouteImport.update({
-  id: '/friends',
-  path: '/friends',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedComplaintsRoute = AuthenticatedComplaintsRouteImport.update({
   id: '/complaints',
   path: '/complaints',
@@ -174,8 +174,10 @@ export interface FileRoutesByFullPath {
   '/community': typeof CommunityRoute
   '/dashboard': typeof DashboardRoute
   '/emergency': typeof EmergencyRoute
+  '/friends': typeof FriendsRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -185,8 +187,6 @@ export interface FileRoutesByFullPath {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/complaints': typeof AuthenticatedComplaintsRoute
-  '/friends': typeof AuthenticatedFriendsRoute
-  '/messages': typeof AuthenticatedMessagesRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -201,8 +201,10 @@ export interface FileRoutesByTo {
   '/community': typeof CommunityRoute
   '/dashboard': typeof DashboardRoute
   '/emergency': typeof EmergencyRoute
+  '/friends': typeof FriendsRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -212,8 +214,6 @@ export interface FileRoutesByTo {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/account': typeof AuthenticatedAccountRoute
   '/complaints': typeof AuthenticatedComplaintsRoute
-  '/friends': typeof AuthenticatedFriendsRoute
-  '/messages': typeof AuthenticatedMessagesRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -230,8 +230,10 @@ export interface FileRoutesById {
   '/community': typeof CommunityRoute
   '/dashboard': typeof DashboardRoute
   '/emergency': typeof EmergencyRoute
+  '/friends': typeof FriendsRoute
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRoute
   '/profile': typeof ProfileRoute
   '/protest': typeof ProtestRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -241,8 +243,6 @@ export interface FileRoutesById {
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/complaints': typeof AuthenticatedComplaintsRoute
-  '/_authenticated/friends': typeof AuthenticatedFriendsRoute
-  '/_authenticated/messages': typeof AuthenticatedMessagesRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -259,8 +259,10 @@ export interface FileRouteTypes {
     | '/community'
     | '/dashboard'
     | '/emergency'
+    | '/friends'
     | '/map'
     | '/mcp'
+    | '/messages'
     | '/profile'
     | '/protest'
     | '/reset-password'
@@ -270,8 +272,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/complaints'
-    | '/friends'
-    | '/messages'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -286,8 +286,10 @@ export interface FileRouteTypes {
     | '/community'
     | '/dashboard'
     | '/emergency'
+    | '/friends'
     | '/map'
     | '/mcp'
+    | '/messages'
     | '/profile'
     | '/protest'
     | '/reset-password'
@@ -297,8 +299,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/account'
     | '/complaints'
-    | '/friends'
-    | '/messages'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -314,8 +314,10 @@ export interface FileRouteTypes {
     | '/community'
     | '/dashboard'
     | '/emergency'
+    | '/friends'
     | '/map'
     | '/mcp'
+    | '/messages'
     | '/profile'
     | '/protest'
     | '/reset-password'
@@ -325,8 +327,6 @@ export interface FileRouteTypes {
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/account'
     | '/_authenticated/complaints'
-    | '/_authenticated/friends'
-    | '/_authenticated/messages'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -343,8 +343,10 @@ export interface RootRouteChildren {
   CommunityRoute: typeof CommunityRoute
   DashboardRoute: typeof DashboardRoute
   EmergencyRoute: typeof EmergencyRoute
+  FriendsRoute: typeof FriendsRoute
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
+  MessagesRoute: typeof MessagesRoute
   ProfileRoute: typeof ProfileRoute
   ProtestRoute: typeof ProtestRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -399,6 +401,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -411,6 +420,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/map'
       preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/friends': {
+      id: '/friends'
+      path: '/friends'
+      fullPath: '/friends'
+      preLoaderRoute: typeof FriendsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/emergency': {
@@ -490,20 +506,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/messages': {
-      id: '/_authenticated/messages'
-      path: '/messages'
-      fullPath: '/messages'
-      preLoaderRoute: typeof AuthenticatedMessagesRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/friends': {
-      id: '/_authenticated/friends'
-      path: '/friends'
-      fullPath: '/friends'
-      preLoaderRoute: typeof AuthenticatedFriendsRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/complaints': {
       id: '/_authenticated/complaints'
       path: '/complaints'
@@ -552,15 +554,11 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedComplaintsRoute: typeof AuthenticatedComplaintsRoute
-  AuthenticatedFriendsRoute: typeof AuthenticatedFriendsRoute
-  AuthenticatedMessagesRoute: typeof AuthenticatedMessagesRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedComplaintsRoute: AuthenticatedComplaintsRoute,
-  AuthenticatedFriendsRoute: AuthenticatedFriendsRoute,
-  AuthenticatedMessagesRoute: AuthenticatedMessagesRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -572,8 +570,10 @@ const rootRouteChildren: RootRouteChildren = {
   CommunityRoute: CommunityRoute,
   DashboardRoute: DashboardRoute,
   EmergencyRoute: EmergencyRoute,
+  FriendsRoute: FriendsRoute,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
+  MessagesRoute: MessagesRoute,
   ProfileRoute: ProfileRoute,
   ProtestRoute: ProtestRoute,
   ResetPasswordRoute: ResetPasswordRoute,
