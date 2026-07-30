@@ -155,7 +155,10 @@ export async function searchPeople(meId: string, term: string): Promise<PersonCa
   } catch {
     live = [];
   }
-  return [...live, ...demoSearchPeople(meId, term)];
+  // Sample neighbours are a fallback only: with the live schema applied, real
+  // profiles win and demo cards fill in when nothing matches.
+  return live.length ? live : demoSearchPeople(meId, term);
+
 }
 
 /** Send (or re-send after a decline) a friend request. */
