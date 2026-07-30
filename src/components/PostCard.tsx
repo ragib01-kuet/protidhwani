@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { BadgeCheck, MapPin, Clock, Heart, MessageCircle, Paperclip, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { kindMeta, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
@@ -71,9 +72,15 @@ export function PostCard({ post }: { post: Post }) {
         </span>
       </div>
 
-      <h3 lang="bn" className="mt-4 text-lg font-bold leading-snug tracking-tight">
-        {post.title.bn}
-      </h3>
+      <Link
+        to="/explore/$postId"
+        params={{ postId: post.id }}
+        className="mt-4 block transition-colors hover:text-primary"
+      >
+        <h3 lang="bn" className="text-lg font-bold leading-snug tracking-tight">
+          {post.title.bn}
+        </h3>
+      </Link>
       <p lang="en" className="mt-1 text-sm font-medium text-muted-foreground">
         {post.title.en}
       </p>
@@ -188,11 +195,15 @@ export function PostCard({ post }: { post: Post }) {
             <span className="font-semibold tabular-nums">{(post.support + (supported ? 1 : 0)).toLocaleString("bn-BD")}</span>
             <span lang="bn" className="text-xs text-muted-foreground">সমর্থন</span>
           </button>
-          <button className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary">
+          <Link
+            to="/explore/$postId"
+            params={{ postId: post.id }}
+            className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary"
+          >
             <MessageCircle className="size-4" />
             <span className="font-semibold tabular-nums">{post.comments.toLocaleString("bn-BD")}</span>
             <span lang="bn" className="text-xs text-muted-foreground">মন্তব্য</span>
-          </button>
+          </Link>
         </div>
         <span
           className={cn(
