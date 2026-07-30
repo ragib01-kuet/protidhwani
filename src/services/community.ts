@@ -127,7 +127,7 @@ export async function uploadPostMedia(userId: string, files: File[]): Promise<st
       upsert: false,
       contentType: file.type || undefined,
     });
-    if (error) throw error;
+    if (error) throw new Error(explainStorageError(error.message, isVideo));
     urls.push(supabase.storage.from(COMMUNITY_BUCKET).getPublicUrl(path).data.publicUrl);
   }
   return urls;
