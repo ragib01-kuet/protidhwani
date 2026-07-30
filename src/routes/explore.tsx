@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { PostCard } from "@/components/PostCard";
-import { posts } from "@/lib/civic";
+import { Search } from "lucide-react";
+import { posts, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/explore")({
@@ -103,9 +104,15 @@ function Explore() {
       </section>
 
       <div className="mt-5 space-y-4">
-        {posts.map((p) => (
+        {visible.map((p) => (
           <PostCard key={p.id} post={p} />
         ))}
+        {visible.length === 0 && (
+          <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-10 text-center">
+            <p lang="bn" className="text-sm font-bold">কোনো ফলাফল পাওয়া যায়নি</p>
+            <p lang="en" className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">No matching reports</p>
+          </div>
+        )}
       </div>
     </AppShell>
   );
