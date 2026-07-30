@@ -392,10 +392,11 @@ function Protest() {
       <button
         onClick={() => setComposerOpen(true)}
         aria-label="নতুন আপডেট / Post update"
-        className="fixed bottom-24 right-5 z-30 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-4 font-bold text-primary-foreground shadow-lg lg:bottom-8"
+        className="fixed bottom-24 left-1/2 z-30 inline-flex -translate-x-1/2 items-center gap-2 rounded-full bg-primary px-5 py-3.5 font-bold text-primary-foreground shadow-lg lg:bottom-8"
       >
         <Plus className="size-5" />
         <span lang="bn" className="text-sm">আপডেট দিন</span>
+        <span lang="en" className="text-[10px] uppercase tracking-wider opacity-80">Post update</span>
       </button>
 
       {composerOpen && (
