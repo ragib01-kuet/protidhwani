@@ -45,7 +45,7 @@ type Tab = "friends" | "requests" | "discover";
 
 function FriendsPage() {
   const { user } = useAuth();
-  const meId = user?.id ?? "";
+  const meId = user?.id ?? "demo-me";
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("friends");
   const [term, setTerm] = useState("");
