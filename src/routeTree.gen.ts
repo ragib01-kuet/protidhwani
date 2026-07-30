@@ -22,6 +22,7 @@ import { Route as CommunityRouteImport } from './routes/community'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore.index'
+import { Route as UUserIdRouteImport } from './routes/u.$userId'
 import { Route as ExplorePostIdRouteImport } from './routes/explore.$postId'
 import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
@@ -97,6 +98,11 @@ const IndexRoute = IndexRouteImport.update({
 const ExploreIndexRoute = ExploreIndexRouteImport.update({
   id: '/explore/',
   path: '/explore/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UUserIdRoute = UUserIdRouteImport.update({
+  id: '/u/$userId',
+  path: '/u/$userId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ExplorePostIdRoute = ExplorePostIdRouteImport.update({
@@ -185,6 +191,7 @@ export interface FileRoutesByFullPath {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/explore/$postId': typeof ExplorePostIdRoute
+  '/u/$userId': typeof UUserIdRoute
   '/explore/': typeof ExploreIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -211,6 +218,7 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/explore/$postId': typeof ExplorePostIdRoute
+  '/u/$userId': typeof UUserIdRoute
   '/explore': typeof ExploreIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -239,6 +247,7 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
   '/explore/$postId': typeof ExplorePostIdRoute
+  '/u/$userId': typeof UUserIdRoute
   '/explore/': typeof ExploreIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -267,6 +276,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signup'
     | '/explore/$postId'
+    | '/u/$userId'
     | '/explore/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -293,6 +303,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signup'
     | '/explore/$postId'
+    | '/u/$userId'
     | '/explore'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -320,6 +331,7 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/signup'
     | '/explore/$postId'
+    | '/u/$userId'
     | '/explore/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
@@ -344,6 +356,7 @@ export interface RootRouteChildren {
   AuthLoginRoute: typeof AuthLoginRoute
   AuthSignupRoute: typeof AuthSignupRoute
   ExplorePostIdRoute: typeof ExplorePostIdRoute
+  UUserIdRoute: typeof UUserIdRoute
   ExploreIndexRoute: typeof ExploreIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
@@ -440,6 +453,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore/'
       preLoaderRoute: typeof ExploreIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/u/$userId': {
+      id: '/u/$userId'
+      path: '/u/$userId'
+      fullPath: '/u/$userId'
+      preLoaderRoute: typeof UUserIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/explore/$postId': {
@@ -566,6 +586,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthLoginRoute: AuthLoginRoute,
   AuthSignupRoute: AuthSignupRoute,
   ExplorePostIdRoute: ExplorePostIdRoute,
+  UUserIdRoute: UUserIdRoute,
   ExploreIndexRoute: ExploreIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
