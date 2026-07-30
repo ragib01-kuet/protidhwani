@@ -428,6 +428,22 @@ function Profile() {
                 className="mt-1.5"
               />
             </div>
+            <div>
+              <Label htmlFor="p_phone">
+                <span lang="bn">মোবাইল নম্বর</span>{" "}
+                <span className="text-muted-foreground">Phone</span>
+              </Label>
+              <Input
+                id="p_phone"
+                type="tel"
+                inputMode="tel"
+                placeholder="01XXXXXXXXX"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="mt-1.5"
+              />
+            </div>
+
             <div className="sm:col-span-2">
               <Label htmlFor="p_bio">
                 <span lang="bn">পরিচিতি</span> <span className="text-muted-foreground">Bio</span>
