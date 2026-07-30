@@ -22,6 +22,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useAuth } from "@/hooks/useAuth";
 import { supabase, getErrorMessage } from "@/integrations/supabase/client";
 import type { CommunityPostKind } from "@/integrations/supabase/database.types";
+import {
+  DEMO_COMMENTS,
+  DEMO_POSTS,
+  filterDemoPosts,
+  isDemoPost,
+} from "@/data/community-demo";
+
 import { DISTRICTS, POST_KINDS, TONE_CLASS } from "@/lib/community-meta";
 import { cn } from "@/lib/utils";
 import {
