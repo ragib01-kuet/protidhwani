@@ -440,12 +440,13 @@ function PillarGrid() {
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
+            <Link
+              to={current.to}
               className={`tap inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-primary-foreground ${tone.bar} shadow-[0_8px_24px_-10px_currentColor]`}
             >
               {current.cta}
               <ArrowUpRight className="h-3.5 w-3.5" />
-            </button>
+            </Link>
             <span className="bn inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
               <span className={`h-1.5 w-1.5 rounded-full ${tone.bar}`} />
               {current.stat}
