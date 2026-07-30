@@ -201,7 +201,41 @@ function Community() {
       files: File[];
       removed: string[];
     }) => {
-      const uploaded = files.length ? await uploadPostMedia(user!.id, files) : [];
+      let uploaded: string[] = [];
+      if (files.length) {
+        // Skip files already uploaded in a previous failed attempt so a retry
+        // only re-sends what actually failed.
+        const done = uploadedRef.current;
+        const pending = files.filter((file) => !done.has(file));
+        setUploadItems(
+          files.map((file, index) => ({
+            index,
+            status: done.has(file) ? ("done" as const) : ("pending" as const),
+            percent: done.has(file) ? 100 : 0,
+            url: done.get(file),
+          })),
+        );
+        if (pending.length) {
+          try {
+            await uploadPostMedia(user!.id, pending, (items) => {
+              setUploadItems((prev) => {
+                const next = [...prev];
+                items.forEach((item) => {
+                  const original = files.indexOf(pending[item.index]);
+                  if (original >= 0) next[original] = { ...item, index: original };
+                });
+                return next;
+              });
+              items.forEach((item) => {
+                if (item.status === "done" && item.url) done.set(pending[item.index], item.url);
+              });
+            });
+          } catch (error) {
+            throw error;
+          }
+        }
+        uploaded = files.map((file) => done.get(file)!).filter(Boolean);
+      }
       const payload = { ...input, image_urls: [...input.image_urls, ...uploaded] };
       return editing ? updatePost(editing.id, payload) : createPost(user!.id, payload);
     },
@@ -209,6 +243,8 @@ function Community() {
       toast.success(editing ? "পোস্ট হালনাগাদ হয়েছে" : "পোস্ট প্রকাশিত হয়েছে", {
         description: editing ? "Post updated" : "Your post is live",
       });
+      uploadedRef.current = new Map();
+      setUploadItems([]);
       setComposerOpen(false);
       setEditing(null);
       invalidateFeed();
