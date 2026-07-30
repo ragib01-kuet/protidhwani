@@ -288,7 +288,47 @@ function Community() {
     setComposerOpen(true);
   };
 
-  const posts = feed.data ?? [];
+  const livePosts = feed.data ?? [];
+  // Fall back to the seeded demo feed whenever live data has nothing to show.
+  const demoVisible = filterDemoPosts(demoPosts, filters);
+  const showingDemo = !feed.isLoading && livePosts.length === 0 && demoVisible.length > 0;
+  const posts = showingDemo ? demoVisible : livePosts;
+
+  const toggleDemoSupport = (post: PostWithAuthor) => {
+    const on = demoSupported.includes(post.id);
+    setDemoSupported((prev) => (on ? prev.filter((id) => id !== post.id) : [...prev, post.id]));
+    setDemoPosts((prev) =>
+      prev.map((p) =>
+        p.id === post.id ? { ...p, support_count: p.support_count + (on ? -1 : 1) } : p,
+      ),
+    );
+    toast.success(on ? "সমর্থন প্রত্যাহার হয়েছে" : "সমর্থন যোগ হয়েছে", {
+      description: on ? "Support removed (demo)" : "Support added (demo)",
+    });
+  };
+
+  const addDemoComment = (post: PostWithAuthor, body: string) => {
+    const comment = {
+      id: `demo-c-${crypto.randomUUID()}`,
+      post_id: post.id,
+      user_id: user?.id ?? "demo-guest",
+      body,
+      created_at: new Date().toISOString(),
+      author: {
+        id: user?.id ?? "demo-guest",
+        full_name: "You",
+        full_name_bn: "আপনি",
+        username: "you",
+        avatar_url: null,
+      },
+    } as (typeof DEMO_COMMENTS)[string][number];
+    setDemoComments((prev) => ({ ...prev, [post.id]: [...(prev[post.id] ?? []), comment] }));
+    setDemoPosts((prev) =>
+      prev.map((p) => (p.id === post.id ? { ...p, comment_count: p.comment_count + 1 } : p)),
+    );
+    toast.success("মন্তব্য যোগ হয়েছে", { description: "Comment added (demo)" });
+  };
+
 
   // Deep link from a shared URL: scroll to and highlight the post.
   useEffect(() => {
