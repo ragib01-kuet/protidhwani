@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VehicleRouteImport } from './routes/vehicle'
+import { Route as TrustSafetyRouteImport } from './routes/trust-safety'
 import { Route as RightsRouteImport } from './routes/rights'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProtestRouteImport } from './routes/protest'
@@ -19,8 +20,11 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as EmergencyRouteImport } from './routes/emergency'
+import { Route as EditorsRouteImport } from './routes/editors'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CommunityRouteImport } from './routes/community'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExploreIndexRouteImport } from './routes/explore.index'
@@ -39,6 +43,11 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 const VehicleRoute = VehicleRouteImport.update({
   id: '/vehicle',
   path: '/vehicle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TrustSafetyRoute = TrustSafetyRouteImport.update({
+  id: '/trust-safety',
+  path: '/trust-safety',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RightsRoute = RightsRouteImport.update({
@@ -86,14 +95,29 @@ const EmergencyRoute = EmergencyRouteImport.update({
   path: '/emergency',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EditorsRoute = EditorsRouteImport.update({
+  id: '/editors',
+  path: '/editors',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CommunityRoute = CommunityRouteImport.update({
   id: '/community',
   path: '/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -171,8 +195,11 @@ const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/community': typeof CommunityRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
   '/friends': typeof FriendsRoute
   '/map': typeof MapRoute
@@ -182,6 +209,7 @@ export interface FileRoutesByFullPath {
   '/protest': typeof ProtestRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
+  '/trust-safety': typeof TrustSafetyRoute
   '/vehicle': typeof VehicleRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -198,8 +226,11 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/community': typeof CommunityRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
   '/friends': typeof FriendsRoute
   '/map': typeof MapRoute
@@ -209,6 +240,7 @@ export interface FileRoutesByTo {
   '/protest': typeof ProtestRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
+  '/trust-safety': typeof TrustSafetyRoute
   '/vehicle': typeof VehicleRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -227,8 +259,11 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/about': typeof AboutRoute
   '/community': typeof CommunityRoute
+  '/contact': typeof ContactRoute
   '/dashboard': typeof DashboardRoute
+  '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
   '/friends': typeof FriendsRoute
   '/map': typeof MapRoute
@@ -238,6 +273,7 @@ export interface FileRoutesById {
   '/protest': typeof ProtestRoute
   '/reset-password': typeof ResetPasswordRoute
   '/rights': typeof RightsRoute
+  '/trust-safety': typeof TrustSafetyRoute
   '/vehicle': typeof VehicleRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -256,8 +292,11 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/community'
+    | '/contact'
     | '/dashboard'
+    | '/editors'
     | '/emergency'
     | '/friends'
     | '/map'
@@ -267,6 +306,7 @@ export interface FileRouteTypes {
     | '/protest'
     | '/reset-password'
     | '/rights'
+    | '/trust-safety'
     | '/vehicle'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -283,8 +323,11 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/community'
+    | '/contact'
     | '/dashboard'
+    | '/editors'
     | '/emergency'
     | '/friends'
     | '/map'
@@ -294,6 +337,7 @@ export interface FileRouteTypes {
     | '/protest'
     | '/reset-password'
     | '/rights'
+    | '/trust-safety'
     | '/vehicle'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -311,8 +355,11 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/about'
     | '/community'
+    | '/contact'
     | '/dashboard'
+    | '/editors'
     | '/emergency'
     | '/friends'
     | '/map'
@@ -322,6 +369,7 @@ export interface FileRouteTypes {
     | '/protest'
     | '/reset-password'
     | '/rights'
+    | '/trust-safety'
     | '/vehicle'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
@@ -340,8 +388,11 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AboutRoute: typeof AboutRoute
   CommunityRoute: typeof CommunityRoute
+  ContactRoute: typeof ContactRoute
   DashboardRoute: typeof DashboardRoute
+  EditorsRoute: typeof EditorsRoute
   EmergencyRoute: typeof EmergencyRoute
   FriendsRoute: typeof FriendsRoute
   MapRoute: typeof MapRoute
@@ -351,6 +402,7 @@ export interface RootRouteChildren {
   ProtestRoute: typeof ProtestRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   RightsRoute: typeof RightsRoute
+  TrustSafetyRoute: typeof TrustSafetyRoute
   VehicleRoute: typeof VehicleRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
@@ -371,6 +423,13 @@ declare module '@tanstack/react-router' {
       path: '/vehicle'
       fullPath: '/vehicle'
       preLoaderRoute: typeof VehicleRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trust-safety': {
+      id: '/trust-safety'
+      path: '/trust-safety'
+      fullPath: '/trust-safety'
+      preLoaderRoute: typeof TrustSafetyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rights': {
@@ -436,6 +495,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EmergencyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/editors': {
+      id: '/editors'
+      path: '/editors'
+      fullPath: '/editors'
+      preLoaderRoute: typeof EditorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -443,11 +509,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/community': {
       id: '/community'
       path: '/community'
       fullPath: '/community'
       preLoaderRoute: typeof CommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -567,8 +647,11 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AboutRoute: AboutRoute,
   CommunityRoute: CommunityRoute,
+  ContactRoute: ContactRoute,
   DashboardRoute: DashboardRoute,
+  EditorsRoute: EditorsRoute,
   EmergencyRoute: EmergencyRoute,
   FriendsRoute: FriendsRoute,
   MapRoute: MapRoute,
@@ -578,6 +661,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProtestRoute: ProtestRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   RightsRoute: RightsRoute,
+  TrustSafetyRoute: TrustSafetyRoute,
   VehicleRoute: VehicleRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
