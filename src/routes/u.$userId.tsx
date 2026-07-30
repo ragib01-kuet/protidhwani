@@ -238,6 +238,62 @@ function PersonProfile() {
               </Button>
             </div>
           </section>
+
+          {composerOpen ? (
+            <div
+              className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setComposerOpen(false)}
+            >
+              <div
+                className="w-full max-w-md rounded-t-[2rem] border border-border bg-card p-5 shadow-lift sm:rounded-[2rem]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar person={person} size={44} />
+                  <div className="min-w-0">
+                    <p lang="bn" className="truncate text-sm font-bold">
+                      {name.bn}
+                    </p>
+                    <p lang="en" className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                      {name.en}
+                    </p>
+                  </div>
+                </div>
+                <Textarea
+                  autoFocus
+                  rows={4}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="বার্তা লিখুন · Write a message…"
+                  className="mt-4"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && draft.trim()) {
+                      e.preventDefault();
+                      messageMutation.mutate(draft);
+                    }
+                  }}
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="ghost" onClick={() => setComposerOpen(false)}>
+                    বাতিল Cancel
+                  </Button>
+                  <Button
+                    disabled={!draft.trim() || messageMutation.isPending}
+                    onClick={() => messageMutation.mutate(draft)}
+                  >
+                    {messageMutation.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <MessageCircle className="size-4" />
+                    )}
+                    পাঠান Send
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </AppShell>
