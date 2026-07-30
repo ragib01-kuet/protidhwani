@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Play, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, Check, ImagePlus, Loader2, Play, RotateCw, X } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DISTRICTS, POST_KINDS, TONE_CLASS } from "@/lib/community-meta";
@@ -9,6 +9,7 @@ import {
   IMAGE_MAX_BYTES,
   VIDEO_MAX_BYTES,
   isVideoUrl,
+  type MediaUploadProgress,
   type PostInput,
   type PostWithAuthor,
 } from "@/services/community";
@@ -20,8 +21,17 @@ export interface PostComposerModalProps {
   editing?: PostWithAuthor | null;
   initialKind?: CommunityPostKind;
   submitting: boolean;
+  /** Per-file upload state, indexed against the selected files. */
+  uploadProgress?: MediaUploadProgress[];
   onSubmit: (input: PostInput, files: File[], removedUrls: string[]) => Promise<void>;
 }
+
+function formatSize(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
 
 const EMPTY = {
   title: "",
