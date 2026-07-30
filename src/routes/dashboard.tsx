@@ -1,9 +1,10 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Search, TrendingUp } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { PostCard } from "@/components/PostCard";
-import { posts, quickActions } from "@/lib/civic";
-import { cn } from "@/lib/utils";
+import { QuickActionsBar } from "@/components/QuickActionsBar";
+import { posts } from "@/lib/civic";
+
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
