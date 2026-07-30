@@ -22,6 +22,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useAuth } from "@/hooks/useAuth";
 import { supabase, getErrorMessage } from "@/integrations/supabase/client";
 import type { CommunityPostKind } from "@/integrations/supabase/database.types";
+import {
+  DEMO_COMMENTS,
+  DEMO_POSTS,
+  filterDemoPosts,
+  isDemoPost,
+} from "@/data/community-demo";
+
 import { DISTRICTS, POST_KINDS, TONE_CLASS } from "@/lib/community-meta";
 import { cn } from "@/lib/utils";
 import {
@@ -102,6 +109,12 @@ function Community() {
   const [deleteFor, setDeleteFor] = useState<PostWithAuthor | null>(null);
   const [busyPostId, setBusyPostId] = useState<string | null>(null);
 
+  // Demo feed state (session-only): supports and comments on seeded posts.
+  const [demoPosts, setDemoPosts] = useState<PostWithAuthor[]>(DEMO_POSTS);
+  const [demoComments, setDemoComments] = useState(DEMO_COMMENTS);
+  const [demoSupported, setDemoSupported] = useState<string[]>([]);
+  const [showDemo, setShowDemo] = useState(true);
+
   useEffect(() => {
     const id = setTimeout(() => setSearch(searchInput.trim()), 300);
     return () => clearTimeout(id);
@@ -140,8 +153,10 @@ function Community() {
   const comments = useQuery({
     queryKey: ["community", "comments", commentsFor?.id],
     queryFn: () => listPostComments(commentsFor!.id),
-    enabled: Boolean(commentsFor),
+    enabled: Boolean(commentsFor) && !isDemoPost(commentsFor!.id),
   });
+
+
 
   const invalidateFeed = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["community", "posts"] });
@@ -274,7 +289,50 @@ function Community() {
     setComposerOpen(true);
   };
 
-  const posts = feed.data ?? [];
+  const livePosts = feed.data ?? [];
+  // Seeded demo posts (with photos) always stay visible below live content
+  // unless the reader turns them off.
+  const demoVisible = filterDemoPosts(demoPosts, filters);
+  const showingDemo = !feed.isLoading && showDemo && demoVisible.length > 0;
+
+  const posts = showingDemo ? [...livePosts, ...demoVisible] : livePosts;
+
+
+  const toggleDemoSupport = (post: PostWithAuthor) => {
+    const on = demoSupported.includes(post.id);
+    setDemoSupported((prev) => (on ? prev.filter((id) => id !== post.id) : [...prev, post.id]));
+    setDemoPosts((prev) =>
+      prev.map((p) =>
+        p.id === post.id ? { ...p, support_count: p.support_count + (on ? -1 : 1) } : p,
+      ),
+    );
+    toast.success(on ? "সমর্থন প্রত্যাহার হয়েছে" : "সমর্থন যোগ হয়েছে", {
+      description: on ? "Support removed (demo)" : "Support added (demo)",
+    });
+  };
+
+  const addDemoComment = (post: PostWithAuthor, body: string) => {
+    const comment = {
+      id: `demo-c-${crypto.randomUUID()}`,
+      post_id: post.id,
+      user_id: user?.id ?? "demo-guest",
+      body,
+      created_at: new Date().toISOString(),
+      author: {
+        id: user?.id ?? "demo-guest",
+        full_name: "You",
+        full_name_bn: "আপনি",
+        username: "you",
+        avatar_url: null,
+      },
+    } as (typeof DEMO_COMMENTS)[string][number];
+    setDemoComments((prev) => ({ ...prev, [post.id]: [...(prev[post.id] ?? []), comment] }));
+    setDemoPosts((prev) =>
+      prev.map((p) => (p.id === post.id ? { ...p, comment_count: p.comment_count + 1 } : p)),
+    );
+    toast.success("মন্তব্য যোগ হয়েছে", { description: "Comment added (demo)" });
+  };
+
 
   // Deep link from a shared URL: scroll to and highlight the post.
   useEffect(() => {
@@ -293,7 +351,11 @@ function Community() {
   return (
     <AppShell
       title={{ bn: "কমিউনিটি", en: "Community" }}
-      subtitle={feed.data ? `${feed.data.length} posts` : undefined}
+      subtitle={
+        feed.isLoading
+          ? undefined
+          : `${posts.length} posts${showingDemo ? ` · ${demoVisible.length} demo` : ""}`
+      }
       onSearchClick={() => searchRef.current?.focus()}
       hideComposer
     >
@@ -436,6 +498,35 @@ function Community() {
         </div>
       </section>
 
+      {/* Demo banner */}
+      {showingDemo && (
+        <section className="mt-5 rounded-[1.75rem] border border-warning/30 bg-warning-soft p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p lang="bn" className="text-sm font-bold text-warning">
+                ডেমো পোস্ট দেখানো হচ্ছে
+              </p>
+              <p lang="en" className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-warning/80">
+                Demo mode · Sample posts with photos
+              </p>
+            </div>
+            <button
+              onClick={() => setShowDemo(false)}
+              className="shrink-0 rounded-full bg-warning px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-warning-foreground"
+            >
+              লুকান · Hide demo
+            </button>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            <span lang="bn">ছবিসহ নমুনা পোস্টগুলো ফিডের শেষে দেখানো হচ্ছে; সমর্থন ও মন্তব্য এই সেশনেই সংরক্ষিত থাকে।</span>{" "}
+            <span lang="en">
+              Sample posts appear after live posts. Supports and comments on them are kept for this
+              session only.
+            </span>
+          </p>
+        </section>
+      )}
+
       {/* Feed */}
       <div className="mt-5 space-y-4">
         {feed.isLoading ? (
@@ -444,7 +535,8 @@ function Community() {
               <div key={i} className="h-52 animate-pulse rounded-[1.75rem] border border-border bg-card" />
             ))}
           </div>
-        ) : feed.isError ? (
+        ) : feed.isError && !showingDemo ? (
+
           <div role="alert" className="rounded-[1.75rem] border border-emergency/30 bg-emergency-soft p-6">
             <p lang="bn" className="text-sm font-bold text-emergency">
               ফিড লোড করা যায়নি
@@ -477,30 +569,49 @@ function Community() {
           </div>
         ) : (
           posts.map((post) => (
+            <div key={post.id} className="space-y-1.5">
+              {isDemoPost(post.id) && (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-warning-soft px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-warning">
+                  <span lang="bn">ডেমো</span> · Demo
+                </span>
+              )}
             <CommunityPostCard
-              key={post.id}
               post={post}
-              supported={supportedIds.has(post.id)}
+              supported={
+                isDemoPost(post.id) ? demoSupported.includes(post.id) : supportedIds.has(post.id)
+              }
               flagged={flaggedIds.has(post.id)}
-              isOwner={user?.id === post.user_id}
+              isOwner={!isDemoPost(post.id) && user?.id === post.user_id}
               busy={busyPostId === post.id}
               onSupport={(p) => {
+                if (isDemoPost(p.id)) {
+                  toggleDemoSupport(p);
+                  return;
+                }
                 if (!requireAuth("সমর্থন করতে সাইন ইন করুন")) return;
                 support.mutate(p);
               }}
               onComment={setCommentsFor}
               onShare={handleShare}
               onFlag={(p) => {
+                if (isDemoPost(p.id)) {
+                  toast.success("রিপোর্ট পাঠানো হয়েছে", {
+                    description: "Flag recorded in demo mode",
+                  });
+                  return;
+                }
                 if (!requireAuth("রিপোর্ট করতে সাইন ইন করুন")) return;
                 setFlagReason("misinformation");
                 setFlagFor(p);
               }}
+
               onEdit={(p) => {
                 setEditing(p);
                 setComposerOpen(true);
               }}
               onDelete={setDeleteFor}
             />
+            </div>
           ))
         )}
         {feed.isFetching && !feed.isLoading && (
@@ -537,14 +648,41 @@ function Community() {
         post={commentsFor}
         open={Boolean(commentsFor)}
         onOpenChange={(open) => !open && setCommentsFor(null)}
-        comments={comments.data ?? []}
+        comments={
+          commentsFor && isDemoPost(commentsFor.id)
+            ? (demoComments[commentsFor.id] ?? [])
+            : (comments.data ?? [])
+        }
         loading={comments.isLoading}
         posting={addComment.isPending}
-        currentUserId={user?.id ?? null}
+        currentUserId={
+          user?.id ?? (commentsFor && isDemoPost(commentsFor.id) ? "demo-guest" : null)
+        }
         onSubmit={async (body) => {
+          if (commentsFor && isDemoPost(commentsFor.id)) {
+            addDemoComment(commentsFor, body);
+            return;
+          }
           await addComment.mutateAsync(body);
         }}
-        onDelete={(c) => removeComment.mutate(c.id)}
+        onDelete={(c) => {
+          if (isDemoPost(c.post_id)) {
+            setDemoComments((prev) => ({
+              ...prev,
+              [c.post_id]: (prev[c.post_id] ?? []).filter((x) => x.id !== c.id),
+            }));
+            setDemoPosts((prev) =>
+              prev.map((p) =>
+                p.id === c.post_id
+                  ? { ...p, comment_count: Math.max(0, p.comment_count - 1) }
+                  : p,
+              ),
+            );
+            return;
+          }
+          removeComment.mutate(c.id);
+        }}
+
         onSignIn={() => navigate({ to: "/auth/login", search: { redirect: "/community" } })}
       />
 
