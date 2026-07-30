@@ -140,9 +140,13 @@ function Community() {
     }
   }, [detect]);
 
-  // First visit with no saved area: open the picker once hydration settles.
+  // First visit with no saved area: prompt once. Choosing "nationwide"
+  // afterwards must not re-open the picker.
+  const promptedRef = useRef(false);
   useEffect(() => {
-    if (hydrated && !scope) setAreaSheetOpen(true);
+    if (!hydrated || promptedRef.current) return;
+    promptedRef.current = true;
+    if (!scope) setAreaSheetOpen(true);
   }, [hydrated, scope]);
 
   useEffect(() => {
