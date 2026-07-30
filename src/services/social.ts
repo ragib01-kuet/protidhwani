@@ -146,10 +146,15 @@ export async function searchPeople(meId: string, term: string): Promise<PersonCa
       `full_name.ilike.%${safe}%,full_name_bn.ilike.%${safe}%,username.ilike.%${safe}%,district.ilike.%${safe}%`,
     );
   }
-  const { data, error } = await query.order("updated_at", { ascending: false });
-  const live = error ? [] : ((data ?? []) as PersonCard[]);
-  if (error && !isMissingSocialSchema(error)) throw error;
-  // Demo neighbours always appear so Discover is never an empty page.
+  // Live profiles are best-effort: a missing column or restricted policy must
+  // never blank out Discover, so failures fall through to the demo network.
+  let live: PersonCard[] = [];
+  try {
+    const { data, error } = await query;
+    if (!error) live = (data ?? []) as PersonCard[];
+  } catch {
+    live = [];
+  }
   return [...live, ...demoSearchPeople(meId, term)];
 }
 
