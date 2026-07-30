@@ -24,6 +24,8 @@ export const TOOLS_NAV = [
   { to: "/emergency", bn: "জরুরি সহায়তা", en: "Emergency" },
   { to: "/rights", bn: "অধিকার", en: "Rights" },
   { to: "/protest", bn: "প্রতিবাদ মোড", en: "Protest Mode" },
+  { to: "/friends", bn: "বন্ধুরা", en: "Friends" },
+  { to: "/messages", bn: "বার্তা", en: "Messages" },
   { to: "/vehicle", bn: "যানবাহন যাচাই", en: "Verify Vehicle" },
   { to: "/complaints", bn: "অভিযোগ", en: "Complaints" },
   { to: "/account", bn: "অ্যাকাউন্ট", en: "Account" },
