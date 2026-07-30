@@ -176,17 +176,11 @@ function Hero() {
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
             <Link
-              to="/emergency"
-              className="tap inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
+              to="/explore"
+              className="tap inline-flex items-center gap-2 rounded-full bg-foreground px-6 py-3.5 text-sm font-semibold text-background"
             >
-              <Siren className="h-4 w-4" />
-              Report an incident
-            </Link>
-            <Link
-              to="/dashboard"
-              className="tap inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold"
-            >
-              Explore the feed
+              <span lang="bn" className="bn">ফিড দেখুন</span>
+              <span lang="en">Explore the feed</span>
               <ChevronRight className="h-4 w-4" />
             </Link>
           </div>
