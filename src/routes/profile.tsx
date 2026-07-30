@@ -72,6 +72,10 @@ function Profile() {
 
   const [editing, setEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     full_name_bn: "",
     full_name: "",
@@ -96,6 +100,10 @@ function Profile() {
     });
   }, [profileQuery.data]);
 
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
   const saveMutation = useMutation({
     mutationFn: () =>
       upsertProfile(userId, {
@@ -115,33 +123,49 @@ function Profile() {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
-  async function handleAvatar(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file || !userId) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB");
-      event.target.value = "";
-      return;
-    }
+  async function runUpload(file: File) {
     setUploading(true);
+    setUploadPct(0);
+    setUploadError(null);
     try {
-      const url = await uploadAvatar(userId, file);
-      setForm((prev) => ({ ...prev, avatar_url: url }));
+      const url = await uploadAvatar(userId, file, setUploadPct);
       await upsertProfile(userId, { avatar_url: url });
-      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-      toast.success("ছবি আপলোড হয়েছে · Image uploaded");
+      setForm((prev) => ({ ...prev, avatar_url: url }));
+      setPendingFile(null);
+      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      toast.success("ছবি আপলোড হয়েছে · Photo uploaded");
     } catch (error) {
       const message = getErrorMessage(error);
-      toast.error(
-        /bucket not found/i.test(message)
-          ? "ছবি স্টোরেজ প্রস্তুত নয় · Image storage is not set up yet (avatars bucket missing)"
-          : message,
-      );
+      const friendly = /bucket not found/i.test(message)
+        ? "ছবি স্টোরেজ প্রস্তুত নয় · Image storage is not set up yet"
+        : /row-level security|unauthorized|jwt/i.test(message)
+          ? "অনুমতি নেই · Permission denied — sign in again and retry"
+          : message;
+      setUploadError(friendly);
+      toast.error(`${friendly} · আবার চেষ্টা করুন · Tap retry`);
     } finally {
       setUploading(false);
-      event.target.value = "";
     }
   }
+
+  async function handleAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !userId) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("শুধু ছবি ফাইল · Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB");
+      return;
+    }
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(URL.createObjectURL(file));
+    setPendingFile(file);
+    await runUpload(file);
+  }
+
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
@@ -207,15 +231,20 @@ function Profile() {
       <section className="rounded-[2rem] border border-border bg-card p-6 shadow-card">
         <div className="flex items-start gap-4">
           <label className="relative grid size-16 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-3xl bg-brand-soft text-xl font-bold text-primary">
-            {form.avatar_url ? (
+            {preview ?? form.avatar_url ? (
               <img
-                src={form.avatar_url}
+                src={preview ?? form.avatar_url}
                 alt={`${nameEn} avatar`}
-                className="size-full object-cover"
+                className={`size-full object-cover transition-opacity ${uploading ? "opacity-60" : ""}`}
                 loading="lazy"
               />
             ) : (
               <span lang="bn">{initials(nameBn)}</span>
+            )}
+            {uploading && (
+              <span className="absolute inset-0 grid place-items-center bg-foreground/45 text-[10px] font-bold text-background">
+                {uploadPct}%
+              </span>
             )}
             <span className="absolute inset-x-0 bottom-0 grid h-5 place-items-center bg-foreground/60 text-background">
               {uploading ? (
@@ -233,6 +262,7 @@ function Profile() {
               aria-label="ছবি আপলোড · Upload avatar"
             />
           </label>
+
 
           <div className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
@@ -265,6 +295,40 @@ function Profile() {
             <span lang="bn">সম্পাদনা</span>
           </Button>
         </div>
+
+        {uploading && (
+          <div className="mt-4">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-200"
+                style={{ width: `${uploadPct}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              <span lang="bn">ছবি আপলোড হচ্ছে…</span>{" "}
+              <span lang="en" className="uppercase tracking-wider">
+                Uploading {uploadPct}%
+              </span>
+            </p>
+          </div>
+        )}
+
+        {!uploading && uploadError && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-emergency/30 bg-emergency-soft px-4 py-3">
+            <p className="min-w-0 flex-1 text-xs font-semibold text-emergency">{uploadError}</p>
+            {pendingFile && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => pendingFile && runUpload(pendingFile)}
+              >
+                <span lang="bn">আবার চেষ্টা</span> <span className="opacity-70">Retry</span>
+              </Button>
+            )}
+          </div>
+        )}
+
+
 
         <div className="mt-5 flex items-center gap-2 rounded-2xl bg-verified-soft px-4 py-3">
           <ShieldCheck className="size-4 shrink-0 text-verified" />
@@ -364,6 +428,22 @@ function Profile() {
                 className="mt-1.5"
               />
             </div>
+            <div>
+              <Label htmlFor="p_phone">
+                <span lang="bn">মোবাইল নম্বর</span>{" "}
+                <span className="text-muted-foreground">Phone</span>
+              </Label>
+              <Input
+                id="p_phone"
+                type="tel"
+                inputMode="tel"
+                placeholder="01XXXXXXXXX"
+                value={form.phone}
+                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                className="mt-1.5"
+              />
+            </div>
+
             <div className="sm:col-span-2">
               <Label htmlFor="p_bio">
                 <span lang="bn">পরিচিতি</span> <span className="text-muted-foreground">Bio</span>
