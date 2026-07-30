@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   AlertTriangle,
@@ -61,20 +61,29 @@ function Index() {
 
 /* ---------------------------- Top navigation --------------------------- */
 
+const LANDING_NAV = [
+  { to: "/dashboard", en: "Feed" },
+  { to: "/complaints", en: "Report" },
+  { to: "/rights", en: "Rights" },
+  { to: "/explore", en: "Fact-check" },
+  { to: "/map", en: "Safety" },
+  { to: "/community", en: "Public Info" },
+] as const;
+
 function TopBar() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
         <Logo />
         <nav className="ml-6 hidden items-center gap-1 lg:flex">
-          {["Feed", "Report", "Rights", "Fact-check", "Safety", "Public Info"].map((l) => (
-            <a
-              key={l}
-              href="#"
+          {LANDING_NAV.map((l) => (
+            <Link
+              key={l.en}
+              to={l.to}
               className="rounded-full px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
-              {l}
-            </a>
+              {l.en}
+            </Link>
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
@@ -88,16 +97,26 @@ function TopBar() {
               ⌘K
             </kbd>
           </div>
-          <button className="tap grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-foreground/80 hover:text-foreground">
+          <Link
+            to="/explore"
+            aria-label="সতর্কতা / Alerts"
+            className="tap grid h-9 w-9 place-items-center rounded-full border border-border bg-surface text-foreground/80 hover:text-foreground"
+          >
             <Bell className="h-4 w-4" />
-          </button>
-          <button className="tap hidden rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-medium sm:inline-flex">
+          </Link>
+          <Link
+            to="/auth/login"
+            className="tap hidden rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-medium sm:inline-flex"
+          >
             Sign in
-          </button>
-          <button className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-primary-foreground shadow-[0_4px_20px_-6px_var(--color-primary)]">
+          </Link>
+          <Link
+            to="/complaints"
+            className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-primary-foreground shadow-[0_4px_20px_-6px_var(--color-primary)]"
+          >
             Report now
             <ArrowUpRight className="h-3.5 w-3.5" />
-          </button>
+          </Link>
         </div>
       </div>
     </header>
@@ -157,14 +176,20 @@ function Hero() {
           </p>
 
           <div className="mt-7 flex flex-wrap items-center gap-3">
-            <button className="tap inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background">
+            <Link
+              to="/emergency"
+              className="tap inline-flex items-center gap-2 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-background"
+            >
               <Siren className="h-4 w-4" />
               Report an incident
-            </button>
-            <button className="tap inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold">
+            </Link>
+            <Link
+              to="/dashboard"
+              className="tap inline-flex items-center gap-2 rounded-full border border-border bg-background px-5 py-3 text-sm font-semibold"
+            >
               Explore the feed
               <ChevronRight className="h-4 w-4" />
-            </button>
+            </Link>
           </div>
 
           <dl className="mt-10 grid max-w-lg grid-cols-3 gap-4">

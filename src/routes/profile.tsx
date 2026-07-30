@@ -490,7 +490,7 @@ function Profile() {
             <span lang="bn">এখনও কোনো পোস্ট নেই।</span>{" "}
             <Link
               to="/community"
-              search={{}}
+              search={(prev: Record<string, unknown>) => prev}
               className="font-semibold text-primary hover:underline"
             >
               প্রথম পোস্ট করুন · Create your first post
