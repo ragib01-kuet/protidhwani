@@ -1,5 +1,14 @@
 import { supabase } from "@/integrations/supabase/client";
-import { personName, type PersonCard } from "@/services/social";
+import { isMissingSocialSchema, personName, type PersonCard } from "@/services/social";
+import {
+  demoConversation,
+  demoListMessages,
+  demoMarkRead,
+  demoSendMessage,
+  findDemoPerson,
+  isDemoPerson,
+  subscribeDemo,
+} from "@/data/social-demo";
 
 export interface DirectMessage {
   id: string;
@@ -26,7 +35,10 @@ export async function listMyMessages(meId: string, limit = 300): Promise<DirectM
     .or(`sender_id.eq.${meId},recipient_id.eq.${meId}`)
     .order("created_at", { ascending: false })
     .limit(limit);
-  if (error) throw error;
+  if (error) {
+    if (isMissingSocialSchema(error)) return demoListMessages(meId);
+    throw error;
+  }
   return (data ?? []) as DirectMessage[];
 }
 
@@ -46,9 +58,17 @@ export async function listThreads(meId: string): Promise<Thread[]> {
   }
 
   const ids = [...byPeer.keys()];
-  const { data, error } = await supabase.from("profiles").select(PERSON_SELECT).in("id", ids);
-  if (error) throw error;
-  const people = new Map(((data ?? []) as PersonCard[]).map((p) => [p.id, p]));
+  const people = new Map<string, PersonCard>();
+  for (const id of ids) {
+    const demo = findDemoPerson(id);
+    if (demo) people.set(id, demo);
+  }
+  const realIds = ids.filter((id) => !isDemoPerson(id));
+  if (realIds.length) {
+    const { data, error } = await supabase.from("profiles").select(PERSON_SELECT).in("id", realIds);
+    if (error) throw error;
+    for (const p of (data ?? []) as PersonCard[]) people.set(p.id, p);
+  }
 
   return ids
     .map((id) => {
@@ -76,11 +96,16 @@ export async function listConversation(meId: string, peerId: string): Promise<Di
     )
     .order("created_at", { ascending: true })
     .limit(500);
-  if (error) throw error;
+  if (error) {
+    if (isMissingSocialSchema(error)) return demoConversation(meId, peerId);
+    throw error;
+  }
   return (data ?? []) as DirectMessage[];
 }
 
 export async function getPerson(id: string): Promise<PersonCard | null> {
+  const demo = findDemoPerson(id);
+  if (demo) return demo;
   const { data, error } = await supabase
     .from("profiles")
     .select(PERSON_SELECT)
@@ -100,24 +125,32 @@ export async function sendMessage(
   if (trimmed.length > 4000) {
     throw new Error("বার্তা ৪০০০ অক্ষরের কম হতে হবে · Message must be under 4000 characters");
   }
+  if (isDemoPerson(peerId)) return demoSendMessage(meId, peerId, trimmed);
   const { data, error } = await supabase
     .from("messages")
     .insert({ sender_id: meId, recipient_id: peerId, body: trimmed })
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) {
+    if (isMissingSocialSchema(error)) return demoSendMessage(meId, peerId, trimmed);
+    throw error;
+  }
   return data as DirectMessage;
 }
 
 /** Mark every unread message from this peer as read. */
 export async function markThreadRead(meId: string, peerId: string): Promise<void> {
+  if (isDemoPerson(peerId)) {
+    demoMarkRead(meId, peerId);
+    return;
+  }
   const { error } = await supabase
     .from("messages")
     .update({ read_at: new Date().toISOString() })
     .eq("recipient_id", meId)
     .eq("sender_id", peerId)
     .is("read_at", null);
-  if (error) throw error;
+  if (error && !isMissingSocialSchema(error)) throw error;
 }
 
 export function unreadTotal(threads: Thread[]): number {
@@ -143,7 +176,9 @@ export function subscribeToMessages(meId: string, onChange: () => void): () => v
       onChange,
     )
     .subscribe();
+  const unsubDemo = subscribeDemo(onChange);
   return () => {
+    unsubDemo();
     void supabase.removeChannel(channel);
   };
 }
