@@ -494,6 +494,32 @@ function Community() {
         </div>
       </section>
 
+      {/* Demo banner */}
+      {showingDemo && (
+        <section className="mt-5 rounded-[1.75rem] border border-warning/30 bg-warning-soft p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <p lang="bn" className="text-sm font-bold text-warning">
+                ডেমো ফিড দেখানো হচ্ছে
+              </p>
+              <p lang="en" className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-warning/80">
+                Demo mode · Seeded posts with photos
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full bg-warning px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-warning-foreground">
+              Demo
+            </span>
+          </div>
+          <p className="mt-2 text-xs text-muted-foreground">
+            <span lang="bn">লাইভ পোস্ট এলে ডেমো নিজে থেকেই সরে যাবে। সমর্থন ও মন্তব্য এই সেশনেই সংরক্ষিত থাকে।</span>{" "}
+            <span lang="en">
+              Demo posts disappear as soon as live posts exist. Supports and comments here are kept
+              for this session only.
+            </span>
+          </p>
+        </section>
+      )}
+
       {/* Feed */}
       <div className="mt-5 space-y-4">
         {feed.isLoading ? (
@@ -502,7 +528,8 @@ function Community() {
               <div key={i} className="h-52 animate-pulse rounded-[1.75rem] border border-border bg-card" />
             ))}
           </div>
-        ) : feed.isError ? (
+        ) : feed.isError && !showingDemo ? (
+
           <div role="alert" className="rounded-[1.75rem] border border-emergency/30 bg-emergency-soft p-6">
             <p lang="bn" className="text-sm font-bold text-emergency">
               ফিড লোড করা যায়নি
