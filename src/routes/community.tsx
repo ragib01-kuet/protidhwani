@@ -635,14 +635,39 @@ function Community() {
         post={commentsFor}
         open={Boolean(commentsFor)}
         onOpenChange={(open) => !open && setCommentsFor(null)}
-        comments={comments.data ?? []}
+        comments={
+          commentsFor && isDemoPost(commentsFor.id)
+            ? (demoComments[commentsFor.id] ?? [])
+            : (comments.data ?? [])
+        }
         loading={comments.isLoading}
         posting={addComment.isPending}
-        currentUserId={user?.id ?? null}
+        currentUserId={user?.id ?? "demo-guest"}
         onSubmit={async (body) => {
+          if (commentsFor && isDemoPost(commentsFor.id)) {
+            addDemoComment(commentsFor, body);
+            return;
+          }
           await addComment.mutateAsync(body);
         }}
-        onDelete={(c) => removeComment.mutate(c.id)}
+        onDelete={(c) => {
+          if (isDemoPost(c.post_id)) {
+            setDemoComments((prev) => ({
+              ...prev,
+              [c.post_id]: (prev[c.post_id] ?? []).filter((x) => x.id !== c.id),
+            }));
+            setDemoPosts((prev) =>
+              prev.map((p) =>
+                p.id === c.post_id
+                  ? { ...p, comment_count: Math.max(0, p.comment_count - 1) }
+                  : p,
+              ),
+            );
+            return;
+          }
+          removeComment.mutate(c.id);
+        }}
+
         onSignIn={() => navigate({ to: "/auth/login", search: { redirect: "/community" } })}
       />
 
