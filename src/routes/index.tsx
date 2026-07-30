@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BrandLockup } from "@/components/BrandLogo";
 import {
@@ -72,6 +72,7 @@ const LANDING_NAV = [
 ] as const;
 
 function TopBar() {
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -88,16 +89,26 @@ function TopBar() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 md:flex">
-            <Search className="h-4 w-4 text-muted-foreground" />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void navigate({ to: "/explore" });
+            }}
+            role="search"
+            className="hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 md:flex"
+          >
+            <button type="submit" aria-label="খুঁজুন / Search" className="tap grid place-items-center">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </button>
             <input
+              name="q"
               placeholder="Search reports, laws, alerts…"
               className="w-56 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             <kbd className="rounded border border-border bg-background px-1.5 text-[10px] text-muted-foreground">
               ⌘K
             </kbd>
-          </div>
+          </form>
           <Link
             to="/explore"
             aria-label="সতর্কতা / Alerts"
