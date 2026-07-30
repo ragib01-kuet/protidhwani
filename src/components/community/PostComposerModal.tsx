@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Play, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AlertTriangle, Check, ImagePlus, Loader2, Play, RotateCw, X } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DISTRICTS, POST_KINDS, TONE_CLASS } from "@/lib/community-meta";
@@ -9,6 +9,7 @@ import {
   IMAGE_MAX_BYTES,
   VIDEO_MAX_BYTES,
   isVideoUrl,
+  type MediaUploadProgress,
   type PostInput,
   type PostWithAuthor,
 } from "@/services/community";
@@ -20,8 +21,17 @@ export interface PostComposerModalProps {
   editing?: PostWithAuthor | null;
   initialKind?: CommunityPostKind;
   submitting: boolean;
+  /** Per-file upload state, indexed against the selected files. */
+  uploadProgress?: MediaUploadProgress[];
   onSubmit: (input: PostInput, files: File[], removedUrls: string[]) => Promise<void>;
 }
+
+function formatSize(bytes: number): string {
+  return bytes >= 1024 * 1024
+    ? `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+    : `${Math.max(1, Math.round(bytes / 1024))} KB`;
+}
+
 
 const EMPTY = {
   title: "",
@@ -43,6 +53,7 @@ export function PostComposerModal({
   editing,
   initialKind = "report",
   submitting,
+  uploadProgress = [],
   onSubmit,
 }: PostComposerModalProps) {
   const [kind, setKind] = useState<CommunityPostKind>(initialKind);
@@ -52,6 +63,21 @@ export function PostComposerModal({
   const [removedUrls, setRemovedUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  /** Stable object URLs so previews don't flicker/leak on every render. */
+  const previews = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+
+  const itemFor = (index: number) => uploadProgress.find((item) => item.index === index);
+  const failed = uploadProgress.filter((item) => item.status === "error");
+  const uploading = uploadProgress.some((item) => item.status === "uploading");
+  const overallPct = uploadProgress.length
+    ? Math.round(
+        uploadProgress.reduce((sum, item) => sum + (item.status === "done" ? 100 : item.percent), 0) /
+          uploadProgress.length,
+      )
+    : 0;
+
 
   useEffect(() => {
     if (!open) return;
@@ -328,36 +354,63 @@ export function PostComposerModal({
                   </button>
                 </span>
               ))}
-              {files.map((file, i) => (
-                <span
-                  key={`${file.name}-${i}`}
-                  className="relative size-20 overflow-hidden rounded-2xl border border-border"
-                >
-                  {file.type.startsWith("video/") ? (
-                    <>
-                      <video
-                        src={URL.createObjectURL(file)}
-                        muted
-                        playsInline
-                        className="size-full object-cover"
-                      />
-                      <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25 text-background">
-                        <Play className="size-5 fill-current" />
-                      </span>
-                    </>
-                  ) : (
-                    <img src={URL.createObjectURL(file)} alt="" className="size-full object-cover" />
-                  )}
-                  <button
-                    type="button"
-                    aria-label="ছবি সরান / Remove image"
-                    onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-background/90"
+              {files.map((file, i) => {
+                const item = itemFor(i);
+                return (
+                  <span
+                    key={`${file.name}-${i}`}
+                    className={cn(
+                      "relative size-20 overflow-hidden rounded-2xl border border-border",
+                      item?.status === "error" && "border-emergency",
+                      item?.status === "done" && "border-verified",
+                    )}
                   >
-                    <X className="size-3" />
-                  </button>
-                </span>
-              ))}
+                    {file.type.startsWith("video/") ? (
+                      <>
+                        <video src={previews[i]} muted playsInline className="size-full object-cover" />
+                        <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25 text-background">
+                          <Play className="size-5 fill-current" />
+                        </span>
+                      </>
+                    ) : (
+                      <img src={previews[i]} alt="" className="size-full object-cover" />
+                    )}
+
+                    {item && item.status !== "pending" && (
+                      <span
+                        className={cn(
+                          "pointer-events-none absolute inset-0 flex flex-col items-center justify-end gap-1 p-1.5 text-[10px] font-bold text-background",
+                          item.status === "uploading" && "bg-foreground/55",
+                          item.status === "error" && "bg-emergency/70",
+                          item.status === "done" && "bg-verified/45",
+                        )}
+                      >
+                        {item.status === "uploading" && <span>{item.percent}%</span>}
+                        {item.status === "done" && <Check className="mb-4 size-5" />}
+                        {item.status === "error" && <AlertTriangle className="mb-4 size-5" />}
+                        <span className="h-1 w-full overflow-hidden rounded-full bg-background/40">
+                          <span
+                            className="block h-full rounded-full bg-background transition-[width] duration-200"
+                            style={{ width: `${item.status === "done" ? 100 : item.percent}%` }}
+                          />
+                        </span>
+                      </span>
+                    )}
+
+                    {!submitting && (
+                      <button
+                        type="button"
+                        aria-label="ছবি সরান / Remove image"
+                        onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-background/90"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
+
               {keptUrls.length + files.length < 6 && (
                 <button
                   type="button"
@@ -381,6 +434,93 @@ export function PostComposerModal({
               }}
             />
           </div>
+
+          {uploadProgress.length > 0 && (
+            <section
+              aria-live="polite"
+              className="space-y-2 rounded-2xl border border-border bg-surface p-4"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span lang="bn" className="text-xs font-bold">
+                  আপলোড হচ্ছে{" "}
+                  <span lang="en" className="font-normal text-muted-foreground">
+                    · Uploading media
+                  </span>
+                </span>
+                <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                  {overallPct}%
+                </span>
+              </div>
+              <span className="block h-1.5 w-full overflow-hidden rounded-full bg-border">
+                <span
+                  className={cn(
+                    "block h-full rounded-full transition-[width] duration-300",
+                    failed.length ? "bg-emergency" : "bg-primary",
+                  )}
+                  style={{ width: `${overallPct}%` }}
+                />
+              </span>
+
+              <ul className="space-y-2 pt-1">
+                {files.map((file, i) => {
+                  const item = itemFor(i);
+                  const pct = item?.status === "done" ? 100 : (item?.percent ?? 0);
+                  return (
+                    <li key={`${file.name}-progress-${i}`} className="space-y-1">
+                      <div className="flex items-center gap-2 text-[11px]">
+                        {item?.status === "uploading" && (
+                          <Loader2 className="size-3 shrink-0 animate-spin text-primary" />
+                        )}
+                        {item?.status === "done" && (
+                          <Check className="size-3 shrink-0 text-verified" />
+                        )}
+                        {item?.status === "error" && (
+                          <AlertTriangle className="size-3 shrink-0 text-emergency" />
+                        )}
+                        <span className="min-w-0 flex-1 truncate font-medium">{file.name}</span>
+                        <span className="shrink-0 tabular-nums text-muted-foreground">
+                          {item?.status === "error" ? "ব্যর্থ · Failed" : `${pct}%`}
+                        </span>
+                        <span className="shrink-0 text-muted-foreground">{formatSize(file.size)}</span>
+                      </div>
+                      <span className="block h-1 w-full overflow-hidden rounded-full bg-border">
+                        <span
+                          className={cn(
+                            "block h-full rounded-full transition-[width] duration-200",
+                            item?.status === "error"
+                              ? "bg-emergency"
+                              : item?.status === "done"
+                                ? "bg-verified"
+                                : "bg-primary",
+                          )}
+                          style={{ width: `${item?.status === "error" ? 100 : pct}%` }}
+                        />
+                      </span>
+                      {item?.status === "error" && item.error && (
+                        <p className="text-[10px] leading-snug text-emergency">{item.error}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {failed.length > 0 && !uploading && !submitting && (
+                <button
+                  type="button"
+                  onClick={(event) => void submit(event)}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-emergency/40 bg-emergency-soft px-4 py-2.5 text-xs font-bold text-emergency transition-transform hover:-translate-y-0.5 active:scale-95"
+                >
+                  <RotateCw className="size-3.5" />
+                  <span lang="bn">ব্যর্থ ফাইল আবার চেষ্টা করুন</span>
+                  <span lang="en" className="text-[10px] uppercase tracking-wider opacity-80">
+                    Retry failed ({failed.length})
+                  </span>
+                </button>
+              )}
+            </section>
+          )}
+
+
 
           {error && (
             <p role="alert" className="rounded-2xl bg-emergency-soft px-4 py-3 text-xs text-emergency">
