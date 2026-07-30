@@ -528,6 +528,8 @@ function Profile() {
       <section className="mt-5 overflow-hidden rounded-[2rem] border border-border bg-card shadow-card">
         {(
           [
+            { bn: "বন্ধুরা ও অনুরোধ", en: "Friends & requests", to: "/friends" },
+            { bn: "বার্তা", en: "Messages", to: "/messages" },
             { bn: "আমার অভিযোগ", en: "My reports", to: "/complaints" },
             { bn: "অ্যাকাউন্ট সেটিংস", en: "Account settings", to: "/account" },
             { bn: "জরুরি যোগাযোগ", en: "Emergency contacts", to: "/emergency" },
