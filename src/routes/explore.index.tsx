@@ -2,6 +2,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { PostCard } from "@/components/PostCard";
+import { PostCardSkeletonList } from "@/components/PostCardSkeleton";
 import { Globe2, MapPin, Search } from "lucide-react";
 import { feedPosts, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
@@ -91,6 +92,8 @@ function Explore() {
     });
   }, [matches, page]);
   const hasMore = visible.length < matches.length;
+  // How many cards the next page will actually add — skeleton count matches it.
+  const pendingCount = Math.min(PAGE_SIZE, matches.length - visible.length);
 
   const loadMore = useCallback(() => {
     const startedFor = keyRef.current;
@@ -205,25 +208,30 @@ function Explore() {
         {visible.map((p) => (
           <PostCard key={p.id} post={p} />
         ))}
+        {hasMore && loadingMore && <PostCardSkeletonList count={pendingCount} />}
         {hasMore && (
           <div ref={sentinelRef} className="py-2">
-            <div className="rounded-[2rem] border border-border bg-card px-6 py-6 text-center">
-              <p lang="bn" className="text-sm font-bold">
-                {loadingMore ? "আরও পোস্ট লোড হচ্ছে…" : "আরও পোস্ট আছে"}
+            {loadingMore ? (
+              <p className="text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                <span lang="bn" className="mr-2 text-xs normal-case tracking-normal">আরও পোস্ট লোড হচ্ছে…</span>
+                Loading more posts
               </p>
-              <p lang="en" className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                {loadingMore ? "Loading more posts" : `${matches.length - visible.length} more reports`}
-              </p>
-              <button
-                type="button"
-                onClick={loadMore}
-                disabled={loadingMore}
-                className="mt-4 rounded-full border border-border px-5 py-2 text-xs font-semibold transition-colors hover:border-primary/50 disabled:opacity-50"
-              >
-                <span lang="bn">আরও দেখুন</span>
-                <span lang="en" className="ml-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Load more</span>
-              </button>
-            </div>
+            ) : (
+              <div className="rounded-[2rem] border border-border bg-card px-6 py-6 text-center">
+                <p lang="bn" className="text-sm font-bold">আরও পোস্ট আছে</p>
+                <p lang="en" className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                  {matches.length - visible.length} more reports
+                </p>
+                <button
+                  type="button"
+                  onClick={loadMore}
+                  className="mt-4 rounded-full border border-border px-5 py-2 text-xs font-semibold transition-colors hover:border-primary/50"
+                >
+                  <span lang="bn">আরও দেখুন</span>
+                  <span lang="en" className="ml-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Load more</span>
+                </button>
+              </div>
+            )}
           </div>
         )}
         {!hasMore && visible.length > 0 && (
