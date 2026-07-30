@@ -72,6 +72,10 @@ function Profile() {
 
   const [editing, setEditing] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadPct, setUploadPct] = useState(0);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
   const [form, setForm] = useState({
     full_name_bn: "",
     full_name: "",
@@ -96,6 +100,10 @@ function Profile() {
     });
   }, [profileQuery.data]);
 
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
   const saveMutation = useMutation({
     mutationFn: () =>
       upsertProfile(userId, {
@@ -115,33 +123,49 @@ function Profile() {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 
-  async function handleAvatar(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file || !userId) return;
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB");
-      event.target.value = "";
-      return;
-    }
+  async function runUpload(file: File) {
     setUploading(true);
+    setUploadPct(0);
+    setUploadError(null);
     try {
-      const url = await uploadAvatar(userId, file);
-      setForm((prev) => ({ ...prev, avatar_url: url }));
+      const url = await uploadAvatar(userId, file, setUploadPct);
       await upsertProfile(userId, { avatar_url: url });
-      queryClient.invalidateQueries({ queryKey: ["profile", userId] });
-      toast.success("ছবি আপলোড হয়েছে · Image uploaded");
+      setForm((prev) => ({ ...prev, avatar_url: url }));
+      setPendingFile(null);
+      await queryClient.invalidateQueries({ queryKey: ["profile", userId] });
+      toast.success("ছবি আপলোড হয়েছে · Photo uploaded");
     } catch (error) {
       const message = getErrorMessage(error);
-      toast.error(
-        /bucket not found/i.test(message)
-          ? "ছবি স্টোরেজ প্রস্তুত নয় · Image storage is not set up yet (avatars bucket missing)"
-          : message,
-      );
+      const friendly = /bucket not found/i.test(message)
+        ? "ছবি স্টোরেজ প্রস্তুত নয় · Image storage is not set up yet"
+        : /row-level security|unauthorized|jwt/i.test(message)
+          ? "অনুমতি নেই · Permission denied — sign in again and retry"
+          : message;
+      setUploadError(friendly);
+      toast.error(`${friendly} · আবার চেষ্টা করুন · Tap retry`);
     } finally {
       setUploading(false);
-      event.target.value = "";
     }
   }
+
+  async function handleAvatar(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !userId) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("শুধু ছবি ফাইল · Only image files are allowed");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB");
+      return;
+    }
+    if (preview) URL.revokeObjectURL(preview);
+    setPreview(URL.createObjectURL(file));
+    setPendingFile(file);
+    await runUpload(file);
+  }
+
 
   async function handleSignOut() {
     await queryClient.cancelQueries();
