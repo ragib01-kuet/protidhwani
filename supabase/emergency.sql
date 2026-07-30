@@ -120,9 +120,8 @@ security definer
 set search_path = public
 as $$
 begin
-  insert into public.notifications (user_id, kind, title, body, link)
+  insert into public.notifications (user_id, title, body, link)
   select p.id,
-         'sos',
          case new.kind
            when 'blood' then 'রক্তের জরুরি ডাক · Blood alert'
            else 'জরুরি এসওএস · Emergency SOS'
