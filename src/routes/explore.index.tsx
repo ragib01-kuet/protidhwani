@@ -35,6 +35,27 @@ function Explore() {
   const [page, setPage] = useState(1);
   const [loadingMore, setLoadingMore] = useState(false);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const timerRef = useRef<number | null>(null);
+
+  // A single identity for "which feed am I paging through".
+  const filterKey = `${active}::${query.trim().toLowerCase()}`;
+  const keyRef = useRef(filterKey);
+  const [renderedKey, setRenderedKey] = useState(filterKey);
+
+  // Synchronous reset during render: page must never be carried over from a
+  // previous filter, otherwise the first paint after a chip/search change
+  // shows a deeper slice (and duplicate cards while the list re-keys).
+  if (renderedKey !== filterKey) {
+    keyRef.current = filterKey;
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+    setRenderedKey(filterKey);
+    setPage(1);
+    setLoadingMore(false);
+  }
 
   const matches = useMemo(() => {
     const chip = chips.find((c) => c.en === active) ?? chips[0];
@@ -47,18 +68,38 @@ function Explore() {
     });
   }, [active, query]);
 
-  // Reset pagination whenever the filter or search term changes.
+  // Scroll the list back to its start after a filter/search change so the
+  // sentinel is not already on screen (which would instantly auto-page).
   useEffect(() => {
-    setPage(1);
-  }, [active, query]);
+    const el = listRef.current;
+    if (!el) return;
+    const top = el.getBoundingClientRect().top + window.scrollY - 12;
+    if (window.scrollY > top) window.scrollTo({ top, behavior: "auto" });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterKey]);
 
-  const visible = useMemo(() => matches.slice(0, page * PAGE_SIZE), [matches, page]);
+  useEffect(() => () => {
+    if (timerRef.current !== null) window.clearTimeout(timerRef.current);
+  }, []);
+
+  const visible = useMemo(() => {
+    const seen = new Set<string>();
+    return matches.slice(0, page * PAGE_SIZE).filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
+    });
+  }, [matches, page]);
   const hasMore = visible.length < matches.length;
 
   const loadMore = useCallback(() => {
+    const startedFor = keyRef.current;
     setLoadingMore((busy) => {
       if (busy) return busy;
-      window.setTimeout(() => {
+      timerRef.current = window.setTimeout(() => {
+        timerRef.current = null;
+        // Drop a page bump that was scheduled for a filter the user left.
+        if (keyRef.current !== startedFor) return;
         setPage((p) => p + 1);
         setLoadingMore(false);
       }, 350);
@@ -77,7 +118,7 @@ function Explore() {
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [hasMore, loadMore]);
+  }, [hasMore, loadMore, filterKey]);
 
   return (
     <AppShell title={{ bn: "অন্বেষণ", en: "Explore" }}>
@@ -159,7 +200,7 @@ function Explore() {
         </div>
       </section>
 
-      <div className="mt-5 space-y-4">
+      <div ref={listRef} className="mt-5 space-y-4">
         {visible.map((p) => (
           <PostCard key={p.id} post={p} />
         ))}
