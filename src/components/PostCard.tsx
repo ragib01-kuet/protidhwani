@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BadgeCheck, MapPin, Clock, Heart, MessageCircle, Paperclip, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { kindMeta, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,9 @@ const levelLabel = {
 
 export function PostCard({ post }: { post: Post }) {
   const meta = kindMeta[post.kind];
+  const images = post.images ?? [];
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [supported, setSupported] = useState(false);
 
   return (
     <article
@@ -95,14 +99,60 @@ export function PostCard({ post }: { post: Post }) {
         </div>
       )}
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-secondary to-brand-soft"
+      {images.length > 0 && (
+        <div
+          className={cn(
+            "mt-4 grid gap-1.5 overflow-hidden rounded-2xl",
+            images.length === 1 && "grid-cols-1",
+            images.length >= 2 && "grid-cols-2",
+          )}
+        >
+          {images.slice(0, 4).map((src, i) => {
+            const extra = i === 3 && images.length > 4 ? images.length - 4 : 0;
+            return (
+              <button
+                key={src + i}
+                type="button"
+                onClick={() => setLightbox(i)}
+                className={cn(
+                  "group/media relative aspect-square overflow-hidden bg-surface",
+                  images.length === 3 && i === 0 && "col-span-2",
+                )}
+              >
+                <img
+                  src={src}
+                  alt={`${post.title.en} — ${i + 1}`}
+                  loading="lazy"
+                  width={1024}
+                  height={1024}
+                  className="size-full object-cover transition-transform duration-500 group-hover/media:scale-105"
+                />
+                {extra > 0 && (
+                  <span className="absolute inset-0 grid place-items-center bg-foreground/60 text-xl font-bold text-background">
+                    +{extra}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {lightbox !== null && images[lightbox] && (
+        <div
+          className="fixed inset-0 z-[120] grid place-items-center bg-foreground/90 p-4"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <img
+            src={images[lightbox]}
+            alt={post.title.en}
+            className="max-h-[85vh] w-auto max-w-full rounded-2xl object-contain"
           />
-        ))}
-      </div>
+        </div>
+      )}
+
 
       <div className="mt-4 flex flex-wrap gap-2">
         {post.tags.map((t) => (
@@ -125,9 +175,17 @@ export function PostCard({ post }: { post: Post }) {
 
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-border pt-4">
         <div className="flex min-w-0 items-center gap-2">
-          <button className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary">
-            <Heart className="size-4" />
-            <span className="font-semibold tabular-nums">{post.support.toLocaleString("bn-BD")}</span>
+          <button
+            type="button"
+            aria-pressed={supported}
+            onClick={() => setSupported((v) => !v)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary",
+              supported && "bg-brand-soft text-primary",
+            )}
+          >
+            <Heart className={cn("size-4", supported && "fill-current")} />
+            <span className="font-semibold tabular-nums">{(post.support + (supported ? 1 : 0)).toLocaleString("bn-BD")}</span>
             <span lang="bn" className="text-xs text-muted-foreground">সমর্থন</span>
           </button>
           <button className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary">

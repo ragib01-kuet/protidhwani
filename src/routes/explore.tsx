@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { PostCard } from "@/components/PostCard";
-import { posts } from "@/lib/civic";
+import { Search } from "lucide-react";
+import { posts, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/explore")({
@@ -18,35 +19,62 @@ export const Route = createFileRoute("/explore")({
 });
 
 const chips = [
-  { bn: "সব", en: "All" },
-  { bn: "যাচাইকৃত", en: "Verified" },
-  { bn: "জরুরি", en: "Emergency" },
-  { bn: "ভুল তথ্য", en: "Misinformation" },
-  { bn: "অধিকার", en: "Rights" },
-  { bn: "নিখোঁজ", en: "Missing" },
-];
+  { bn: "সব", en: "All", match: () => true },
+  { bn: "যাচাইকৃত", en: "Verified", match: (p: Post) => p.status === "verified" },
+  { bn: "জরুরি", en: "Emergency", match: (p: Post) => p.kind === "emergency" },
+  { bn: "ভুল তথ্য", en: "Misinformation", match: (p: Post) => p.status !== "verified" },
+  { bn: "অধিকার", en: "Rights", match: (p: Post) => p.kind === "rights" },
+  { bn: "নিখোঁজ", en: "Missing", match: (p: Post) => p.kind === "missing" },
+] as const;
 
 function Explore() {
-  const [active, setActive] = useState("All");
+  const [active, setActive] = useState<string>("All");
+  const [query, setQuery] = useState("");
+
+  const visible = useMemo(() => {
+    const chip = chips.find((c) => c.en === active) ?? chips[0];
+    const term = query.trim().toLowerCase();
+    return posts.filter((p) => {
+      if (!chip.match(p)) return false;
+      if (!term) return true;
+      return [p.title.bn, p.title.en, p.body.bn, p.body.en, p.location.bn, p.location.en, ...p.tags.flatMap((t) => [t.bn, t.en])]
+        .some((v) => v.toLowerCase().includes(term));
+    });
+  }, [active, query]);
+
   return (
     <AppShell title={{ bn: "অন্বেষণ", en: "Explore" }}>
-      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
-        {chips.map((c) => (
-          <button
-            key={c.en}
-            onClick={() => setActive(c.en)}
-            className={cn(
-              "shrink-0 rounded-full border px-4 py-2 text-left transition-all active:scale-95",
-              active === c.en
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card hover:border-primary/40",
-            )}
-          >
-            <span lang="bn" className="block text-xs font-bold leading-none">{c.bn}</span>
-            <span lang="en" className="block text-[9px] uppercase tracking-wider opacity-70">{c.en}</span>
-          </button>
-        ))}
+      <label className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-3 shadow-card">
+        <Search className="size-4 shrink-0 text-muted-foreground" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="খুঁজুন · Search reports, areas, tags"
+          className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+        />
+      </label>
+
+      <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
+        {chips.map((c) => {
+          const count = posts.filter((p) => c.match(p)).length;
+          return (
+            <button
+              key={c.en}
+              onClick={() => setActive(c.en)}
+              className={cn(
+                "shrink-0 rounded-full border px-4 py-2 text-left transition-all active:scale-95",
+                active === c.en
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border bg-card hover:border-primary/40",
+              )}
+            >
+              <span lang="bn" className="block text-xs font-bold leading-none">{c.bn} ({count})</span>
+              <span lang="en" className="block text-[9px] uppercase tracking-wider opacity-70">{c.en}</span>
+            </button>
+          );
+        })}
       </div>
+
 
       <section className="mt-5 rounded-[2rem] border border-border bg-card p-5 shadow-card">
         <h2 lang="bn" className="text-base font-bold">কাছের সতর্কতা</h2>
@@ -76,9 +104,15 @@ function Explore() {
       </section>
 
       <div className="mt-5 space-y-4">
-        {posts.map((p) => (
+        {visible.map((p) => (
           <PostCard key={p.id} post={p} />
         ))}
+        {visible.length === 0 && (
+          <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-10 text-center">
+            <p lang="bn" className="text-sm font-bold">কোনো ফলাফল পাওয়া যায়নি</p>
+            <p lang="en" className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">No matching reports</p>
+          </div>
+        )}
       </div>
     </AppShell>
   );

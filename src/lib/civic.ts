@@ -22,7 +22,19 @@ export type Post = {
   status: "verified" | "pending" | "disputed";
   level?: "critical" | "high" | "moderate";
   evidence?: number;
+  /** 1:1 demo media rendered in the feed card. */
+  images?: string[];
 };
+
+import gasLeakImage from "@/assets/demo/explore-gasleak.jpg";
+import trafficImage from "@/assets/demo/explore-traffic.jpg";
+import missingImage from "@/assets/demo/explore-missing.jpg";
+import legalImage from "@/assets/demo/explore-legal.jpg";
+import pollImage from "@/assets/demo/explore-poll.jpg";
+import reliefImage from "@/assets/demo/community-relief.jpg";
+import roadImage from "@/assets/demo/community-road.jpg";
+import streetlightImage from "@/assets/demo/community-streetlight.jpg";
+import waterloggingImage from "@/assets/demo/community-waterlogging.jpg";
 
 export const kindMeta: Record<
   PostKind,
@@ -41,6 +53,7 @@ export const kindMeta: Record<
 export const posts: Post[] = [
   {
     id: "1",
+    images: [gasLeakImage, roadImage, streetlightImage],
     kind: "emergency",
     author: { bn: "রুমানা হক", en: "Rumana Haque", initials: "রু", verified: true },
     location: { bn: "মিরপুর ১০, ঢাকা", en: "Mirpur 10, Dhaka" },
@@ -65,6 +78,7 @@ export const posts: Post[] = [
   },
   {
     id: "2",
+    images: [trafficImage],
     kind: "verified",
     author: { bn: "সিটি ট্রাফিক ইউনিট", en: "City Traffic Unit", initials: "সি", verified: true },
     location: { bn: "গুলশান ২, ঢাকা", en: "Gulshan 2, Dhaka" },
@@ -88,6 +102,7 @@ export const posts: Post[] = [
   },
   {
     id: "3",
+    images: [missingImage, waterloggingImage],
     kind: "missing",
     author: { bn: "আফসানা মিম", en: "Afsana Mim", initials: "আ", verified: false },
     location: { bn: "চট্টগ্রাম", en: "Chattogram" },
@@ -109,6 +124,7 @@ export const posts: Post[] = [
   },
   {
     id: "4",
+    images: [legalImage],
     kind: "rights",
     author: { bn: "নাগরিক আইন সহায়তা", en: "Citizen Legal Aid", initials: "না", verified: true },
     location: { bn: "রাজশাহী", en: "Rajshahi" },
@@ -131,6 +147,7 @@ export const posts: Post[] = [
   },
   {
     id: "5",
+    images: [pollImage, reliefImage, waterloggingImage, roadImage, streetlightImage],
     kind: "poll",
     author: { bn: "ওয়ার্ড ১৯ কমিউনিটি", en: "Ward 19 Community", initials: "ও", verified: false },
     location: { bn: "খুলনা", en: "Khulna" },
