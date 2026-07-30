@@ -70,37 +70,8 @@ function Home() {
         </div>
       </section>
 
-      <section className="mt-7">
-        <h2 lang="bn" className="text-base font-bold">দ্রুত পদক্ষেপ</h2>
-        <p lang="en" className="text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
-          Quick Actions
-        </p>
+      <QuickActionsBar />
 
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {quickActions.map((a) => (
-            <Link
-              key={a.en}
-              to={a.to}
-              className="group flex min-h-28 flex-col justify-between rounded-3xl border border-border bg-card p-4 shadow-card transition-all duration-300 hover:-translate-y-1 hover:shadow-lift active:scale-95"
-            >
-              <span
-                className={cn(
-                  "grid size-10 place-items-center rounded-2xl text-lg transition-transform group-hover:scale-110",
-                  toneRing[a.tone],
-                )}
-              >
-                {a.icon}
-              </span>
-              <span className="mt-3 block min-w-0">
-                <span lang="bn" className="block truncate text-sm font-bold">{a.bn}</span>
-                <span lang="en" className="block truncate text-[9px] uppercase tracking-wider text-muted-foreground">
-                  {a.en}
-                </span>
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
 
       <section className="mt-8">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
