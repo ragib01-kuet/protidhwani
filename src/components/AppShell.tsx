@@ -48,14 +48,17 @@ export function AppShell({
             ) : (
               <span className="hidden" />
             )}
-            <div className="min-w-0">
-              <h1 lang="bn" className="truncate text-xl font-bold tracking-tight">
-                {title.bn}
-              </h1>
-              <p lang="en" className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                {title.en}
-                {subtitle ? ` · ${subtitle}` : ""}
-              </p>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <BrandLogo size={32} className="shrink-0" />
+              <div className="min-w-0">
+                <h1 lang="bn" className="truncate text-xl font-bold tracking-tight">
+                  {title.bn}
+                </h1>
+                <p lang="en" className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  {title.en}
+                  {subtitle ? ` · ${subtitle}` : ""}
+                </p>
+              </div>
             </div>
             <div className="flex shrink-0 items-center gap-2">
               {showSearch && (
