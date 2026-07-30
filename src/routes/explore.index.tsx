@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { PostCard } from "@/components/PostCard";
 import { Search } from "lucide-react";
-import { posts, type Post } from "@/lib/civic";
+import { feedPosts, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/explore/")({
@@ -27,20 +27,57 @@ const chips = [
   { bn: "নিখোঁজ", en: "Missing", match: (p: Post) => p.kind === "missing" },
 ] as const;
 
+const PAGE_SIZE = 6;
+
 function Explore() {
   const [active, setActive] = useState<string>("All");
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  const visible = useMemo(() => {
+  const matches = useMemo(() => {
     const chip = chips.find((c) => c.en === active) ?? chips[0];
     const term = query.trim().toLowerCase();
-    return posts.filter((p) => {
+    return feedPosts.filter((p) => {
       if (!chip.match(p)) return false;
       if (!term) return true;
       return [p.title.bn, p.title.en, p.body.bn, p.body.en, p.location.bn, p.location.en, ...p.tags.flatMap((t) => [t.bn, t.en])]
         .some((v) => v.toLowerCase().includes(term));
     });
   }, [active, query]);
+
+  // Reset pagination whenever the filter or search term changes.
+  useEffect(() => {
+    setPage(1);
+  }, [active, query]);
+
+  const visible = useMemo(() => matches.slice(0, page * PAGE_SIZE), [matches, page]);
+  const hasMore = visible.length < matches.length;
+
+  const loadMore = useCallback(() => {
+    setLoadingMore((busy) => {
+      if (busy) return busy;
+      window.setTimeout(() => {
+        setPage((p) => p + 1);
+        setLoadingMore(false);
+      }, 350);
+      return true;
+    });
+  }, []);
+
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el || !hasMore) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) loadMore();
+      },
+      { rootMargin: "320px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, loadMore]);
 
   return (
     <AppShell title={{ bn: "অন্বেষণ", en: "Explore" }}>
@@ -56,7 +93,7 @@ function Explore() {
 
       <div className="-mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none]">
         {chips.map((c) => {
-          const count = posts.filter((p) => c.match(p)).length;
+          const count = feedPosts.filter((p) => c.match(p)).length;
           return (
             <button
               key={c.en}
@@ -107,6 +144,33 @@ function Explore() {
         {visible.map((p) => (
           <PostCard key={p.id} post={p} />
         ))}
+        {hasMore && (
+          <div ref={sentinelRef} className="py-2">
+            <div className="rounded-[2rem] border border-border bg-card px-6 py-6 text-center">
+              <p lang="bn" className="text-sm font-bold">
+                {loadingMore ? "আরও পোস্ট লোড হচ্ছে…" : "আরও পোস্ট আছে"}
+              </p>
+              <p lang="en" className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                {loadingMore ? "Loading more posts" : `${matches.length - visible.length} more reports`}
+              </p>
+              <button
+                type="button"
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="mt-4 rounded-full border border-border px-5 py-2 text-xs font-semibold transition-colors hover:border-primary/50 disabled:opacity-50"
+              >
+                <span lang="bn">আরও দেখুন</span>
+                <span lang="en" className="ml-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Load more</span>
+              </button>
+            </div>
+          </div>
+        )}
+        {!hasMore && visible.length > 0 && (
+          <p className="py-4 text-center text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+            <span lang="bn" className="mr-2 text-xs normal-case tracking-normal">সব পোস্ট দেখা হয়েছে</span>
+            End of feed
+          </p>
+        )}
         {visible.length === 0 && (
           <div className="rounded-[2rem] border border-dashed border-border bg-card px-6 py-10 text-center">
             <p lang="bn" className="text-sm font-bold">কোনো ফলাফল পাওয়া যায়নি</p>
