@@ -663,6 +663,7 @@ function FeedRow({
   place,
   time,
   verified,
+  to,
 }: {
   tag: string;
   tone: string;
@@ -671,6 +672,7 @@ function FeedRow({
   place: string;
   time: string;
   verified: boolean;
+  to: "/map" | "/rights" | "/explore" | "/emergency";
 }) {
   const toneMap: Record<string, string> = {
     emergency: "bg-emergency/10 text-emergency",
@@ -679,7 +681,10 @@ function FeedRow({
     warning: "bg-warning/15 text-warning-foreground",
   };
   return (
-    <article className="card-soft tap group flex items-start gap-4 p-4 hover:-translate-y-0.5 sm:p-5">
+    <Link
+      to={to}
+      className="card-soft tap group flex items-start gap-4 p-4 hover:-translate-y-0.5 sm:p-5"
+    >
       <div className={`hidden h-11 w-11 shrink-0 place-items-center rounded-2xl sm:grid ${toneMap[tone]}`}>
         <AlertTriangle className="h-5 w-5" />
       </div>
@@ -708,7 +713,7 @@ function FeedRow({
         </div>
       </div>
       <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-    </article>
+    </Link>
   );
 }
 
