@@ -354,36 +354,63 @@ export function PostComposerModal({
                   </button>
                 </span>
               ))}
-              {files.map((file, i) => (
-                <span
-                  key={`${file.name}-${i}`}
-                  className="relative size-20 overflow-hidden rounded-2xl border border-border"
-                >
-                  {file.type.startsWith("video/") ? (
-                    <>
-                      <video
-                        src={URL.createObjectURL(file)}
-                        muted
-                        playsInline
-                        className="size-full object-cover"
-                      />
-                      <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25 text-background">
-                        <Play className="size-5 fill-current" />
-                      </span>
-                    </>
-                  ) : (
-                    <img src={URL.createObjectURL(file)} alt="" className="size-full object-cover" />
-                  )}
-                  <button
-                    type="button"
-                    aria-label="ছবি সরান / Remove image"
-                    onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-background/90"
+              {files.map((file, i) => {
+                const item = itemFor(i);
+                return (
+                  <span
+                    key={`${file.name}-${i}`}
+                    className={cn(
+                      "relative size-20 overflow-hidden rounded-2xl border border-border",
+                      item?.status === "error" && "border-emergency",
+                      item?.status === "done" && "border-verified",
+                    )}
                   >
-                    <X className="size-3" />
-                  </button>
-                </span>
-              ))}
+                    {file.type.startsWith("video/") ? (
+                      <>
+                        <video src={previews[i]} muted playsInline className="size-full object-cover" />
+                        <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25 text-background">
+                          <Play className="size-5 fill-current" />
+                        </span>
+                      </>
+                    ) : (
+                      <img src={previews[i]} alt="" className="size-full object-cover" />
+                    )}
+
+                    {item && item.status !== "pending" && (
+                      <span
+                        className={cn(
+                          "pointer-events-none absolute inset-0 flex flex-col items-center justify-end gap-1 p-1.5 text-[10px] font-bold text-background",
+                          item.status === "uploading" && "bg-foreground/55",
+                          item.status === "error" && "bg-emergency/70",
+                          item.status === "done" && "bg-verified/45",
+                        )}
+                      >
+                        {item.status === "uploading" && <span>{item.percent}%</span>}
+                        {item.status === "done" && <Check className="mb-4 size-5" />}
+                        {item.status === "error" && <AlertTriangle className="mb-4 size-5" />}
+                        <span className="h-1 w-full overflow-hidden rounded-full bg-background/40">
+                          <span
+                            className="block h-full rounded-full bg-background transition-[width] duration-200"
+                            style={{ width: `${item.status === "done" ? 100 : item.percent}%` }}
+                          />
+                        </span>
+                      </span>
+                    )}
+
+                    {!submitting && (
+                      <button
+                        type="button"
+                        aria-label="ছবি সরান / Remove image"
+                        onClick={() => setFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                        className="absolute right-1 top-1 grid size-5 place-items-center rounded-full bg-background/90"
+                      >
+                        <X className="size-3" />
+                      </button>
+                    )}
+                  </span>
+                );
+              })}
+
               {keptUrls.length + files.length < 6 && (
                 <button
                   type="button"
