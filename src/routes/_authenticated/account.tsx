@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Loader2, LogOut, Upload } from "lucide-react";
+
+import { AppShell } from "@/components/AppShell";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -109,16 +111,14 @@ function AccountPage() {
   }
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-2xl px-4 py-8 pb-28">
-      <header className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 lang="bn" className="text-2xl font-bold text-foreground">
-            আমার প্রোফাইল
-          </h1>
-          <p lang="en" className="text-sm text-muted-foreground">
-            My profile · {user?.email}
-          </p>
-        </div>
+    <AppShell
+      title={{ bn: "আমার প্রোফাইল", en: "My account" }}
+      subtitle={user?.email ?? undefined}
+      showSearch={false}
+      hideComposer
+      showBack
+    >
+      <header className="mb-6 flex items-start justify-end gap-4">
         <Button variant="outline" size="sm" onClick={handleSignOut}>
           <LogOut className="size-4" />
           <span lang="bn">লগআউট</span>
@@ -260,6 +260,6 @@ function AccountPage() {
           </div>
         </form>
       )}
-    </main>
+    </AppShell>
   );
 }

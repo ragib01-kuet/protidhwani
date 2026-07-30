@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { PenLine, X } from "lucide-react";
 import { composerOptions } from "@/lib/civic";
+import { COMPOSER_ROUTES } from "@/lib/nav";
 
 export function Composer() {
   const [open, setOpen] = useState(false);
@@ -24,7 +26,7 @@ export function Composer() {
             className="absolute inset-0"
             onClick={() => setOpen(false)}
           />
-          <div className="relative w-full max-w-2xl rounded-t-[2rem] border border-border bg-card p-6 shadow-lift duration-300 animate-in slide-in-from-bottom">
+          <div className="relative w-full max-w-2xl rounded-t-[2rem] border border-border bg-card p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-lift duration-300 animate-in slide-in-from-bottom">
             <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-border" />
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
@@ -46,9 +48,11 @@ export function Composer() {
 
             <div className="grid grid-cols-3 gap-3 sm:grid-cols-3">
               {composerOptions.map((o) => (
-                <button
+                <Link
                   key={o.en}
-                  className="flex min-h-24 flex-col items-center justify-center gap-1.5 rounded-3xl border border-border bg-surface p-3 transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card active:scale-95"
+                  to={COMPOSER_ROUTES[o.en] ?? "/community"}
+                  onClick={() => setOpen(false)}
+                  className="flex min-h-24 flex-col items-center justify-center gap-1.5 rounded-3xl border border-border bg-surface p-3 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-card active:scale-95"
                 >
                   <span className="text-2xl">{o.icon}</span>
                   <span lang="bn" className="text-sm font-semibold leading-none">
@@ -57,7 +61,7 @@ export function Composer() {
                   <span lang="en" className="text-[9px] uppercase tracking-wider text-muted-foreground">
                     {o.en}
                   </span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>
