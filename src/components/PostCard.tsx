@@ -95,14 +95,60 @@ export function PostCard({ post }: { post: Post }) {
         </div>
       )}
 
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="aspect-[4/3] rounded-2xl bg-gradient-to-br from-secondary to-brand-soft"
+      {images.length > 0 && (
+        <div
+          className={cn(
+            "mt-4 grid gap-1.5 overflow-hidden rounded-2xl",
+            images.length === 1 && "grid-cols-1",
+            images.length >= 2 && "grid-cols-2",
+          )}
+        >
+          {images.slice(0, 4).map((src, i) => {
+            const extra = i === 3 && images.length > 4 ? images.length - 4 : 0;
+            return (
+              <button
+                key={src + i}
+                type="button"
+                onClick={() => setLightbox(i)}
+                className={cn(
+                  "group/media relative aspect-square overflow-hidden bg-surface",
+                  images.length === 3 && i === 0 && "col-span-2",
+                )}
+              >
+                <img
+                  src={src}
+                  alt={`${post.title.en} — ${i + 1}`}
+                  loading="lazy"
+                  width={1024}
+                  height={1024}
+                  className="size-full object-cover transition-transform duration-500 group-hover/media:scale-105"
+                />
+                {extra > 0 && (
+                  <span className="absolute inset-0 grid place-items-center bg-foreground/60 text-xl font-bold text-background">
+                    +{extra}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {lightbox !== null && images[lightbox] && (
+        <div
+          className="fixed inset-0 z-[120] grid place-items-center bg-foreground/90 p-4"
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <img
+            src={images[lightbox]}
+            alt={post.title.en}
+            className="max-h-[85vh] w-auto max-w-full rounded-2xl object-contain"
           />
-        ))}
-      </div>
+        </div>
+      )}
+
 
       <div className="mt-4 flex flex-wrap gap-2">
         {post.tags.map((t) => (
