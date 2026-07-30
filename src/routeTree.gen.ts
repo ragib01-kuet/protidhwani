@@ -18,6 +18,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MapRouteImport } from './routes/map'
+import { Route as July36RouteImport } from './routes/july36'
 import { Route as FriendsRouteImport } from './routes/friends'
 import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as EditorsRouteImport } from './routes/editors'
@@ -85,6 +86,11 @@ const McpRoute = McpRouteImport.update({
 const MapRoute = MapRouteImport.update({
   id: '/map',
   path: '/map',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const July36Route = July36RouteImport.update({
+  id: '/july36',
+  path: '/july36',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FriendsRoute = FriendsRouteImport.update({
@@ -214,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
   '/friends': typeof FriendsRoute
+  '/july36': typeof July36Route
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
@@ -247,6 +254,7 @@ export interface FileRoutesByTo {
   '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
   '/friends': typeof FriendsRoute
+  '/july36': typeof July36Route
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
   '/friends': typeof FriendsRoute
+  '/july36': typeof July36Route
   '/map': typeof MapRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRoute
@@ -317,6 +326,7 @@ export interface FileRouteTypes {
     | '/editors'
     | '/emergency'
     | '/friends'
+    | '/july36'
     | '/map'
     | '/mcp'
     | '/messages'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/editors'
     | '/emergency'
     | '/friends'
+    | '/july36'
     | '/map'
     | '/mcp'
     | '/messages'
@@ -384,6 +395,7 @@ export interface FileRouteTypes {
     | '/editors'
     | '/emergency'
     | '/friends'
+    | '/july36'
     | '/map'
     | '/mcp'
     | '/messages'
@@ -419,6 +431,7 @@ export interface RootRouteChildren {
   EditorsRoute: typeof EditorsRoute
   EmergencyRoute: typeof EmergencyRoute
   FriendsRoute: typeof FriendsRoute
+  July36Route: typeof July36Route
   MapRoute: typeof MapRoute
   McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRoute
@@ -503,6 +516,13 @@ declare module '@tanstack/react-router' {
       path: '/map'
       fullPath: '/map'
       preLoaderRoute: typeof MapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/july36': {
+      id: '/july36'
+      path: '/july36'
+      fullPath: '/july36'
+      preLoaderRoute: typeof July36RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/friends': {
@@ -696,6 +716,7 @@ const rootRouteChildren: RootRouteChildren = {
   EditorsRoute: EditorsRoute,
   EmergencyRoute: EmergencyRoute,
   FriendsRoute: FriendsRoute,
+  July36Route: July36Route,
   MapRoute: MapRoute,
   McpRoute: McpRoute,
   MessagesRoute: MessagesRoute,
