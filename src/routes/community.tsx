@@ -43,7 +43,7 @@ import {
   listPosts,
   toggleSupport,
   updatePost,
-  uploadPostImages,
+  uploadPostMedia,
   type FeedSort,
   type PostInput,
   type PostWithAuthor,
@@ -201,7 +201,7 @@ function Community() {
       files: File[];
       removed: string[];
     }) => {
-      const uploaded = files.length ? await uploadPostImages(user!.id, files) : [];
+      const uploaded = files.length ? await uploadPostMedia(user!.id, files) : [];
       const payload = { ...input, image_urls: [...input.image_urls, ...uploaded] };
       return editing ? updatePost(editing.id, payload) : createPost(user!.id, payload);
     },
