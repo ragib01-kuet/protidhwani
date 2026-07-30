@@ -79,17 +79,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "প্রতিধ্বনি · Protidhwani" },
+      { title: "Protidhwani — প্রতিধ্বনি | Citizen Civic Network for Bangladesh" },
       {
         name: "description",
         content:
-          "প্রতিধ্বনি · Protidhwani — a citizen-powered civic network for Bangladesh.",
+          "Protidhwani is a citizen-powered civic network for Bangladesh. Report incidents, know your rights, verify information, and stay safe with your community.",
       },
       { name: "author", content: "Protidhwani" },
       { property: "og:site_name", content: "Protidhwani" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "theme-color", content: "#0F766E" },
+      { property: "og:title", content: "Protidhwani — প্রতিধ্বনি | Citizen Civic Network for Bangladesh" },
+      { name: "twitter:title", content: "Protidhwani — প্রতিধ্বনি | Citizen Civic Network for Bangladesh" },
+      { property: "og:description", content: "Protidhwani is a citizen-powered civic network for Bangladesh. Report incidents, know your rights, verify information, and stay safe with your community." },
+      { name: "twitter:description", content: "Protidhwani is a citizen-powered civic network for Bangladesh. Report incidents, know your rights, verify information, and stay safe with your community." },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/VrRZZeFEaGMZarAAmyTRtnjEbPv2/social-images/social-1785396605747-1000108184.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/VrRZZeFEaGMZarAAmyTRtnjEbPv2/social-images/social-1785396605747-1000108184.webp" },
     ],
     links: [
       {
