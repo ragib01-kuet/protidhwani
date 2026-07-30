@@ -642,7 +642,9 @@ function Community() {
         }
         loading={comments.isLoading}
         posting={addComment.isPending}
-        currentUserId={user?.id ?? "demo-guest"}
+        currentUserId={
+          user?.id ?? (commentsFor && isDemoPost(commentsFor.id) ? "demo-guest" : null)
+        }
         onSubmit={async (body) => {
           if (commentsFor && isDemoPost(commentsFor.id)) {
             addDemoComment(commentsFor, body);
