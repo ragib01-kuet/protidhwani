@@ -7,7 +7,19 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { mcpPlugin } from "@lovable.dev/mcp-js/stacks/tanstack/vite";
 
+// Deploy target: Lovable's own build leaves NITRO_PRESET unset (cloudflare default).
+// Netlify sets NITRO_PRESET=netlify in netlify.toml so SSR ships as a Netlify function.
+const nitroPreset = process.env.NITRO_PRESET?.trim();
+
 export default defineConfig({
+  ...(nitroPreset
+    ? {
+        nitro: {
+          preset: nitroPreset,
+          output: { dir: "dist", serverDir: "dist/server", publicDir: "dist/client" },
+        },
+      }
+    : {}),
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
