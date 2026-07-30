@@ -17,7 +17,8 @@ export function AuthCard({
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <Link to="/" className="mb-6 flex flex-col items-center gap-1">
+        <Link to="/" className="mb-6 flex flex-col items-center gap-2">
+          <BrandLogo size={64} />
           <span lang="bn" className="text-2xl font-bold tracking-tight text-primary">
             প্রতিধ্বনি
           </span>
