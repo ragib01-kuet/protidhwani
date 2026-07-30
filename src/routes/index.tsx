@@ -764,11 +764,11 @@ function VerificationBand() {
 
 function EmergencyStrip() {
   const hotlines = [
-    { name: "National Emergency", num: "999" },
-    { name: "Fire Service", num: "102" },
-    { name: "Ambulance", num: "১০৫১" },
-    { name: "Women & Child", num: "109" },
-    { name: "Anti-corruption", num: "106" },
+    { name: "National Emergency", num: "999", dial: "999" },
+    { name: "Fire Service", num: "102", dial: "102" },
+    { name: "Ambulance", num: "১০৫১", dial: "1051" },
+    { name: "Women & Child", num: "109", dial: "109" },
+    { name: "Anti-corruption", num: "106", dial: "106" },
   ];
   return (
     <section className="mt-20 card-soft overflow-hidden">
@@ -780,10 +780,13 @@ function EmergencyStrip() {
           <div className="text-sm font-semibold">Emergency hotlines</div>
           <div className="bn text-xs text-muted-foreground">জরুরি হেল্পলাইন</div>
         </div>
-        <button className="ml-auto tap inline-flex items-center gap-1 rounded-full bg-emergency px-3 py-1.5 text-xs font-semibold text-emergency-foreground">
+        <Link
+          to="/emergency"
+          className="ml-auto tap inline-flex items-center gap-1 rounded-full bg-emergency px-3 py-1.5 text-xs font-semibold text-emergency-foreground"
+        >
           Send SOS
           <ArrowUpRight className="h-3 w-3" />
-        </button>
+        </Link>
       </div>
       <ul className="grid divide-border sm:grid-cols-5 sm:divide-x">
         {hotlines.map((h) => (
@@ -794,9 +797,13 @@ function EmergencyStrip() {
               </div>
               <div className="mt-0.5 text-lg font-bold tracking-tight">{h.num}</div>
             </div>
-            <button className="tap grid h-8 w-8 place-items-center rounded-full border border-border">
+            <a
+              href={`tel:${h.dial}`}
+              aria-label={`${h.name} — কল করুন / Call ${h.dial}`}
+              className="tap grid h-8 w-8 place-items-center rounded-full border border-border"
+            >
               <ArrowUpRight className="h-4 w-4" />
-            </button>
+            </a>
           </li>
         ))}
       </ul>
@@ -808,9 +815,9 @@ function EmergencyStrip() {
 
 function PublicInfo() {
   const items = [
-    { t: "Right to Information Act", d: "How to file an RTI request in 5 steps.", tag: "Guide" },
-    { t: "Voter services", d: "NID correction, voter list, polling info.", tag: "Directory" },
-    { t: "Disaster preparedness", d: "Cyclone, flood & earthquake protocols.", tag: "Safety" },
+    { t: "Right to Information Act", d: "How to file an RTI request in 5 steps.", tag: "Guide", to: "/rights" as const },
+    { t: "Voter services", d: "NID correction, voter list, polling info.", tag: "Directory", to: "/community" as const },
+    { t: "Disaster preparedness", d: "Cyclone, flood & earthquake protocols.", tag: "Safety", to: "/emergency" as const },
   ];
   return (
     <section className="mt-20">
@@ -821,9 +828,9 @@ function PublicInfo() {
       />
       <div className="mt-8 grid gap-4 md:grid-cols-3">
         {items.map((i) => (
-          <a
+          <Link
             key={i.t}
-            href="#"
+            to={i.to}
             className="card-soft tap group flex flex-col p-6 hover:-translate-y-0.5"
           >
             <span className="inline-flex w-fit rounded-full bg-verified/10 px-2 py-0.5 text-[11px] font-semibold text-verified">
@@ -834,7 +841,7 @@ function PublicInfo() {
             <div className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
               Read guide <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </section>
@@ -868,19 +875,39 @@ function Footer() {
             </p>
           </div>
           {[
-            { h: "Platform", l: ["Feed", "Report", "Fact-check", "Rights"] },
-            { h: "About", l: ["Mission", "Editors", "Trust & safety", "Contact"] },
+            {
+              h: "Platform",
+              l: [
+                { x: "Feed", to: "/dashboard" as const },
+                { x: "Report", to: "/complaints" as const },
+                { x: "Fact-check", to: "/explore" as const },
+                { x: "Rights", to: "/rights" as const },
+              ],
+            },
+            {
+              h: "About",
+              l: [
+                { x: "Mission", to: "/rights" as const },
+                { x: "Editors", to: "/community" as const },
+                { x: "Trust & safety", to: "/map" as const },
+                { x: "Contact", to: "/messages" as const },
+              ],
+            },
           ].map((c) => (
             <div key={c.h}>
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {c.h}
               </div>
               <ul className="mt-3 space-y-2 text-sm">
-                {c.l.map((x) => (
-                  <li key={x}>
-                    <a href="#" className="text-foreground/80 hover:text-foreground">
-                      {x}
-                    </a>
+                {c.l.map((item) => (
+                  <li key={item.x}>
+                    <Link
+                      to={item.to}
+                      search={item.to === "/messages" ? {} : undefined}
+                      className="text-foreground/80 hover:text-foreground"
+                    >
+                      {item.x}
+                    </Link>
                   </li>
                 ))}
               </ul>
