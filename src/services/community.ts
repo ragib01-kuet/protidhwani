@@ -123,31 +123,107 @@ function explainStorageError(message: string, isVideo: boolean): string {
   return message;
 }
 
-/** Upload community photos/videos into `community-images/<uid>/<uuid>.<ext>`. */
-export async function uploadPostMedia(userId: string, files: File[]): Promise<string[]> {
-  const urls: string[] = [];
-  for (const file of files) {
-    const isVideo = file.type.startsWith("video/");
-    const limit = isVideo ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
-    if (file.size > limit) {
-      throw new Error(
-        isVideo
-          ? "ভিডিও ৫০ এমবি-র কম হতে হবে · Video must be under 50 MB"
-          : "ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB",
-      );
-    }
-    const ext =
-      file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from(COMMUNITY_BUCKET).upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-      contentType: file.type || undefined,
-    });
-    if (error) throw new Error(explainStorageError(error.message, isVideo));
-    urls.push(supabase.storage.from(COMMUNITY_BUCKET).getPublicUrl(path).data.publicUrl);
+export interface MediaUploadProgress {
+  /** Index of the file in the array passed to uploadPostMedia. */
+  index: number;
+  status: "pending" | "uploading" | "done" | "error";
+  percent: number;
+  url?: string;
+  error?: string;
+}
+
+/** Upload one file with real progress via the Storage REST endpoint. */
+async function uploadOne(
+  userId: string,
+  file: File,
+  token: string,
+  onProgress: (percent: number) => void,
+): Promise<string> {
+  const isVideo = file.type.startsWith("video/");
+  const limit = isVideo ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
+  if (file.size > limit) {
+    throw new Error(
+      isVideo
+        ? "ভিডিও ৫০ এমবি-র কম হতে হবে · Video must be under 50 MB"
+        : "ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB",
+    );
   }
-  return urls;
+  const ext = file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
+  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+  const baseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+  const apiKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("POST", `${baseUrl}/storage/v1/object/${COMMUNITY_BUCKET}/${path}`);
+    xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    xhr.setRequestHeader("apikey", apiKey);
+    xhr.setRequestHeader("x-upsert", "false");
+    xhr.setRequestHeader("cache-control", "3600");
+    if (file.type) xhr.setRequestHeader("content-type", file.type);
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) onProgress(Math.round((event.loaded / event.total) * 100));
+    };
+    xhr.onerror = () => reject(new Error("নেটওয়ার্ক সমস্যা · Network error while uploading"));
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) return resolve();
+      let message = `Upload failed (${xhr.status})`;
+      try {
+        const parsed = JSON.parse(xhr.responseText) as { message?: string; error?: string };
+        message = parsed.message ?? parsed.error ?? message;
+      } catch {
+        /* keep default message */
+      }
+      reject(new Error(explainStorageError(message, isVideo)));
+    };
+    xhr.send(file);
+  });
+  onProgress(100);
+  return supabase.storage.from(COMMUNITY_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+
+/**
+ * Upload community photos/videos into `community-images/<uid>/<uuid>.<ext>`.
+ * Reports per-file progress. Throws only after attempting every file, so the
+ * caller can keep the successful uploads and retry just the failed ones.
+ */
+export async function uploadPostMedia(
+  userId: string,
+  files: File[],
+  onProgress?: (items: MediaUploadProgress[]) => void,
+): Promise<string[]> {
+  const items: MediaUploadProgress[] = files.map((_, index) => ({
+    index,
+    status: "pending",
+    percent: 0,
+  }));
+  const emit = () => onProgress?.(items.map((item) => ({ ...item })));
+  emit();
+
+  const { data: sessionData } = await supabase.auth.getSession();
+  const token = sessionData.session?.access_token;
+  if (!token) throw new Error("লগইন প্রয়োজন · You must be signed in to upload");
+
+  const failures: string[] = [];
+  for (let i = 0; i < files.length; i += 1) {
+    items[i].status = "uploading";
+    emit();
+    try {
+      const url = await uploadOne(userId, files[i], token, (percent) => {
+        items[i].percent = percent;
+        emit();
+      });
+      items[i] = { index: i, status: "done", percent: 100, url };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      items[i] = { index: i, status: "error", percent: 0, error: message };
+      failures.push(message);
+    }
+    emit();
+  }
+
+  if (failures.length) throw new Error(failures[0]);
+  return items.map((item) => item.url!).filter(Boolean);
 }
 
 /** @deprecated use uploadPostMedia */
