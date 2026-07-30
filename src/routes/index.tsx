@@ -629,18 +629,26 @@ function FeedAndTrending() {
               { t: "#RoadSafety", c: "9.6k reports" },
               { t: "#PriceHike", c: "3.2k signals" },
             ].map((x, i) => (
-              <li key={x.t} className="flex items-center justify-between py-3">
-                <div>
-                  <div className="text-xs text-muted-foreground">Trending · {i + 1}</div>
-                  <div className="mt-0.5 text-sm font-semibold">{x.t}</div>
-                </div>
-                <span className="text-xs text-muted-foreground">{x.c}</span>
+              <li key={x.t}>
+                <Link
+                  to="/explore"
+                  className="tap flex items-center justify-between py-3 transition-colors hover:text-primary"
+                >
+                  <span className="block">
+                    <span className="block text-xs text-muted-foreground">Trending · {i + 1}</span>
+                    <span className="mt-0.5 block text-sm font-semibold">{x.t}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">{x.c}</span>
+                </Link>
               </li>
             ))}
           </ul>
-          <button className="tap mt-3 inline-flex w-full items-center justify-center gap-1 rounded-full border border-border bg-background py-2 text-sm font-medium">
+          <Link
+            to="/explore"
+            className="tap mt-3 inline-flex w-full items-center justify-center gap-1 rounded-full border border-border bg-background py-2 text-sm font-medium"
+          >
             See all trends <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          </Link>
         </div>
       </aside>
     </section>
