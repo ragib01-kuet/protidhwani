@@ -30,11 +30,11 @@ export const Route = createFileRoute("/")({
         content:
           "Protidhwani is a citizen-powered civic network for Bangladesh. Report incidents, know your rights, verify information, and stay safe with your community.",
       },
-      { property: "og:title", content: "Protidhwani — প্রতিধ্বনি" },
+      { property: "og:title", content: "Protidhwani — প্রতিধ্বনি | Citizen Civic Network for Bangladesh" },
       {
         property: "og:description",
         content:
-          "A citizen-powered civic network for Bangladesh. Report. Verify. Protect. Connect.",
+          "Protidhwani is a citizen-powered civic network for Bangladesh. Report incidents, know your rights, verify information, and stay safe with your community.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
