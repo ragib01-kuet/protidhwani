@@ -64,7 +64,7 @@ function mapRow(row: VehicleRow, reports: ReportRow[]): VehicleRecord {
  * Once the optional live tables are proven missing we stop calling them, so the
  * demo does not spam 404s on every keystroke.
  */
-let liveRegistryAvailable: boolean | null = null;
+let liveRegistryAvailable = null as boolean | null;
 
 function markLiveUnavailable(error: unknown) {
   const code = (error as { code?: string } | null)?.code;
