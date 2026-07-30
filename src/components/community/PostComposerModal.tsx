@@ -435,6 +435,93 @@ export function PostComposerModal({
             />
           </div>
 
+          {uploadProgress.length > 0 && (
+            <section
+              aria-live="polite"
+              className="space-y-2 rounded-2xl border border-border bg-surface p-4"
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span lang="bn" className="text-xs font-bold">
+                  আপলোড হচ্ছে{" "}
+                  <span lang="en" className="font-normal text-muted-foreground">
+                    · Uploading media
+                  </span>
+                </span>
+                <span className="text-xs font-bold tabular-nums text-muted-foreground">
+                  {overallPct}%
+                </span>
+              </div>
+              <span className="block h-1.5 w-full overflow-hidden rounded-full bg-border">
+                <span
+                  className={cn(
+                    "block h-full rounded-full transition-[width] duration-300",
+                    failed.length ? "bg-emergency" : "bg-primary",
+                  )}
+                  style={{ width: `${overallPct}%` }}
+                />
+              </span>
+
+              <ul className="space-y-2 pt-1">
+                {files.map((file, i) => {
+                  const item = itemFor(i);
+                  const pct = item?.status === "done" ? 100 : (item?.percent ?? 0);
+                  return (
+                    <li key={`${file.name}-progress-${i}`} className="space-y-1">
+                      <div className="flex items-center gap-2 text-[11px]">
+                        {item?.status === "uploading" && (
+                          <Loader2 className="size-3 shrink-0 animate-spin text-primary" />
+                        )}
+                        {item?.status === "done" && (
+                          <Check className="size-3 shrink-0 text-verified" />
+                        )}
+                        {item?.status === "error" && (
+                          <AlertTriangle className="size-3 shrink-0 text-emergency" />
+                        )}
+                        <span className="min-w-0 flex-1 truncate font-medium">{file.name}</span>
+                        <span className="shrink-0 tabular-nums text-muted-foreground">
+                          {item?.status === "error" ? "ব্যর্থ · Failed" : `${pct}%`}
+                        </span>
+                        <span className="shrink-0 text-muted-foreground">{formatSize(file.size)}</span>
+                      </div>
+                      <span className="block h-1 w-full overflow-hidden rounded-full bg-border">
+                        <span
+                          className={cn(
+                            "block h-full rounded-full transition-[width] duration-200",
+                            item?.status === "error"
+                              ? "bg-emergency"
+                              : item?.status === "done"
+                                ? "bg-verified"
+                                : "bg-primary",
+                          )}
+                          style={{ width: `${item?.status === "error" ? 100 : pct}%` }}
+                        />
+                      </span>
+                      {item?.status === "error" && item.error && (
+                        <p className="text-[10px] leading-snug text-emergency">{item.error}</p>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+
+              {failed.length > 0 && !uploading && !submitting && (
+                <button
+                  type="button"
+                  onClick={(event) => void submit(event)}
+                  className="flex w-full items-center justify-center gap-2 rounded-full border border-emergency/40 bg-emergency-soft px-4 py-2.5 text-xs font-bold text-emergency transition-transform hover:-translate-y-0.5 active:scale-95"
+                >
+                  <RotateCw className="size-3.5" />
+                  <span lang="bn">ব্যর্থ ফাইল আবার চেষ্টা করুন</span>
+                  <span lang="en" className="text-[10px] uppercase tracking-wider opacity-80">
+                    Retry failed ({failed.length})
+                  </span>
+                </button>
+              )}
+            </section>
+          )}
+
+
+
           {error && (
             <p role="alert" className="rounded-2xl bg-emergency-soft px-4 py-3 text-xs text-emergency">
               {error}
