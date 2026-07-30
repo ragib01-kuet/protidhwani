@@ -60,7 +60,7 @@ export const DEMO_POSTS: PostWithAuthor[] = [
       "আগ্রাবাদ এলাকায় সংস্কারের কাজ অসমাপ্ত রেখে ঠিকাদার চলে গেছে। রাতে গর্তটি দেখা যায় না, ইতিমধ্যে দুটি মোটরসাইকেল দুর্ঘটনা ঘটেছে। ব্যারিকেড ও দ্রুত মেরামত দরকার।",
     body_en:
       "The contractor left the repair work unfinished in Agrabad. The pit is invisible at night and two motorcycle accidents have already happened. Barricades and immediate repair are needed.",
-    location: "আগ্রাবাদ · Agrabad",
+    location: "আগ্রাবাদ · Agrabad, ডবলমুরিং · Double Mooring",
     district: "Chattogram",
     tags: ["সড়ক", "road", "safety"],
     image_urls: [roadImage],
