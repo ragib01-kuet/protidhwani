@@ -192,3 +192,87 @@ export const composerOptions = [
   { icon: "✊", bn: "প্রতিবাদ", en: "Protest" },
   { icon: "🖼️", bn: "মিডিয়া", en: "Media" },
 ] as const;
+
+export type PostComment = {
+  id: string;
+  author: { bn: string; en: string; initials: string };
+  time: { bn: string; en: string };
+  body: { bn: string; en: string };
+};
+
+/** Demo discussion threads for the Explore post detail pages. */
+export const postComments: Record<string, PostComment[]> = {
+  "1": [
+    {
+      id: "1-c1",
+      author: { bn: "ফায়ার সার্ভিস ইউনিট", en: "Fire Service Unit", initials: "ফা" },
+      time: { bn: "২ মিনিট আগে", en: "2 minutes ago" },
+      body: {
+        bn: "দুইটি ইউনিট ঘটনাস্থলে পৌঁছেছে, গ্যাস সরবরাহ বন্ধ করা হয়েছে।",
+        en: "Two units have reached the site and the gas supply has been shut off.",
+      },
+    },
+    {
+      id: "1-c2",
+      author: { bn: "সাব্বির আহমেদ", en: "Sabbir Ahmed", initials: "সা" },
+      time: { bn: "৫ মিনিট আগে", en: "5 minutes ago" },
+      body: {
+        bn: "মিরপুর ১০ গোলচত্বর এড়িয়ে কাজীপাড়া হয়ে যান।",
+        en: "Avoid the Mirpur 10 roundabout and take the Kazipara route instead.",
+      },
+    },
+  ],
+  "2": [
+    {
+      id: "2-c1",
+      author: { bn: "নুসরাত জাহান", en: "Nusrat Jahan", initials: "নু" },
+      time: { bn: "১০ মিনিট আগে", en: "10 minutes ago" },
+      body: {
+        bn: "বিকল্প রুটে যানজট কম, ধন্যবাদ আপডেটের জন্য।",
+        en: "The alternate route is much clearer, thanks for the update.",
+      },
+    },
+  ],
+  "3": [
+    {
+      id: "3-c1",
+      author: { bn: "রুবেল হোসেন", en: "Rubel Hossain", initials: "রু" },
+      time: { bn: "৪০ মিনিট আগে", en: "40 minutes ago" },
+      body: {
+        bn: "থানায় জিডি করা হয়েছে কি? প্রয়োজনে সহায়তা করতে পারি।",
+        en: "Has a general diary been filed? I can help if needed.",
+      },
+    },
+    {
+      id: "3-c2",
+      author: { bn: "আফসানা মিম", en: "Afsana Mim", initials: "আ" },
+      time: { bn: "২০ মিনিট আগে", en: "20 minutes ago" },
+      body: {
+        bn: "হ্যাঁ, কোতোয়ালী থানায় জিডি হয়েছে। ছবি শেয়ার করুন সবার সাথে।",
+        en: "Yes, a diary is filed at Kotwali. Please share the photo widely.",
+      },
+    },
+  ],
+  "4": [
+    {
+      id: "4-c1",
+      author: { bn: "শ্রমিক ঐক্য", en: "Sromik Oikko", initials: "শ্র" },
+      time: { bn: "১ ঘন্টা আগে", en: "1 hour ago" },
+      body: {
+        bn: "নিয়োগপত্র ও হাজিরা খাতার কপি সংরক্ষণ করা জরুরি।",
+        en: "Keeping a copy of the appointment letter and attendance register is essential.",
+      },
+    },
+  ],
+  "5": [
+    {
+      id: "5-c1",
+      author: { bn: "ওয়ার্ড ১৯ কমিউনিটি", en: "Ward 19 Community", initials: "ও" },
+      time: { bn: "৩ ঘন্টা আগে", en: "3 hours ago" },
+      body: {
+        bn: "এখন পর্যন্ত জলাবদ্ধতা সবচেয়ে বেশি ভোট পেয়েছে।",
+        en: "Waterlogging is leading the vote so far.",
+      },
+    },
+  ],
+};
