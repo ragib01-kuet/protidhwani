@@ -24,3 +24,12 @@
   for = "/favicon.png"
   [headers.values]
     Cache-Control = "public, max-age=86400"
+
+# Lovable CDN assets (logo, founder photo, Bangla fonts, July 36 PDF) are served
+# from /__l5e/assets-v1/* by Lovable hosting. Proxy them so the Netlify deploy
+# resolves the exact same URLs.
+[[redirects]]
+  from = "/__l5e/assets-v1/*"
+  to = "https://protidhwani.lovable.app/__l5e/assets-v1/:splat"
+  status = 200
+  force = true
