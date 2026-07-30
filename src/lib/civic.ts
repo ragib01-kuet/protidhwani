@@ -276,3 +276,50 @@ export const postComments: Record<string, PostComment[]> = {
     },
   ],
 };
+
+const FEED_AREAS = [
+  { bn: "উত্তরা সেক্টর ৭, ঢাকা", en: "Uttara Sector 7, Dhaka" },
+  { bn: "আগ্রাবাদ, চট্টগ্রাম", en: "Agrabad, Chattogram" },
+  { bn: "জিন্দাবাজার, সিলেট", en: "Zindabazar, Sylhet" },
+  { bn: "সোনাডাঙ্গা, খুলনা", en: "Sonadanga, Khulna" },
+  { bn: "সাহেব বাজার, রাজশাহী", en: "Saheb Bazar, Rajshahi" },
+  { bn: "বগুড়া সদর", en: "Bogura Sadar" },
+  { bn: "কোতোয়ালী, বরিশাল", en: "Kotwali, Barishal" },
+  { bn: "মেডিকেল মোড়, রংপুর", en: "Medical More, Rangpur" },
+];
+
+const FEED_TIMES = [
+  { bn: "৭ ঘন্টা আগে", en: "7 hours ago" },
+  { bn: "১১ ঘন্টা আগে", en: "11 hours ago" },
+  { bn: "১৫ ঘন্টা আগে", en: "15 hours ago" },
+  { bn: "১ দিন আগে", en: "1 day ago" },
+  { bn: "২ দিন আগে", en: "2 days ago" },
+  { bn: "৩ দিন আগে", en: "3 days ago" },
+];
+
+/**
+ * Paginated demo feed. The five hand-written posts stay on top, followed by
+ * area-shifted variants so infinite scroll on /explore has enough material.
+ */
+export const feedPosts: Post[] = [
+  ...posts,
+  ...Array.from({ length: 24 }, (_, i) => {
+    const base = posts[i % posts.length];
+    const area = FEED_AREAS[i % FEED_AREAS.length];
+    const time = FEED_TIMES[i % FEED_TIMES.length];
+    const page = Math.floor(i / posts.length) + 2;
+    return {
+      ...base,
+      id: `${base.id}-${page}`,
+      location: area,
+      time,
+      support: Math.max(12, Math.round(base.support * (0.35 + ((i * 7) % 9) / 10))),
+      comments: Math.max(3, Math.round(base.comments * (0.3 + ((i * 5) % 8) / 10))),
+      title: {
+        bn: `${base.title.bn} — ${area.bn}`,
+        en: `${base.title.en} — ${area.en}`,
+      },
+      images: base.images ? base.images.slice(0, ((i % 3) + 1)) : undefined,
+    } satisfies Post;
+  }),
+];

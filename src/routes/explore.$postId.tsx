@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { BadgeCheck, Clock, Heart, MapPin, MessageCircle, Send, Share2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { kindMeta, postComments, posts, type Post, type PostComment } from "@/lib/civic";
+import { feedPosts, kindMeta, postComments, type Post, type PostComment } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
 const toneClass = {
@@ -20,7 +20,7 @@ const statusLabel = {
 
 export const Route = createFileRoute("/explore/$postId")({
   loader: ({ params }): { post: Post } => {
-    const post = posts.find((p) => p.id === params.postId);
+    const post = feedPosts.find((p) => p.id === params.postId);
     if (!post) throw notFound();
     return { post };
   },
@@ -72,7 +72,10 @@ function PostDetail() {
   const status = statusLabel[post.status];
   const images = post.images ?? [];
 
-  const seeded = useMemo<PostComment[]>(() => postComments[post.id] ?? [], [post.id]);
+  const seeded = useMemo<PostComment[]>(
+    () => postComments[post.id] ?? postComments[post.id.split("-")[0]] ?? [],
+    [post.id],
+  );
   const [added, setAdded] = useState<PostComment[]>([]);
   const [draft, setDraft] = useState("");
   const [supported, setSupported] = useState(false);
