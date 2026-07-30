@@ -195,7 +195,7 @@ export const composerOptions = [
 
 export type PostComment = {
   id: string;
-  author: { bn: string; en: string; initials: string };
+  author: { id?: string; bn: string; en: string; initials: string };
   time: { bn: string; en: string };
   body: { bn: string; en: string };
 };
