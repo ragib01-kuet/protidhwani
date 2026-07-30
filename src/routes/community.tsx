@@ -565,21 +565,34 @@ function Community() {
             <CommunityPostCard
               key={post.id}
               post={post}
-              supported={supportedIds.has(post.id)}
+              supported={
+                isDemoPost(post.id) ? demoSupported.includes(post.id) : supportedIds.has(post.id)
+              }
               flagged={flaggedIds.has(post.id)}
-              isOwner={user?.id === post.user_id}
+              isOwner={!isDemoPost(post.id) && user?.id === post.user_id}
               busy={busyPostId === post.id}
               onSupport={(p) => {
+                if (isDemoPost(p.id)) {
+                  toggleDemoSupport(p);
+                  return;
+                }
                 if (!requireAuth("সমর্থন করতে সাইন ইন করুন")) return;
                 support.mutate(p);
               }}
               onComment={setCommentsFor}
               onShare={handleShare}
               onFlag={(p) => {
+                if (isDemoPost(p.id)) {
+                  toast.success("রিপোর্ট পাঠানো হয়েছে", {
+                    description: "Flag recorded in demo mode",
+                  });
+                  return;
+                }
                 if (!requireAuth("রিপোর্ট করতে সাইন ইন করুন")) return;
                 setFlagReason("misinformation");
                 setFlagFor(p);
               }}
+
               onEdit={(p) => {
                 setEditing(p);
                 setComposerOpen(true);
