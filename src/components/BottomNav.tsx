@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/BrandLogo";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
