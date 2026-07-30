@@ -49,7 +49,7 @@ export const Route = createFileRoute("/messages")({
 
 function MessagesPage() {
   const { user } = useAuth();
-  const meId = user?.id ?? "";
+  const meId = user?.id ?? "demo-me";
   const { peer: peerId } = Route.useSearch();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
