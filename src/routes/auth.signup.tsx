@@ -54,17 +54,34 @@ function SignUpPage() {
         data: { full_name: fullName },
       },
     });
-    setSubmitting(false);
 
     if (signUpError) {
+      setSubmitting(false);
       setError(getErrorMessage(signUpError));
       return;
     }
     if (data.session) {
+      setSubmitting(false);
       navigate({ to: "/account", replace: true });
       return;
     }
-    setNotice("ইমেইল যাচাই করুন — Check your inbox to confirm your email, then log in.");
+
+    // Demo app: no email verification step — sign the user straight in.
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    setSubmitting(false);
+
+    if (signInData?.session) {
+      navigate({ to: "/account", replace: true });
+      return;
+    }
+    setError(
+      getErrorMessage(signInError) ??
+        "সাইন আপ সম্পূর্ণ হয়নি — Sign up could not be completed. Please try again.",
+    );
+
   }
 
   return (
