@@ -34,7 +34,7 @@ export const TOOLS_NAV = [
 
 /** Composer shortcuts → the route that actually handles each civic action. */
 export const COMPOSER_ROUTES: Record<string, string> = {
-  Report: "/complaints",
+  Report: "/report",
   Ask: "/community",
   Discuss: "/community",
   Emergency: "/emergency",
