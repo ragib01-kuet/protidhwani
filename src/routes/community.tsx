@@ -113,6 +113,7 @@ function Community() {
   const [demoPosts, setDemoPosts] = useState<PostWithAuthor[]>(DEMO_POSTS);
   const [demoComments, setDemoComments] = useState(DEMO_COMMENTS);
   const [demoSupported, setDemoSupported] = useState<string[]>([]);
+  const [showDemo, setShowDemo] = useState(true);
 
   useEffect(() => {
     const id = setTimeout(() => setSearch(searchInput.trim()), 300);
@@ -499,21 +500,24 @@ function Community() {
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
               <p lang="bn" className="text-sm font-bold text-warning">
-                ডেমো ফিড দেখানো হচ্ছে
+                ডেমো পোস্ট দেখানো হচ্ছে
               </p>
               <p lang="en" className="mt-0.5 text-[11px] uppercase tracking-[0.14em] text-warning/80">
-                Demo mode · Seeded posts with photos
+                Demo mode · Sample posts with photos
               </p>
             </div>
-            <span className="shrink-0 rounded-full bg-warning px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-warning-foreground">
-              Demo
-            </span>
+            <button
+              onClick={() => setShowDemo(false)}
+              className="shrink-0 rounded-full bg-warning px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-warning-foreground"
+            >
+              লুকান · Hide demo
+            </button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            <span lang="bn">লাইভ পোস্ট এলে ডেমো নিজে থেকেই সরে যাবে। সমর্থন ও মন্তব্য এই সেশনেই সংরক্ষিত থাকে।</span>{" "}
+            <span lang="bn">ছবিসহ নমুনা পোস্টগুলো ফিডের শেষে দেখানো হচ্ছে; সমর্থন ও মন্তব্য এই সেশনেই সংরক্ষিত থাকে।</span>{" "}
             <span lang="en">
-              Demo posts disappear as soon as live posts exist. Supports and comments here are kept
-              for this session only.
+              Sample posts appear after live posts. Supports and comments on them are kept for this
+              session only.
             </span>
           </p>
         </section>
