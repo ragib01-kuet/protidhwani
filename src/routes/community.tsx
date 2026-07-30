@@ -289,14 +289,13 @@ function Community() {
   };
 
   const livePosts = feed.data ?? [];
-  // Fall back to the seeded demo feed whenever live data has nothing to show.
+  // Seeded demo posts (with photos) always stay visible below live content
+  // unless the reader turns them off.
   const demoVisible = filterDemoPosts(demoPosts, filters);
-  const showingDemo =
-    !feed.isLoading &&
-    (feed.isError || livePosts.length === 0) &&
-    demoVisible.length > 0;
+  const showingDemo = !feed.isLoading && showDemo && demoVisible.length > 0;
 
-  const posts = showingDemo ? demoVisible : livePosts;
+  const posts = showingDemo ? [...livePosts, ...demoVisible] : livePosts;
+
 
   const toggleDemoSupport = (post: PostWithAuthor) => {
     const on = demoSupported.includes(post.id);
