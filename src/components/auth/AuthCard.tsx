@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/BrandLogo";
 
 export function AuthCard({
   bn,
