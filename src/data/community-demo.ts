@@ -38,7 +38,7 @@ export const DEMO_POSTS: PostWithAuthor[] = [
       "গতরাতের ভারী বৃষ্টিতে মিরপুর ১০ গোলচত্বর থেকে কাজীপাড়া পর্যন্ত পুরো সড়ক পানির নিচে। রিকশা ছাড়া কিছুই চলছে না, স্কুলগামী শিশুরা আটকে আছে। ড্রেন পরিষ্কারের জন্য সিটি করপোরেশনে দ্রুত ব্যবস্থা প্রয়োজন।",
     body_en:
       "Heavy overnight rain has submerged the road from Mirpur 10 roundabout to Kazipara. Only rickshaws are moving and school children are stranded. The city corporation needs to clear the drains urgently.",
-    location: "মিরপুর ১০ · Mirpur 10",
+    location: "মিরপুর ১০ · Mirpur 10, মিরপুর · Mirpur",
     district: "Dhaka",
     tags: ["জলাবদ্ধতা", "waterlogging", "drainage"],
     image_urls: [waterloggingImage],
@@ -82,7 +82,7 @@ export const DEMO_POSTS: PostWithAuthor[] = [
       "শাহজালাল উপশহরের প্রধান সড়কের বাতিগুলো দুই সপ্তাহ ধরে নষ্ট। সন্ধ্যার পর একা চলাচল ঝুঁকিপূর্ণ, গত সপ্তাহে তিনটি ছিনতাইয়ের ঘটনা ঘটেছে। বাতি মেরামত ও টহল বাড়ানো জরুরি।",
     body_en:
       "Street lamps on the main road of Shahjalal Upashahar have been dead for two weeks. Walking alone after dusk is risky and three muggings happened last week. Lamps must be fixed and patrols increased.",
-    location: "উপশহর · Upashahar",
+    location: "উপশহর · Upashahar, সিলেট সদর · Sylhet Sadar",
     district: "Sylhet",
     tags: ["নিরাপত্তা", "safety", "streetlight"],
     image_urls: [streetlightImage],
@@ -104,7 +104,7 @@ export const DEMO_POSTS: PostWithAuthor[] = [
       "স্থানীয় স্বেচ্ছাসেবকরা শনিবার সকাল ৯টা থেকে দুপুর ১টা পর্যন্ত ত্রাণ ও বিশুদ্ধ পানি বিতরণ করবেন। স্বেচ্ছাসেবক হিসেবে যুক্ত হতে চাইলে কমেন্টে জানান।",
     body_en:
       "Local volunteers will distribute relief kits and clean water on Saturday from 9am to 1pm. Comment below if you want to join as a volunteer.",
-    location: "খালিশপুর · Khalishpur",
+    location: "খালিশপুর · Khalishpur, খালিশপুর · Khalishpur",
     district: "Khulna",
     tags: ["ত্রাণ", "relief", "volunteer"],
     image_urls: [reliefImage],
