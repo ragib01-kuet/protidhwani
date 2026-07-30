@@ -108,6 +108,9 @@ function Community() {
   const [flagReason, setFlagReason] = useState("misinformation");
   const [deleteFor, setDeleteFor] = useState<PostWithAuthor | null>(null);
   const [busyPostId, setBusyPostId] = useState<string | null>(null);
+  const [uploadItems, setUploadItems] = useState<MediaUploadProgress[]>([]);
+  /** Files already uploaded in this composer session — keeps retries cheap. */
+  const uploadedRef = useRef<Map<File, string>>(new Map());
 
   // Demo feed state (session-only): supports and comments on seeded posts.
   const [demoPosts, setDemoPosts] = useState<PostWithAuthor[]>(DEMO_POSTS);
