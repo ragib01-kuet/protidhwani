@@ -61,6 +61,31 @@ function mapRow(row: VehicleRow, reports: ReportRow[]): VehicleRecord {
 }
 
 /**
+ * Once the optional live tables are proven missing we stop calling them, so the
+ * demo does not spam 404s on every keystroke.
+ */
+let liveRegistryAvailable = null as boolean | null;
+
+function markLiveUnavailable(error: unknown) {
+  const code = (error as { code?: string } | null)?.code;
+  // PGRST205 = table not in schema cache (not provisioned). 42P01 = undefined table.
+  if (code === "PGRST205" || code === "42P01") liveRegistryAvailable = false;
+}
+
+export function isLiveRegistryKnownUnavailable(): boolean {
+  return liveRegistryAvailable === false;
+}
+
+/** Reports filed during this session while the live tables are unavailable. */
+const demoSessionReports = new Map<string, VehicleReportRecord[]>();
+
+function withSessionReports(vehicle: VehicleRecord): VehicleRecord {
+  const extra = demoSessionReports.get(normalizePlate(vehicle.plate));
+  if (!extra?.length) return vehicle;
+  return { ...vehicle, reports: [...extra, ...vehicle.reports] };
+}
+
+/**
  * Looks the plate up in Supabase first; if the optional `vehicles` table is not
  * provisioned (or the request fails) the seeded demo registry answers instead,
  * so the page always stays usable as a demo.
@@ -68,6 +93,17 @@ function mapRow(row: VehicleRow, reports: ReportRow[]): VehicleRecord {
 export async function lookupVehicle(query: string): Promise<VehicleLookupResult> {
   const normalized = normalizePlate(query);
   if (!normalized) return { vehicle: null, source: "demo" };
+
+  const demoAnswer = (reason: string): VehicleLookupResult => {
+    const demo = findDemoVehicle(query);
+    return {
+      vehicle: demo ? withSessionReports(demo) : null,
+      source: "demo",
+      fallbackReason: reason,
+    };
+  };
+
+  if (liveRegistryAvailable === false) return demoAnswer("live_registry_unavailable");
 
   try {
     const { data, error } = await supabase
@@ -79,6 +115,7 @@ export async function lookupVehicle(query: string): Promise<VehicleLookupResult>
       .maybeSingle();
 
     if (error) throw error;
+    liveRegistryAvailable = true;
 
     if (data) {
       const { data: reports } = await supabase
@@ -93,15 +130,11 @@ export async function lookupVehicle(query: string): Promise<VehicleLookupResult>
     // Table exists but no such plate — still offer the demo registry.
     const demo = findDemoVehicle(query);
     return demo
-      ? { vehicle: demo, source: "demo", fallbackReason: "not_in_live_registry" }
+      ? { vehicle: withSessionReports(demo), source: "demo", fallbackReason: "not_in_live_registry" }
       : { vehicle: null, source: "live" };
-  } catch {
-    const demo = findDemoVehicle(query);
-    return {
-      vehicle: demo,
-      source: "demo",
-      fallbackReason: "live_registry_unavailable",
-    };
+  } catch (error) {
+    markLiveUnavailable(error);
+    return demoAnswer("live_registry_unavailable");
   }
 }
 
@@ -112,17 +145,51 @@ export interface VehicleReportInput {
   noteEn?: string;
 }
 
-/** Files a public safety report against a plate. Requires a signed-in user. */
-export async function submitVehicleReport(input: VehicleReportInput, userId: string) {
+export interface VehicleReportResult {
+  stored: "live" | "demo";
+}
+
+/**
+ * Files a public safety report. Writes to Supabase when the tables exist;
+ * otherwise the report is kept for this session so the demo flow still works.
+ */
+export async function submitVehicleReport(
+  input: VehicleReportInput,
+  userId: string | null,
+): Promise<VehicleReportResult> {
+  const normalized = normalizePlate(input.plate);
+
+  const keepLocally = () => {
+    const list = demoSessionReports.get(normalized) ?? [];
+    list.unshift({
+      id: `session-${Date.now()}`,
+      kind: input.kind,
+      noteBn: input.noteBn.trim(),
+      noteEn: input.noteEn?.trim() || "Submitted in demo mode",
+      createdAtISO: new Date().toISOString(),
+      verified: false,
+    });
+    demoSessionReports.set(normalized, list);
+    return { stored: "demo" as const };
+  };
+
+  if (liveRegistryAvailable === false || !userId) return keepLocally();
+
   const { error } = await supabase.from("vehicle_reports").insert({
     plate: input.plate.trim(),
-    plate_normalized: normalizePlate(input.plate),
+    plate_normalized: normalized,
     kind: input.kind,
     note_bn: input.noteBn.trim(),
     note_en: input.noteEn?.trim() || null,
     user_id: userId,
   });
-  if (error) throw error;
+
+  if (error) {
+    markLiveUnavailable(error);
+    if (isLiveRegistryKnownUnavailable()) return keepLocally();
+    throw error;
+  }
+  return { stored: "live" };
 }
 
 /** Plate suggestions for the search field (demo registry + live prefix match). */
@@ -131,7 +198,7 @@ export async function suggestPlates(query: string): Promise<string[]> {
   const local = DEMO_VEHICLES.map((v) => v.plate).filter((p) =>
     q ? normalizePlate(p).includes(q) : true,
   );
-  if (!q) return local.slice(0, 5);
+  if (!q || liveRegistryAvailable === false) return local.slice(0, 5);
   try {
     const { data, error } = await supabase
       .from("vehicles")
@@ -141,7 +208,9 @@ export async function suggestPlates(query: string): Promise<string[]> {
     if (error) throw error;
     const live = (data ?? []).map((r) => (r as { plate: string }).plate);
     return Array.from(new Set([...live, ...local])).slice(0, 6);
-  } catch {
+  } catch (error) {
+    markLiveUnavailable(error);
     return local.slice(0, 5);
   }
 }
+

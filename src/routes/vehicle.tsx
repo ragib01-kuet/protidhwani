@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/integrations/supabase/client";
-import { REPORT_KINDS, type VehicleReportRecord } from "@/data/vehicles";
+import { DEMO_VEHICLES, REPORT_KINDS, type VehicleReportRecord } from "@/data/vehicles";
 import { lookupVehicle, submitVehicleReport, suggestPlates } from "@/services/vehicles";
 import { toBnNumber } from "@/utils/bn";
 
@@ -122,6 +122,53 @@ function Vehicle() {
           </span>
         </button>
       </form>
+
+      <section className="mt-4 rounded-[2rem] border border-dashed border-border bg-surface p-5">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <h3 lang="bn" className="text-sm font-bold">ডেমো নম্বরসমূহ</h3>
+            <p lang="en" className="text-[9px] uppercase tracking-wider text-muted-foreground">
+              Demo plates — tap to verify
+            </p>
+          </div>
+          <span
+            lang="en"
+            className={`shrink-0 rounded-full px-3 py-1 text-[9px] font-bold uppercase tracking-wider ${
+              source === "live" ? "bg-verified-soft text-verified" : "bg-warning-soft text-warning"
+            }`}
+          >
+            {source === "live" ? "Live data" : "Demo mode"}
+          </span>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {DEMO_VEHICLES.map((v) => (
+            <button
+              key={v.plate}
+              onClick={() => {
+                setInput(v.plate);
+                setPlate(v.plate);
+              }}
+              lang="bn"
+              className={`rounded-full border px-3 py-2 text-xs font-bold transition-colors ${
+                v.plate === plate ? "border-primary bg-brand-soft text-primary" : "border-border bg-card hover:border-primary/50"
+              }`}
+            >
+              {v.plate}
+            </button>
+          ))}
+        </div>
+        {source !== "live" ? (
+          <p className="mt-3">
+            <span lang="bn" className="block text-[11px] font-semibold text-muted-foreground">
+              লাইভ রেজিস্ট্রি চালু নেই — বীজ করা ডেমো তথ্য দেখানো হচ্ছে।
+            </span>
+            <span lang="en" className="block text-[9px] uppercase tracking-wider text-muted-foreground/70">
+              Live registry not provisioned — showing seeded demo records
+            </span>
+          </p>
+        ) : null}
+      </section>
+
 
       {lookup.isLoading ? (
         <div className="mt-5 grid place-items-center rounded-[2rem] border border-border bg-card p-10">
@@ -267,12 +314,11 @@ function ReportDialog({
   const [note, setNote] = useState("");
 
   const mutation = useMutation({
-    mutationFn: async () => {
-      if (!userId) throw new Error("রিপোর্ট করতে সাইন ইন করুন · Sign in to report");
-      await submitVehicleReport({ plate, kind, noteBn: note }, userId);
-    },
-    onSuccess: () => {
-      toast.success("রিপোর্ট জমা হয়েছে", { description: "Report submitted" });
+    mutationFn: () => submitVehicleReport({ plate, kind, noteBn: note }, userId),
+    onSuccess: (result) => {
+      toast.success("রিপোর্ট জমা হয়েছে", {
+        description: result.stored === "live" ? "Report submitted" : "Saved in demo mode (this session)",
+      });
       onDone();
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -320,14 +366,18 @@ function ReportDialog({
 
         {!userId ? (
           <p className="mt-3 rounded-2xl bg-warning-soft px-4 py-3">
-            <span lang="bn" className="block text-xs font-bold text-warning">রিপোর্ট করতে সাইন ইন করুন</span>
-            <span lang="en" className="block text-[10px] uppercase tracking-wider text-warning/80">Sign in to submit a report</span>
+            <span lang="bn" className="block text-xs font-bold text-warning">
+              সাইন ইন ছাড়া রিপোর্টটি শুধু এই সেশনে ডেমো হিসেবে থাকবে
+            </span>
+            <span lang="en" className="block text-[10px] uppercase tracking-wider text-warning/80">
+              Not signed in — the report is kept as a demo for this session
+            </span>
           </p>
         ) : null}
 
         <button
           onClick={() => mutation.mutate()}
-          disabled={note.trim().length < 3 || mutation.isPending || !userId}
+          disabled={note.trim().length < 3 || mutation.isPending}
           className="mt-4 flex w-full items-center justify-center gap-2 rounded-2xl bg-emergency px-6 py-3.5 text-emergency-foreground disabled:opacity-60"
         >
           {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
