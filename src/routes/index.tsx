@@ -126,14 +126,7 @@ function TopBar() {
 function Logo() {
   return (
     <a href="/" className="flex items-center gap-2.5">
-      <div className="relative grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-primary to-primary/70 text-primary-foreground shadow-[0_6px_20px_-8px_var(--color-primary)]">
-        <span className="bn text-[15px] font-bold leading-none">প্র</span>
-        <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-emergency ring-2 ring-background" />
-      </div>
-      <div className="leading-tight">
-        <div className="text-[15px] font-bold tracking-tight">Protidhwani</div>
-        <div className="bn -mt-0.5 text-[11px] text-muted-foreground">প্রতিধ্বনি</div>
-      </div>
+      <BrandLockup size={36} />
     </a>
   );
 }
