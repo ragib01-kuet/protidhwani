@@ -1,3 +1,4 @@
+import { BrandLogo } from "@/components/BrandLogo";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home,
@@ -106,11 +107,8 @@ export function SideNav() {
   return (
     <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col gap-1 overflow-y-auto border-r border-border bg-surface px-4 py-6 lg:flex">
       <Link to="/" className="mb-6 flex items-center gap-3 px-2">
-        <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-card">
-          <span lang="bn" className="text-lg font-bold">
-            প্র
-          </span>
-        </span>
+        <BrandLogo size={40} className="shrink-0" />
+
         <span className="min-w-0">
           <span lang="bn" className="block truncate text-base font-bold text-foreground">
             প্রতিধ্বনি
