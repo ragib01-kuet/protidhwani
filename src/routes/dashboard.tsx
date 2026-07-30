@@ -25,12 +25,6 @@ export const Route = createFileRoute("/dashboard")({
   component: Home,
 });
 
-const toneRing = {
-  emergency: "bg-emergency-soft text-emergency",
-  brand: "bg-brand-soft text-primary",
-  verified: "bg-verified-soft text-verified",
-  warning: "bg-warning-soft text-warning",
-} as const;
 
 function Home() {
   return (
