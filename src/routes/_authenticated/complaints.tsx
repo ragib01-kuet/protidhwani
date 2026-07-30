@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowBigUp, Loader2, Trash2, Upload } from "lucide-react";
+
+import { AppShell } from "@/components/AppShell";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -119,11 +121,13 @@ function ComplaintsPage() {
   const voted = new Set(votesQuery.data ?? []);
 
   return (
-    <main className="mx-auto min-h-dvh w-full max-w-3xl px-4 py-8 pb-28">
+    <AppShell
+      title={{ bn: "নাগরিক অভিযোগ", en: "Citizen complaints" }}
+      showSearch={false}
+      hideComposer
+      showBack
+    >
       <header className="mb-6">
-        <h1 lang="bn" className="text-2xl font-bold text-foreground">
-          নাগরিক অভিযোগ
-        </h1>
         <p lang="en" className="text-sm text-muted-foreground">
           Citizen complaints ·{" "}
           <Link to="/account" className="text-primary hover:underline">
@@ -292,6 +296,6 @@ function ComplaintsPage() {
           ))}
         </ul>
       )}
-    </main>
+    </AppShell>
   );
 }
