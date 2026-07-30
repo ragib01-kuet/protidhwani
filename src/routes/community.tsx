@@ -297,8 +297,8 @@ function Community() {
       onSearchClick={() => searchRef.current?.focus()}
       hideComposer
     >
-      {/* Composer */}
-      <section className="rounded-[2rem] border border-border bg-card p-5 shadow-card">
+      {/* Composer — hidden on mobile; mobile users use the floating action buttons */}
+      <section className="hidden rounded-[2rem] border border-border bg-card p-5 shadow-card md:block">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
           <div className="min-w-0">
             <h2 lang="bn" className="text-base font-bold">
