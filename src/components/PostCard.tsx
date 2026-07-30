@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { BadgeCheck, MapPin, Clock, Heart, MessageCircle, Paperclip, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { kindMeta, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,9 @@ const levelLabel = {
 
 export function PostCard({ post }: { post: Post }) {
   const meta = kindMeta[post.kind];
+  const images = post.images ?? [];
+  const [lightbox, setLightbox] = useState<number | null>(null);
+  const [supported, setSupported] = useState(false);
 
   return (
     <article
@@ -171,9 +175,17 @@ export function PostCard({ post }: { post: Post }) {
 
       <div className="mt-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-t border-border pt-4">
         <div className="flex min-w-0 items-center gap-2">
-          <button className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary">
-            <Heart className="size-4" />
-            <span className="font-semibold tabular-nums">{post.support.toLocaleString("bn-BD")}</span>
+          <button
+            type="button"
+            aria-pressed={supported}
+            onClick={() => setSupported((v) => !v)}
+            className={cn(
+              "flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary",
+              supported && "bg-brand-soft text-primary",
+            )}
+          >
+            <Heart className={cn("size-4", supported && "fill-current")} />
+            <span className="font-semibold tabular-nums">{(post.support + (supported ? 1 : 0)).toLocaleString("bn-BD")}</span>
             <span lang="bn" className="text-xs text-muted-foreground">সমর্থন</span>
           </button>
           <button className="flex items-center gap-1.5 rounded-full px-3 py-2 text-sm transition-colors hover:bg-brand-soft hover:text-primary">
