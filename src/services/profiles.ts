@@ -1,5 +1,7 @@
 import { AVATAR_BUCKET, supabase } from "@/integrations/supabase/client";
 import type { Profile } from "@/integrations/supabase/database.types";
+import { COMMUNITY_BUCKET } from "@/services/community";
+
 
 /** Read the signed-in user's profile. Returns null when the row does not exist yet. */
 export async function getProfile(userId: string): Promise<Profile | null> {
