@@ -296,6 +296,40 @@ function Profile() {
           </Button>
         </div>
 
+        {uploading && (
+          <div className="mt-4">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+              <div
+                className="h-full rounded-full bg-primary transition-[width] duration-200"
+                style={{ width: `${uploadPct}%` }}
+              />
+            </div>
+            <p className="mt-1.5 text-[11px] text-muted-foreground">
+              <span lang="bn">ছবি আপলোড হচ্ছে…</span>{" "}
+              <span lang="en" className="uppercase tracking-wider">
+                Uploading {uploadPct}%
+              </span>
+            </p>
+          </div>
+        )}
+
+        {!uploading && uploadError && (
+          <div className="mt-4 flex flex-wrap items-center gap-3 rounded-2xl border border-emergency/30 bg-emergency-soft px-4 py-3">
+            <p className="min-w-0 flex-1 text-xs font-semibold text-emergency">{uploadError}</p>
+            {pendingFile && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => pendingFile && runUpload(pendingFile)}
+              >
+                <span lang="bn">আবার চেষ্টা</span> <span className="opacity-70">Retry</span>
+              </Button>
+            )}
+          </div>
+        )}
+
+
+
         <div className="mt-5 flex items-center gap-2 rounded-2xl bg-verified-soft px-4 py-3">
           <ShieldCheck className="size-4 shrink-0 text-verified" />
           <span>
