@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   ShieldQuestion,
   Trash2,
+  Play,
 } from "lucide-react";
 
 import {
@@ -31,7 +32,7 @@ import {
   toBnNumber,
 } from "@/lib/community-meta";
 import { cn } from "@/lib/utils";
-import type { PostWithAuthor } from "@/services/community";
+import { isVideoUrl, type PostWithAuthor } from "@/services/community";
 
 export interface CommunityPostCardProps {
   post: PostWithAuthor;
