@@ -1,11 +1,17 @@
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, X } from "lucide-react";
+import { ImagePlus, Loader2, Play, X } from "lucide-react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DISTRICTS, POST_KINDS, TONE_CLASS } from "@/lib/community-meta";
 import { cn } from "@/lib/utils";
 import type { CommunityPostKind, CommunityPostLevel } from "@/integrations/supabase/database.types";
-import type { PostInput, PostWithAuthor } from "@/services/community";
+import {
+  IMAGE_MAX_BYTES,
+  VIDEO_MAX_BYTES,
+  isVideoUrl,
+  type PostInput,
+  type PostWithAuthor,
+} from "@/services/community";
 
 export interface PostComposerModalProps {
   open: boolean;
@@ -77,10 +83,20 @@ export function PostComposerModal({
 
   const handleFiles = (list: FileList | null) => {
     if (!list) return;
-    const picked = Array.from(list).filter((f) => f.type.startsWith("image/"));
-    const oversize = picked.find((f) => f.size > 5 * 1024 * 1024);
-    if (oversize) {
-      setError("প্রতিটি ছবি ৫ এমবি-র কম হতে হবে · Each image must be under 5 MB");
+    const picked = Array.from(list).filter(
+      (f) => f.type.startsWith("image/") || f.type.startsWith("video/"),
+    );
+    if (picked.length === 0) {
+      setError("শুধু ছবি বা ভিডিও দিন · Only photos or videos are supported");
+      return;
+    }
+    const tooBig = picked.find((f) =>
+      f.type.startsWith("video/") ? f.size > VIDEO_MAX_BYTES : f.size > IMAGE_MAX_BYTES,
+    );
+    if (tooBig) {
+      setError(
+        "ছবি সর্বোচ্চ ৫ এমবি, ভিডিও সর্বোচ্চ ৫০ এমবি · Photos up to 5 MB, videos up to 50 MB",
+      );
       return;
     }
     setError(null);
@@ -281,12 +297,24 @@ export function PostComposerModal({
 
           <div>
             <span lang="bn" className="mb-2 block text-xs font-bold">
-              ছবি <span lang="en" className="font-normal text-muted-foreground">· Photos (max 6)</span>
+              ছবি ও ভিডিও{" "}
+              <span lang="en" className="font-normal text-muted-foreground">
+                · Photos &amp; videos (max 6)
+              </span>
             </span>
             <div className="flex flex-wrap gap-2">
               {keptUrls.map((url) => (
                 <span key={url} className="relative size-20 overflow-hidden rounded-2xl border border-border">
-                  <img src={url} alt="" className="size-full object-cover" />
+                  {isVideoUrl(url) ? (
+                    <>
+                      <video src={url} muted playsInline className="size-full object-cover" />
+                      <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25 text-background">
+                        <Play className="size-5 fill-current" />
+                      </span>
+                    </>
+                  ) : (
+                    <img src={url} alt="" className="size-full object-cover" />
+                  )}
                   <button
                     type="button"
                     aria-label="ছবি সরান / Remove image"
@@ -305,7 +333,21 @@ export function PostComposerModal({
                   key={`${file.name}-${i}`}
                   className="relative size-20 overflow-hidden rounded-2xl border border-border"
                 >
-                  <img src={URL.createObjectURL(file)} alt="" className="size-full object-cover" />
+                  {file.type.startsWith("video/") ? (
+                    <>
+                      <video
+                        src={URL.createObjectURL(file)}
+                        muted
+                        playsInline
+                        className="size-full object-cover"
+                      />
+                      <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25 text-background">
+                        <Play className="size-5 fill-current" />
+                      </span>
+                    </>
+                  ) : (
+                    <img src={URL.createObjectURL(file)} alt="" className="size-full object-cover" />
+                  )}
                   <button
                     type="button"
                     aria-label="ছবি সরান / Remove image"
@@ -321,7 +363,7 @@ export function PostComposerModal({
                   type="button"
                   onClick={() => fileInput.current?.click()}
                   className="grid size-20 place-items-center rounded-2xl border border-dashed border-border text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-                  aria-label="ছবি যোগ করুন / Add photo"
+                  aria-label="ছবি বা ভিডিও যোগ করুন / Add photo or video"
                 >
                   <ImagePlus className="size-5" />
                 </button>
@@ -330,7 +372,7 @@ export function PostComposerModal({
             <input
               ref={fileInput}
               type="file"
-              accept="image/*"
+              accept="image/*,video/*"
               multiple
               hidden
               onChange={(e) => {
