@@ -674,15 +674,21 @@ function Community() {
         open={composerOpen}
         onOpenChange={(open) => {
           setComposerOpen(open);
-          if (!open) setEditing(null);
+          if (!open) {
+            setEditing(null);
+            setUploadItems([]);
+            uploadedRef.current = new Map();
+          }
         }}
         editing={editing}
         initialKind={composerKind}
         submitting={savePost.isPending}
+        uploadProgress={uploadItems}
         onSubmit={async (input, files, removed) => {
           await savePost.mutateAsync({ input, files, removed });
         }}
       />
+
 
       <CommentsSheet
         post={commentsFor}
