@@ -107,7 +107,7 @@ function AccountPage() {
     await queryClient.cancelQueries();
     queryClient.clear();
     await supabase.auth.signOut();
-    navigate({ to: "/auth/login", replace: true });
+    navigate({ to: "/", replace: true });
   }
 
   return (
