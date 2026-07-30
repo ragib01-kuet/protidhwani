@@ -558,6 +558,7 @@ function PillarGrid() {
 const feed = [
   {
     tag: "Road safety",
+    to: "/map" as const,
     tone: "emergency",
     title: "Reckless bus driving on Airport Road — CCTV footage submitted",
     bn: "এয়ারপোর্ট রোডে বেপরোয়া বাসের ভিডিও জমা",
@@ -567,6 +568,7 @@ const feed = [
   },
   {
     tag: "Rights",
+    to: "/rights" as const,
     tone: "primary",
     title: "Explainer: What to do if police stop you without a warrant",
     bn: "ওয়ারেন্ট ছাড়া পুলিশ থামালে করণীয়",
@@ -576,6 +578,7 @@ const feed = [
   },
   {
     tag: "Fact-check",
+    to: "/explore" as const,
     tone: "verified",
     title: "Claim about petrol price hike — marked misleading",
     bn: "পেট্রলের দাম বৃদ্ধির দাবি — বিভ্রান্তিকর",
@@ -585,6 +588,7 @@ const feed = [
   },
   {
     tag: "Flood alert",
+    to: "/emergency" as const,
     tone: "warning",
     title: "Rising water in Sylhet lowlands — advisory issued",
     bn: "সিলেটের নিম্নাঞ্চলে পানি বৃদ্ধি",
