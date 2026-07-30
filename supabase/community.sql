@@ -179,3 +179,35 @@ exception when duplicate_object then null; end $$;
 do $$ begin
   alter publication supabase_realtime add table public.post_supports;
 exception when duplicate_object then null; end $$;
+
+-- ============================================================
+-- Storage bucket for community photos AND videos.
+-- Run this if uploads fail with "Bucket not found" or a MIME error.
+-- ============================================================
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'community-images', 'community-images', true, 52428800,
+  array[
+    'image/jpeg','image/png','image/webp','image/gif','image/heic',
+    'video/mp4','video/webm','video/quicktime','video/x-m4v','video/ogg'
+  ]
+)
+on conflict (id) do update
+  set public = true,
+      file_size_limit = 52428800,
+      allowed_mime_types = excluded.allowed_mime_types;
+
+-- Public read; owners write their own `<uid>/...` prefix.
+drop policy if exists "community media public read" on storage.objects;
+create policy "community media public read" on storage.objects
+  for select using (bucket_id = 'community-images');
+
+drop policy if exists "community media owner write" on storage.objects;
+create policy "community media owner write" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'community-images' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "community media owner delete" on storage.objects;
+create policy "community media owner delete" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'community-images' and (storage.foldername(name))[1] = auth.uid()::text);
