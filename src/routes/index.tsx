@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { BrandLockup } from "@/components/BrandLogo";
 import {
   AlertTriangle,
   ShieldCheck,
