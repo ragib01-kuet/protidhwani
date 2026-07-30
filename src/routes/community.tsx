@@ -565,8 +565,13 @@ function Community() {
           </div>
         ) : (
           posts.map((post) => (
+            <div key={post.id} className="space-y-1.5">
+              {isDemoPost(post.id) && (
+                <span className="ml-1 inline-flex items-center gap-1 rounded-full bg-warning-soft px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-warning">
+                  <span lang="bn">ডেমো</span> · Demo
+                </span>
+              )}
             <CommunityPostCard
-              key={post.id}
               post={post}
               supported={
                 isDemoPost(post.id) ? demoSupported.includes(post.id) : supportedIds.has(post.id)
@@ -602,6 +607,7 @@ function Community() {
               }}
               onDelete={setDeleteFor}
             />
+            </div>
           ))
         )}
         {feed.isFetching && !feed.isLoading && (
