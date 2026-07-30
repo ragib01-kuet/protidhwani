@@ -51,6 +51,14 @@ function July36Page() {
           </div>
           <a
             href={pdfAsset.url}
+            target="_blank"
+            rel="noreferrer"
+            className="hidden rounded-2xl border border-border px-4 py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-primary sm:inline-flex"
+          >
+            <span lang="bn">নতুন ট্যাবে খুলুন</span>
+          </a>
+          <a
+            href={pdfAsset.url}
             download
             className="inline-flex items-center gap-2 rounded-2xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
           >
@@ -85,7 +93,12 @@ function July36Page() {
             />
             <div className="p-6 text-sm text-muted-foreground">
               <span lang="bn">পিডিএফ দেখা যাচ্ছে না। </span>
-              <a href={pdfAsset.url} className="font-semibold text-primary underline">
+              <a
+                href={pdfAsset.url}
+                target="_blank"
+                rel="noreferrer"
+                className="font-semibold text-primary underline"
+              >
                 Open the PDF
               </a>
             </div>
