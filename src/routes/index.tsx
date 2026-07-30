@@ -904,8 +904,8 @@ function Footer() {
                   <li key={item.x}>
                     <Link
                       to={item.to}
-                      search={item.to === "/messages" ? {} : undefined}
                       className="text-foreground/80 hover:text-foreground"
+
                     >
                       {item.x}
                     </Link>
