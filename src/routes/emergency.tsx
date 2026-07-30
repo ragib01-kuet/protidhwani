@@ -64,7 +64,7 @@ const QUICK_ACTIONS: QuickAction[] = [
 
 function Emergency() {
   const { user } = useAuth();
-  const { scope, setManual, detect, status: geoStatus } = useAreaScope();
+  const { scope, setManual, detect, clear, accuracyKm, status: geoStatus } = useAreaScope();
   const [alerts, setAlerts] = useState<SosAlert[]>([]);
   const [loading, setLoading] = useState(true);
   const [countdown, setCountdown] = useState<null | SosKind>(null);
@@ -463,8 +463,10 @@ function Emergency() {
         onOpenChange={setScopeOpen}
         scope={scope}
         status={geoStatus}
-        onDetect={detect}
-        onSelect={setManual}
+        accuracyKm={accuracyKm}
+        onDetect={() => void detect()}
+        onApply={setManual}
+        onClear={clear}
       />
 
       {trackingId && null}
