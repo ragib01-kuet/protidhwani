@@ -1,4 +1,15 @@
 import { supabase } from "@/integrations/supabase/client";
+import {
+  DEMO_PEOPLE,
+  demoFindLink,
+  demoListLinks,
+  demoRemoveLink,
+  demoRespond,
+  demoSearchPeople,
+  demoSendFriendRequest,
+  isDemoPerson,
+  subscribeDemo,
+} from "@/data/social-demo";
 
 /** Basic public card for a person — used across search, friends and chat. */
 export interface PersonCard {
@@ -66,18 +77,32 @@ export async function listLinks(meId: string): Promise<FriendLink[]> {
     .select("*")
     .or(`requester_id.eq.${meId},addressee_id.eq.${meId}`)
     .order("updated_at", { ascending: false });
-  if (error) throw error;
+  if (error) {
+    if (isMissingSocialSchema(error)) return demoListLinks(meId);
+    throw error;
+  }
   return (data ?? []) as FriendLink[];
 }
 
 async function peopleByIds(ids: string[]): Promise<Map<string, PersonCard>> {
   if (ids.length === 0) return new Map();
-  const { data, error } = await supabase.from("profiles").select(PERSON_SELECT).in("id", ids);
-  if (error) throw error;
-  return new Map(((data ?? []) as PersonCard[]).map((p) => [p.id, p]));
+  const map = new Map<string, PersonCard>();
+  for (const id of ids) {
+    const demo = DEMO_PEOPLE.find((p) => p.id === id);
+    if (demo) map.set(id, demo);
+  }
+  const realIds = ids.filter((id) => !isDemoPerson(id));
+  if (realIds.length) {
+    const { data, error } = await supabase.from("profiles").select(PERSON_SELECT).in("id", realIds);
+    if (error) throw error;
+    for (const p of (data ?? []) as PersonCard[]) map.set(p.id, p);
+  }
+  return map;
 }
 
 export interface SocialGraph {
+  /** True when the data came from the built-in demo network. */
+  demo: boolean;
   friends: PersonWithLink[];
   incoming: PersonWithLink[];
   outgoing: PersonWithLink[];
@@ -88,6 +113,7 @@ export interface SocialGraph {
 /** One round-trip view of my whole social graph. */
 export async function getSocialGraph(meId: string): Promise<SocialGraph> {
   const links = await listLinks(meId);
+  const demo = links.some((l) => isDemoPerson(l.requester_id) || isDemoPerson(l.addressee_id));
   const peerIds = links.map((l) => (l.requester_id === meId ? l.addressee_id : l.requester_id));
   const people = await peopleByIds([...new Set(peerIds)]);
 
@@ -108,7 +134,7 @@ export async function getSocialGraph(meId: string): Promise<SocialGraph> {
     else if (state === "outgoing") outgoing.push(entry);
   }
 
-  return { friends, incoming, outgoing, byPeer };
+  return { demo, friends, incoming, outgoing, byPeer };
 }
 
 /** People search by name (bn/en), username or district — excludes me. */
@@ -120,9 +146,16 @@ export async function searchPeople(meId: string, term: string): Promise<PersonCa
       `full_name.ilike.%${safe}%,full_name_bn.ilike.%${safe}%,username.ilike.%${safe}%,district.ilike.%${safe}%`,
     );
   }
-  const { data, error } = await query.order("updated_at", { ascending: false });
-  if (error) throw error;
-  return (data ?? []) as PersonCard[];
+  // Live profiles are best-effort: a missing column or restricted policy must
+  // never blank out Discover, so failures fall through to the demo network.
+  let live: PersonCard[] = [];
+  try {
+    const { data, error } = await query;
+    if (!error) live = (data ?? []) as PersonCard[];
+  } catch {
+    live = [];
+  }
+  return [...live, ...demoSearchPeople(meId, term)];
 }
 
 /** Send (or re-send after a decline) a friend request. */
@@ -131,15 +164,19 @@ export async function sendFriendRequest(meId: string, peerId: string): Promise<F
   const existing = await findLink(meId, peerId);
   if (existing) {
     if (existing.status === "accepted") return existing;
-    if (existing.addressee_id === meId) return respondToRequest(existing.id, "accepted");
-    return updateLink(existing.id, "pending");
+    if (existing.addressee_id === meId) return respondToRequest(existing.id, "accepted", meId);
+    return updateLink(existing.id, "pending", meId);
   }
+  if (isDemoPerson(peerId)) return demoSendFriendRequest(meId, peerId);
   const { data, error } = await supabase
     .from("friend_requests")
     .insert({ requester_id: meId, addressee_id: peerId, status: "pending" })
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) {
+    if (isMissingSocialSchema(error)) return demoSendFriendRequest(meId, peerId);
+    throw error;
+  }
   return data as FriendLink;
 }
 
@@ -151,11 +188,19 @@ export async function findLink(meId: string, peerId: string): Promise<FriendLink
       `and(requester_id.eq.${meId},addressee_id.eq.${peerId}),and(requester_id.eq.${peerId},addressee_id.eq.${meId})`,
     )
     .maybeSingle();
-  if (error) throw error;
+  if (error) {
+    if (isMissingSocialSchema(error)) return demoFindLink(meId, peerId);
+    throw error;
+  }
   return (data as FriendLink) ?? null;
 }
 
-async function updateLink(id: string, status: FriendStatus): Promise<FriendLink> {
+function isDemoLinkId(id: string) {
+  return id.startsWith("demo-link-");
+}
+
+async function updateLink(id: string, status: FriendStatus, meId = ""): Promise<FriendLink> {
+  if (isDemoLinkId(id)) return demoRespond(meId, id, status === "declined" ? "declined" : "accepted");
   const { data, error } = await supabase
     .from("friend_requests")
     .update({ status, updated_at: new Date().toISOString() })
@@ -170,12 +215,17 @@ async function updateLink(id: string, status: FriendStatus): Promise<FriendLink>
 export async function respondToRequest(
   id: string,
   status: Extract<FriendStatus, "accepted" | "declined">,
+  meId = "",
 ): Promise<FriendLink> {
-  return updateLink(id, status);
+  return updateLink(id, status, meId);
 }
 
 /** Cancel my outgoing request, or unfriend an existing friend. */
-export async function removeLink(id: string): Promise<void> {
+export async function removeLink(id: string, meId = ""): Promise<void> {
+  if (isDemoLinkId(id)) {
+    demoRemoveLink(meId, id);
+    return;
+  }
   const { error } = await supabase.from("friend_requests").delete().eq("id", id);
   if (error) throw error;
 }
@@ -195,7 +245,9 @@ export function subscribeToFriendLinks(meId: string, onChange: () => void): () =
       onChange,
     )
     .subscribe();
+  const unsubDemo = subscribeDemo(onChange);
   return () => {
+    unsubDemo();
     void supabase.removeChannel(channel);
   };
 }

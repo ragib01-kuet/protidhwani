@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Link } from "@tanstack/react-router";
 
 import { personName, type PersonCard } from "@/services/social";
 import { cn } from "@/lib/utils";
@@ -46,15 +47,19 @@ export function PersonRow({
         className,
       )}
     >
-      <Avatar person={person} />
+      <Link to="/u/$userId" params={{ userId: person.id }} aria-label={`${name.bn} ${name.en}`}>
+        <Avatar person={person} />
+      </Link>
       <div className="min-w-0 flex-1">
-        <p lang="bn" className="truncate text-sm font-semibold">
-          {name.bn}
-        </p>
-        <p lang="en" className="truncate text-xs text-muted-foreground">
-          {name.en}
-          {person.district ? ` · ${person.district}` : ""}
-        </p>
+        <Link to="/u/$userId" params={{ userId: person.id }} className="block">
+          <p lang="bn" className="truncate text-sm font-semibold hover:text-primary">
+            {name.bn}
+          </p>
+          <p lang="en" className="truncate text-xs text-muted-foreground">
+            {name.en}
+            {person.district ? ` · ${person.district}` : ""}
+          </p>
+        </Link>
         {meta ? <div className="mt-1 text-xs text-muted-foreground">{meta}</div> : null}
       </div>
       {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
@@ -62,19 +67,18 @@ export function PersonRow({
   );
 }
 
-export function SchemaNotice() {
+/** Shown when friends/messages are running on the built-in demo network. */
+export function DemoNotice() {
   return (
     <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
       <p lang="bn" className="font-semibold">
-        সামাজিক টেবিল এখনো তৈরি হয়নি
+        ডেমো নেটওয়ার্ক চালু
       </p>
-      <p lang="en" className="mt-1 text-muted-foreground">
-        Run <code className="rounded bg-background px-1">supabase/social.sql</code> in your Supabase
-        SQL editor to enable friends and messaging.
+      <p lang="en" className="mt-1 text-xs text-muted-foreground">
+        Demo mode — friend requests and messages work end to end with sample neighbours and are
+        saved on this device. Run <code className="rounded bg-background px-1">supabase/social.sql</code>{" "}
+        to switch to live accounts.
       </p>
-      <a href="/community" className="mt-3 inline-block text-xs font-semibold text-primary">
-        কমিউনিটিতে ফিরুন · Back to community
-      </a>
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { Link, useRouter } from "@tanstack/react-router";
-import { ArrowLeft, LayoutGrid, Plus, Search, X } from "lucide-react";
+import { ArrowLeft, LayoutGrid, MessageCircle, Plus, Search, X } from "lucide-react";
 import { BottomNav, SideNav } from "./BottomNav";
 import { Composer } from "./Composer";
 import { NotificationsBell } from "./NotificationsBell";
@@ -67,6 +67,14 @@ export function AppShell({
                   <Search className="size-5" />
                 </button>
               )}
+              <Link
+                to="/messages"
+                search={{}}
+                aria-label="বার্তা / Messages"
+                className="grid size-11 place-items-center rounded-2xl border border-border bg-card text-muted-foreground transition-colors hover:text-primary"
+              >
+                <MessageCircle className="size-5" />
+              </Link>
               <NotificationsBell />
               <button
                 aria-label="আরও / More"
