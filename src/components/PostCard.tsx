@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { BadgeCheck, MapPin, Clock, Heart, MessageCircle, Paperclip, ShieldAlert, ShieldQuestion } from "lucide-react";
+import { AuthorLink } from "@/components/social/AuthorLink";
 import { kindMeta, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +32,7 @@ export function PostCard({ post }: { post: Post }) {
       )}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+        <AuthorLink userId={post.author.id}>
           <span
             lang="bn"
             className="grid size-11 shrink-0 place-items-center rounded-2xl bg-brand-soft text-base font-bold text-primary"
@@ -40,7 +41,7 @@ export function PostCard({ post }: { post: Post }) {
           </span>
           <div className="min-w-0">
             <span className="flex items-center gap-1.5">
-              <span lang="bn" className="truncate text-sm font-bold">
+              <span lang="bn" className="truncate text-sm font-bold group-hover/author:text-primary">
                 {post.author.bn}
               </span>
               {post.author.verified && <BadgeCheck className="size-4 shrink-0 text-verified" />}
@@ -49,7 +50,7 @@ export function PostCard({ post }: { post: Post }) {
               {post.author.en}
             </span>
           </div>
-        </div>
+        </AuthorLink>
         <span className={cn("shrink-0 rounded-full px-3 py-1.5 text-center", toneClass[meta.tone])}>
           <span lang="bn" className="block text-[11px] font-bold leading-none">
             {meta.bn}
