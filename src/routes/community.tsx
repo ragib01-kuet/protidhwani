@@ -351,7 +351,7 @@ function Community() {
   return (
     <AppShell
       title={{ bn: "কমিউনিটি", en: "Community" }}
-      subtitle={feed.data ? `${feed.data.length} posts` : undefined}
+      subtitle={showingDemo ? `${posts.length} demo posts` : feed.data ? `${posts.length} posts` : undefined}
       onSearchClick={() => searchRef.current?.focus()}
       hideComposer
     >
