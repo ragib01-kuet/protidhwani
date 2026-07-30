@@ -29,6 +29,9 @@ import {
   isDemoPost,
 } from "@/data/community-demo";
 
+import { AreaScopeBar, AreaScopeSheet } from "@/components/community/AreaScopeSheet";
+import { postInScope, scopeLocationString } from "@/data/bd-areas";
+import { useAreaScope } from "@/hooks/useAreaScope";
 import { DISTRICTS, POST_KINDS, TONE_CLASS } from "@/lib/community-meta";
 import { cn } from "@/lib/utils";
 import {
@@ -119,6 +122,33 @@ function Community() {
   const [demoSupported, setDemoSupported] = useState<string[]>([]);
   const [showDemo, setShowDemo] = useState(true);
 
+  // Area scoping — /community is local (union → upazila → district);
+  // /explore stays nationwide.
+  const { scope, hydrated, status, accuracyKm, detect, setManual, clear } = useAreaScope();
+  const [areaSheetOpen, setAreaSheetOpen] = useState(false);
+
+  const handleDetect = useCallback(async () => {
+    const next = await detect();
+    if (next) {
+      toast.success("আপনার এলাকা শনাক্ত হয়েছে", { description: "Area detected from your location" });
+      setAreaSheetOpen(false);
+    } else {
+      toast.error("অবস্থান পাওয়া যায়নি", {
+        description: "Location unavailable or denied — choose your area manually",
+      });
+      setAreaSheetOpen(true);
+    }
+  }, [detect]);
+
+  // First visit with no saved area: prompt once. Choosing "nationwide"
+  // afterwards must not re-open the picker.
+  const promptedRef = useRef(false);
+  useEffect(() => {
+    if (!hydrated || promptedRef.current) return;
+    promptedRef.current = true;
+    if (!scope) setAreaSheetOpen(true);
+  }, [hydrated, scope]);
+
   useEffect(() => {
     const id = setTimeout(() => setSearch(searchInput.trim()), 300);
     return () => clearTimeout(id);
@@ -127,12 +157,12 @@ function Community() {
   const filters = useMemo(
     () => ({
       kind,
-      district: district || null,
+      district: district || scope?.district || null,
       sort,
       search,
       mine: mineOnly && user ? user.id : null,
     }),
-    [kind, district, sort, search, mineOnly, user],
+    [kind, district, scope?.district, sort, search, mineOnly, user],
   );
 
   const feedKey = ["community", "posts", filters] as const;
@@ -329,10 +359,15 @@ function Community() {
     setComposerOpen(true);
   };
 
-  const livePosts = feed.data ?? [];
+  const inScope = useCallback(
+    (post: PostWithAuthor) => postInScope(post, scope),
+    [scope],
+  );
+
+  const livePosts = (feed.data ?? []).filter(inScope);
   // Seeded demo posts (with photos) always stay visible below live content
   // unless the reader turns them off.
-  const demoVisible = filterDemoPosts(demoPosts, filters);
+  const demoVisible = filterDemoPosts(demoPosts, filters).filter(inScope);
   const showingDemo = !feed.isLoading && showDemo && demoVisible.length > 0;
 
   const posts = showingDemo ? [...livePosts, ...demoVisible] : livePosts;
@@ -399,6 +434,28 @@ function Community() {
       onSearchClick={() => searchRef.current?.focus()}
       hideComposer
     >
+      <AreaScopeBar
+        scope={scope}
+        status={status}
+        count={posts.length}
+        onOpen={() => setAreaSheetOpen(true)}
+        onDetect={handleDetect}
+      />
+
+      <AreaScopeSheet
+        open={areaSheetOpen}
+        onOpenChange={setAreaSheetOpen}
+        scope={scope}
+        status={status}
+        accuracyKm={accuracyKm}
+        onDetect={handleDetect}
+        onApply={(d, up, un) => {
+          setDistrict("");
+          setManual(d, up, un);
+        }}
+        onClear={clear}
+      />
+
       {/* Composer — hidden on mobile; mobile users use the floating action buttons */}
       <section className="hidden rounded-[2rem] border border-border bg-card p-5 shadow-card md:block">
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
@@ -479,7 +536,11 @@ function Community() {
             value={district}
             onChange={(e) => setDistrict(e.target.value)}
             aria-label="জেলা / District"
-            className="rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold outline-none"
+            hidden={Boolean(scope)}
+            className={cn(
+              "rounded-full border border-border bg-card px-4 py-2 text-xs font-semibold outline-none",
+              scope && "hidden",
+            )}
           >
             <option value="">সব জেলা · All districts</option>
             {DISTRICTS.map((d) => (
@@ -597,8 +658,16 @@ function Community() {
               এখনও কোনো পোস্ট নেই
             </p>
             <p lang="en" className="mt-1 text-xs uppercase tracking-wider text-muted-foreground">
-              No posts match this view
+              {scope ? "No posts in this area yet" : "No posts match this view"}
             </p>
+            {scope && (
+              <button
+                onClick={() => setAreaSheetOpen(true)}
+                className="mx-auto mt-3 block rounded-full border border-border px-4 py-2 text-xs font-semibold text-muted-foreground"
+              >
+                <span lang="bn">অন্য এলাকা দেখুন</span> · <span lang="en">Change area</span>
+              </button>
+            )}
             <button
               onClick={() => openComposer("report")}
               className="mx-auto mt-5 flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
@@ -684,6 +753,8 @@ function Community() {
         initialKind={composerKind}
         submitting={savePost.isPending}
         uploadProgress={uploadItems}
+        defaultLocation={scope ? scopeLocationString(scope) : ""}
+        defaultDistrict={scope?.district ?? ""}
         onSubmit={async (input, files, removed) => {
           await savePost.mutateAsync({ input, files, removed });
         }}

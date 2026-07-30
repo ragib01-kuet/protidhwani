@@ -1,8 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { PostCard } from "@/components/PostCard";
-import { Search } from "lucide-react";
+import { Globe2, MapPin, Search } from "lucide-react";
 import { feedPosts, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +81,25 @@ function Explore() {
 
   return (
     <AppShell title={{ bn: "অন্বেষণ", en: "Explore" }}>
+      <section className="mb-4 flex items-start gap-3 rounded-[1.75rem] border border-border bg-card p-4 shadow-card">
+        <span className="grid size-10 shrink-0 place-items-center rounded-2xl bg-brand-soft text-primary">
+          <Globe2 className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p lang="bn" className="text-sm font-bold">সারা দেশের ফিড</p>
+          <p lang="en" className="text-[10px] uppercase tracking-wider text-muted-foreground">
+            Nationwide · reports from every district
+          </p>
+        </div>
+        <Link
+          to="/community"
+          className="flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-[11px] font-bold text-primary"
+        >
+          <MapPin className="size-3.5" />
+          <span lang="bn">আমার এলাকা</span>
+        </Link>
+      </section>
+
       <label className="flex items-center gap-2 rounded-full border border-border bg-card px-4 py-3 shadow-card">
         <Search className="size-4 shrink-0 text-muted-foreground" />
         <input
