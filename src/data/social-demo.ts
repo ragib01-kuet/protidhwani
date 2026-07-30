@@ -81,8 +81,50 @@ export const DEMO_PEOPLE: PersonCard[] = [
   },
 ];
 
+/**
+ * Extra demo identities registered by feed datasets (community + civic demos)
+ * so tapping any author in a demo post opens a real, messageable profile.
+ */
+const registry = new Map<string, PersonCard>();
+
+/** Authors used by the demo community + civic feeds. */
+const FEED_DEMO_PEOPLE: PersonCard[] = [
+  { id: "demo-rumana", full_name: "Rumana Haque", full_name_bn: "রুমানা হক", username: "rumana", avatar_url: null, district: "Dhaka" },
+  { id: "demo-traffic-unit", full_name: "City Traffic Unit", full_name_bn: "সিটি ট্রাফিক ইউনিট", username: "traffic", avatar_url: null, district: "Dhaka" },
+  { id: "demo-afsana", full_name: "Afsana Mim", full_name_bn: "আফসানা মিম", username: "afsana", avatar_url: null, district: "Dhaka" },
+  { id: "demo-legal-aid", full_name: "Citizen Legal Aid", full_name_bn: "নাগরিক আইন সহায়তা", username: "legalaid", avatar_url: null, district: "Dhaka" },
+  { id: "demo-ward19", full_name: "Ward 19 Community", full_name_bn: "ওয়ার্ড ১৯ কমিউনিটি", username: "ward19", avatar_url: null, district: "Dhaka" },
+  { id: "demo-user-1", full_name: "Nafisa Rahman", full_name_bn: "নাফিসা রহমান", username: "nafisa", avatar_url: null, district: "Dhaka" },
+  { id: "demo-user-2", full_name: "Tanvir Hasan", full_name_bn: "তানভীর হাসান", username: "tanvir2", avatar_url: null, district: "Dhaka" },
+  { id: "demo-user-3", full_name: "Sadia Islam", full_name_bn: "সাদিয়া ইসলাম", username: "sadia", avatar_url: null, district: "Dhaka" },
+  { id: "demo-user-4", full_name: "Rubel Ahmed", full_name_bn: "রুবেল আহমেদ", username: "rubel", avatar_url: null, district: "Dhaka" },
+];
+for (const person of FEED_DEMO_PEOPLE) registry.set(person.id, person);
+
+export function registerDemoPeople(people: PersonCard[]): void {
+  for (const person of people) registry.set(person.id, person);
+}
+
+function synthesizePerson(id: string): PersonCard {
+  const slug = id.replace(/^demo-/, "").replace(/[-_]+/g, " ").trim();
+  const en = slug.replace(/\b\w/g, (c) => c.toUpperCase()) || "Citizen";
+  return {
+    id,
+    full_name: en,
+    full_name_bn: null,
+    username: slug.replace(/\s+/g, ""),
+    avatar_url: null,
+    district: null,
+  };
+}
+
 export function findDemoPerson(id: string): PersonCard | null {
-  return DEMO_PEOPLE.find((p) => p.id === id) ?? null;
+  const seeded = DEMO_PEOPLE.find((p) => p.id === id);
+  if (seeded) return seeded;
+  const registered = registry.get(id);
+  if (registered) return registered;
+  // Any other demo-prefixed author still resolves to a usable profile.
+  return id.startsWith("demo-") ? synthesizePerson(id) : null;
 }
 
 export function isDemoPerson(id: string): boolean {

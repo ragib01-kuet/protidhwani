@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AuthorLink } from "@/components/social/AuthorLink";
 import {
   BadgeCheck,
   Clock,
@@ -78,7 +79,7 @@ export function CommunityPostCard({
       )}
     >
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3">
-        <div className="flex min-w-0 items-center gap-3">
+        <AuthorLink userId={post.user_id}>
           {post.author?.avatar_url ? (
             <img
               src={post.author.avatar_url}
@@ -96,7 +97,7 @@ export function CommunityPostCard({
           )}
           <div className="min-w-0">
             <span className="flex items-center gap-1.5">
-              <span lang="bn" className="truncate text-sm font-bold">
+              <span lang="bn" className="truncate text-sm font-bold group-hover/author:text-primary">
                 {authorBn}
               </span>
               {post.status === "verified" && (
@@ -110,7 +111,7 @@ export function CommunityPostCard({
               {authorEn}
             </span>
           </div>
-        </div>
+        </AuthorLink>
         <div className="flex shrink-0 items-center gap-2">
           <span className={cn("rounded-full px-3 py-1.5 text-center", TONE_CLASS[meta.tone])}>
             <span lang="bn" className="block text-[11px] font-bold leading-none">
