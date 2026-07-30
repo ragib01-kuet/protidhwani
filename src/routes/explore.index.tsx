@@ -6,7 +6,7 @@ import { Search } from "lucide-react";
 import { posts, type Post } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/explore")({
+export const Route = createFileRoute("/explore/")({
   head: () => ({
     meta: [
       { title: "অন্বেষণ · Explore — Protidhwani" },
