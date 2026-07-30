@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check, Loader2, MapPin, MessageCircle, UserMinus, UserPlus, X } from "lucide-react";
@@ -6,9 +7,10 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Avatar } from "@/components/social/PersonRow";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/integrations/supabase/client";
-import { getPerson } from "@/services/messages";
+import { getPerson, sendMessage } from "@/services/messages";
 import {
   findLink,
   personName,
@@ -86,6 +88,23 @@ function PersonProfile() {
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const messageMutation = useMutation({
+    mutationFn: (body: string) => sendMessage(meId, userId, body),
+    onSuccess: () => {
+      setComposerOpen(false);
+      setDraft("");
+      void queryClient.invalidateQueries({ queryKey: ["dm-threads", meId] });
+      void queryClient.invalidateQueries({ queryKey: ["dm-conversation", meId, userId] });
+      toast.success("বার্তা পাঠানো হয়েছে · Message sent");
+      // Facebook-style: land straight in the conversation view.
+      void navigate({ to: "/messages", search: { peer: userId } });
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
   const removeMutation = useMutation({
     mutationFn: () => removeLink(linkQuery.data!.id, meId),
     onSuccess: () => {
@@ -151,7 +170,7 @@ function PersonProfile() {
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {state === "friends" ? (
                   <>
-                    <Button onClick={() => navigate({ to: "/messages", search: { peer: userId } })}>
+                    <Button onClick={() => setComposerOpen(true)}>
                       <MessageCircle className="size-4" /> বার্তা Message
                     </Button>
                     <Button
@@ -184,10 +203,7 @@ function PersonProfile() {
                     <Button disabled={busy || !meId} onClick={() => addMutation.mutate()}>
                       <UserPlus className="size-4" /> বন্ধু হোন Add friend
                     </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => navigate({ to: "/messages", search: { peer: userId } })}
-                    >
+                    <Button variant="secondary" onClick={() => setComposerOpen(true)}>
                       <MessageCircle className="size-4" /> বার্তা Message
                     </Button>
                   </>
@@ -222,6 +238,62 @@ function PersonProfile() {
               </Button>
             </div>
           </section>
+
+          {composerOpen ? (
+            <div
+              className="fixed inset-0 z-50 flex items-end justify-center bg-foreground/40 p-0 backdrop-blur-sm sm:items-center sm:p-6"
+              role="dialog"
+              aria-modal="true"
+              onClick={() => setComposerOpen(false)}
+            >
+              <div
+                className="w-full max-w-md rounded-t-[2rem] border border-border bg-card p-5 shadow-lift sm:rounded-[2rem]"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center gap-3">
+                  <Avatar person={person} size={44} />
+                  <div className="min-w-0">
+                    <p lang="bn" className="truncate text-sm font-bold">
+                      {name.bn}
+                    </p>
+                    <p lang="en" className="truncate text-[11px] uppercase tracking-wider text-muted-foreground">
+                      {name.en}
+                    </p>
+                  </div>
+                </div>
+                <Textarea
+                  autoFocus
+                  rows={4}
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="বার্তা লিখুন · Write a message…"
+                  className="mt-4"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey && draft.trim()) {
+                      e.preventDefault();
+                      messageMutation.mutate(draft);
+                    }
+                  }}
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button variant="ghost" onClick={() => setComposerOpen(false)}>
+                    বাতিল Cancel
+                  </Button>
+                  <Button
+                    disabled={!draft.trim() || messageMutation.isPending}
+                    onClick={() => messageMutation.mutate(draft)}
+                  >
+                    {messageMutation.isPending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <MessageCircle className="size-4" />
+                    )}
+                    পাঠান Send
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </AppShell>

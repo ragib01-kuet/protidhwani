@@ -11,7 +11,7 @@ export type PostKind =
 export type Post = {
   id: string;
   kind: PostKind;
-  author: { bn: string; en: string; initials: string; verified: boolean };
+  author: { id?: string; bn: string; en: string; initials: string; verified: boolean };
   location: { bn: string; en: string };
   time: { bn: string; en: string };
   title: { bn: string; en: string };
@@ -55,7 +55,7 @@ export const posts: Post[] = [
     id: "1",
     images: [gasLeakImage, roadImage, streetlightImage],
     kind: "emergency",
-    author: { bn: "রুমানা হক", en: "Rumana Haque", initials: "রু", verified: true },
+    author: { id: "demo-rumana", bn: "রুমানা হক", en: "Rumana Haque", initials: "রু", verified: true },
     location: { bn: "মিরপুর ১০, ঢাকা", en: "Mirpur 10, Dhaka" },
     time: { bn: "৪ মিনিট আগে", en: "4 minutes ago" },
     title: {
@@ -80,7 +80,7 @@ export const posts: Post[] = [
     id: "2",
     images: [trafficImage],
     kind: "verified",
-    author: { bn: "সিটি ট্রাফিক ইউনিট", en: "City Traffic Unit", initials: "সি", verified: true },
+    author: { id: "demo-traffic-unit", bn: "সিটি ট্রাফিক ইউনিট", en: "City Traffic Unit", initials: "সি", verified: true },
     location: { bn: "গুলশান ২, ঢাকা", en: "Gulshan 2, Dhaka" },
     time: { bn: "২৫ মিনিট আগে", en: "25 minutes ago" },
     title: {
@@ -104,7 +104,7 @@ export const posts: Post[] = [
     id: "3",
     images: [missingImage, waterloggingImage],
     kind: "missing",
-    author: { bn: "আফসানা মিম", en: "Afsana Mim", initials: "আ", verified: false },
+    author: { id: "demo-afsana", bn: "আফসানা মিম", en: "Afsana Mim", initials: "আ", verified: false },
     location: { bn: "চট্টগ্রাম", en: "Chattogram" },
     time: { bn: "১ ঘন্টা আগে", en: "1 hour ago" },
     title: { bn: "নিখোঁজ: তানভীর, বয়স ১২", en: "Missing: Tanvir, age 12" },
@@ -126,7 +126,7 @@ export const posts: Post[] = [
     id: "4",
     images: [legalImage],
     kind: "rights",
-    author: { bn: "নাগরিক আইন সহায়তা", en: "Citizen Legal Aid", initials: "না", verified: true },
+    author: { id: "demo-legal-aid", bn: "নাগরিক আইন সহায়তা", en: "Citizen Legal Aid", initials: "না", verified: true },
     location: { bn: "রাজশাহী", en: "Rajshahi" },
     time: { bn: "৩ ঘন্টা আগে", en: "3 hours ago" },
     title: {
@@ -149,7 +149,7 @@ export const posts: Post[] = [
     id: "5",
     images: [pollImage, reliefImage, waterloggingImage, roadImage, streetlightImage],
     kind: "poll",
-    author: { bn: "ওয়ার্ড ১৯ কমিউনিটি", en: "Ward 19 Community", initials: "ও", verified: false },
+    author: { id: "demo-ward19", bn: "ওয়ার্ড ১৯ কমিউনিটি", en: "Ward 19 Community", initials: "ও", verified: false },
     location: { bn: "খুলনা", en: "Khulna" },
     time: { bn: "৫ ঘন্টা আগে", en: "5 hours ago" },
     title: {
@@ -195,7 +195,7 @@ export const composerOptions = [
 
 export type PostComment = {
   id: string;
-  author: { bn: string; en: string; initials: string };
+  author: { id?: string; bn: string; en: string; initials: string };
   time: { bn: string; en: string };
   body: { bn: string; en: string };
 };
@@ -245,7 +245,7 @@ export const postComments: Record<string, PostComment[]> = {
     },
     {
       id: "3-c2",
-      author: { bn: "আফসানা মিম", en: "Afsana Mim", initials: "আ" },
+      author: { id: "demo-afsana", bn: "আফসানা মিম", en: "Afsana Mim", initials: "আ" },
       time: { bn: "২০ মিনিট আগে", en: "20 minutes ago" },
       body: {
         bn: "হ্যাঁ, কোতোয়ালী থানায় জিডি হয়েছে। ছবি শেয়ার করুন সবার সাথে।",
@@ -267,7 +267,7 @@ export const postComments: Record<string, PostComment[]> = {
   "5": [
     {
       id: "5-c1",
-      author: { bn: "ওয়ার্ড ১৯ কমিউনিটি", en: "Ward 19 Community", initials: "ও" },
+      author: { id: "demo-ward19", bn: "ওয়ার্ড ১৯ কমিউনিটি", en: "Ward 19 Community", initials: "ও" },
       time: { bn: "৩ ঘন্টা আগে", en: "3 hours ago" },
       body: {
         bn: "এখন পর্যন্ত জলাবদ্ধতা সবচেয়ে বেশি ভোট পেয়েছে।",
