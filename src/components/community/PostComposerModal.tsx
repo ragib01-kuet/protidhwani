@@ -23,6 +23,9 @@ export interface PostComposerModalProps {
   submitting: boolean;
   /** Per-file upload state, indexed against the selected files. */
   uploadProgress?: MediaUploadProgress[];
+  /** Prefilled area/district for new posts — comes from the reader's area scope. */
+  defaultLocation?: string;
+  defaultDistrict?: string;
   onSubmit: (input: PostInput, files: File[], removedUrls: string[]) => Promise<void>;
 }
 
@@ -54,6 +57,8 @@ export function PostComposerModal({
   initialKind = "report",
   submitting,
   uploadProgress = [],
+  defaultLocation = "",
+  defaultDistrict = "",
   onSubmit,
 }: PostComposerModalProps) {
   const [kind, setKind] = useState<CommunityPostKind>(initialKind);
@@ -100,9 +105,9 @@ export function PostComposerModal({
     } else {
       setKind(initialKind);
       setKeptUrls([]);
-      setForm({ ...EMPTY });
+      setForm({ ...EMPTY, location: defaultLocation, district: defaultDistrict });
     }
-  }, [open, editing, initialKind]);
+  }, [open, editing, initialKind, defaultLocation, defaultDistrict]);
 
   const set = (key: keyof typeof EMPTY, value: string) =>
     setForm((prev) => ({ ...prev, [key]: value }));
