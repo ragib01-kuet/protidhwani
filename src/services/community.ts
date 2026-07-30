@@ -97,21 +97,44 @@ export async function deletePost(id: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Upload community photos into `community-images/<uid>/<uuid>.<ext>`. */
-export async function uploadPostImages(userId: string, files: File[]): Promise<string[]> {
+/** Photo/video helpers — media lives in one `image_urls` column. */
+export const IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+export const VIDEO_MAX_BYTES = 50 * 1024 * 1024;
+const VIDEO_EXT = /\.(mp4|webm|mov|m4v|ogv|quicktime)(\?|$)/i;
+
+export function isVideoUrl(url: string): boolean {
+  return VIDEO_EXT.test(url);
+}
+
+/** Upload community photos/videos into `community-images/<uid>/<uuid>.<ext>`. */
+export async function uploadPostMedia(userId: string, files: File[]): Promise<string[]> {
   const urls: string[] = [];
   for (const file of files) {
-    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const isVideo = file.type.startsWith("video/");
+    const limit = isVideo ? VIDEO_MAX_BYTES : IMAGE_MAX_BYTES;
+    if (file.size > limit) {
+      throw new Error(
+        isVideo
+          ? "ভিডিও ৫০ এমবি-র কম হতে হবে · Video must be under 50 MB"
+          : "ছবি ৫ এমবি-র কম হতে হবে · Image must be under 5 MB",
+      );
+    }
+    const ext =
+      file.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
     const path = `${userId}/${crypto.randomUUID()}.${ext}`;
     const { error } = await supabase.storage.from(COMMUNITY_BUCKET).upload(path, file, {
       cacheControl: "3600",
       upsert: false,
+      contentType: file.type || undefined,
     });
     if (error) throw error;
     urls.push(supabase.storage.from(COMMUNITY_BUCKET).getPublicUrl(path).data.publicUrl);
   }
   return urls;
 }
+
+/** @deprecated use uploadPostMedia */
+export const uploadPostImages = uploadPostMedia;
 
 export async function toggleSupport(
   postId: string,
