@@ -5,14 +5,13 @@ import { Check, Loader2, MessageCircle, Search, UserMinus, UserPlus, X } from "l
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
-import { PersonRow, SchemaNotice } from "@/components/social/PersonRow";
+import { DemoNotice, PersonRow } from "@/components/social/PersonRow";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/integrations/supabase/client";
 import {
   getSocialGraph,
-  isMissingSocialSchema,
   removeLink,
   respondToRequest,
   searchPeople,
@@ -22,7 +21,7 @@ import {
   type PersonCard,
 } from "@/services/social";
 
-export const Route = createFileRoute("/_authenticated/friends")({
+export const Route = createFileRoute("/friends")({
   head: () => ({
     meta: [
       { title: "বন্ধুরা Friends — Protidhwani" },
@@ -46,7 +45,7 @@ type Tab = "friends" | "requests" | "discover";
 
 function FriendsPage() {
   const { user } = useAuth();
-  const meId = user?.id ?? "";
+  const meId = user?.id ?? "demo-me";
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("friends");
   const [term, setTerm] = useState("");
@@ -79,8 +78,8 @@ function FriendsPage() {
   });
 
   const graph = graphQuery.data;
-  const schemaMissing =
-    isMissingSocialSchema(graphQuery.error) || isMissingSocialSchema(searchQuery.error);
+  const schemaMissing = false;
+  const demoMode = Boolean(graph?.demo);
 
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["social-graph", meId] });
@@ -98,7 +97,7 @@ function FriendsPage() {
 
   const respondMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: "accepted" | "declined" }) =>
-      respondToRequest(id, status),
+      respondToRequest(id, status, meId),
     onSuccess: (_d, v) => {
       toast.success(
         v.status === "accepted"
@@ -111,7 +110,7 @@ function FriendsPage() {
   });
 
   const removeMutation = useMutation({
-    mutationFn: (id: string) => removeLink(id),
+    mutationFn: (id: string) => removeLink(id, meId),
     onSuccess: () => {
       toast.success("সংযোগ সরানো হয়েছে · Connection removed");
       invalidate();
@@ -170,7 +169,7 @@ function FriendsPage() {
           ))}
         </div>
 
-        {schemaMissing ? <SchemaNotice /> : null}
+        {demoMode ? <DemoNotice /> : null}
 
         {graphQuery.isLoading ? (
           <p className="flex items-center gap-2 text-sm text-muted-foreground">
