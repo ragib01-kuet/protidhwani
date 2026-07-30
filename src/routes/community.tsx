@@ -45,6 +45,7 @@ import {
   updatePost,
   uploadPostMedia,
   type FeedSort,
+  type MediaUploadProgress,
   type PostInput,
   type PostWithAuthor,
 } from "@/services/community";
