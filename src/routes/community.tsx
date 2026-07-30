@@ -102,6 +102,11 @@ function Community() {
   const [deleteFor, setDeleteFor] = useState<PostWithAuthor | null>(null);
   const [busyPostId, setBusyPostId] = useState<string | null>(null);
 
+  // Demo feed state (session-only): supports and comments on seeded posts.
+  const [demoPosts, setDemoPosts] = useState<PostWithAuthor[]>(DEMO_POSTS);
+  const [demoComments, setDemoComments] = useState(DEMO_COMMENTS);
+  const [demoSupported, setDemoSupported] = useState<string[]>([]);
+
   useEffect(() => {
     const id = setTimeout(() => setSearch(searchInput.trim()), 300);
     return () => clearTimeout(id);
@@ -140,8 +145,10 @@ function Community() {
   const comments = useQuery({
     queryKey: ["community", "comments", commentsFor?.id],
     queryFn: () => listPostComments(commentsFor!.id),
-    enabled: Boolean(commentsFor),
+    enabled: Boolean(commentsFor) && !isDemoPost(commentsFor!.id),
   });
+
+
 
   const invalidateFeed = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["community", "posts"] });
