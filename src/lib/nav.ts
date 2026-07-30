@@ -22,7 +22,9 @@ export const PRIMARY_NAV = [
 /** Secondary civic tools — desktop rail plus the mobile "More" sheet. */
 export const TOOLS_NAV = [
   { to: "/report", bn: "ঘটনা রিপোর্ট", en: "Report incident" },
+  { to: "/verify", bn: "তথ্য যাচাই", en: "Verify information" },
   { to: "/emergency", bn: "জরুরি সহায়তা", en: "Emergency" },
+
   { to: "/rights", bn: "অধিকার", en: "Rights" },
   { to: "/protest", bn: "প্রতিবাদ মোড", en: "Protest Mode" },
   { to: "/friends", bn: "বন্ধুরা", en: "Friends" },
