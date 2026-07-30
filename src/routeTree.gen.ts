@@ -33,6 +33,7 @@ import { Route as ExplorePostIdRouteImport } from './routes/explore.$postId'
 import { Route as AuthSignupRouteImport } from './routes/auth.signup'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
+import { Route as AuthenticatedVerifyRouteImport } from './routes/_authenticated/verify'
 import { Route as AuthenticatedReportRouteImport } from './routes/_authenticated/report'
 import { Route as AuthenticatedComplaintsRouteImport } from './routes/_authenticated/complaints'
 import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticated/account'
@@ -160,6 +161,11 @@ const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
   path: '/auth/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedVerifyRoute = AuthenticatedVerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReportRoute = AuthenticatedReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -222,6 +228,7 @@ export interface FileRoutesByFullPath {
   '/account': typeof AuthenticatedAccountRoute
   '/complaints': typeof AuthenticatedComplaintsRoute
   '/report': typeof AuthenticatedReportRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -254,6 +261,7 @@ export interface FileRoutesByTo {
   '/account': typeof AuthenticatedAccountRoute
   '/complaints': typeof AuthenticatedComplaintsRoute
   '/report': typeof AuthenticatedReportRoute
+  '/verify': typeof AuthenticatedVerifyRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/_authenticated/account': typeof AuthenticatedAccountRoute
   '/_authenticated/complaints': typeof AuthenticatedComplaintsRoute
   '/_authenticated/report': typeof AuthenticatedReportRoute
+  '/_authenticated/verify': typeof AuthenticatedVerifyRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/signup': typeof AuthSignupRoute
@@ -322,6 +331,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/complaints'
     | '/report'
+    | '/verify'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -354,6 +364,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/complaints'
     | '/report'
+    | '/verify'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -387,6 +398,7 @@ export interface FileRouteTypes {
     | '/_authenticated/account'
     | '/_authenticated/complaints'
     | '/_authenticated/report'
+    | '/_authenticated/verify'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/signup'
@@ -598,6 +610,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/verify': {
+      id: '/_authenticated/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof AuthenticatedVerifyRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/report': {
       id: '/_authenticated/report'
       path: '/report'
@@ -654,12 +673,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountRoute: typeof AuthenticatedAccountRoute
   AuthenticatedComplaintsRoute: typeof AuthenticatedComplaintsRoute
   AuthenticatedReportRoute: typeof AuthenticatedReportRoute
+  AuthenticatedVerifyRoute: typeof AuthenticatedVerifyRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountRoute: AuthenticatedAccountRoute,
   AuthenticatedComplaintsRoute: AuthenticatedComplaintsRoute,
   AuthenticatedReportRoute: AuthenticatedReportRoute,
+  AuthenticatedVerifyRoute: AuthenticatedVerifyRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
