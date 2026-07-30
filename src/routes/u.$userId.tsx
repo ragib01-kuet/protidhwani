@@ -43,7 +43,7 @@ export const Route = createFileRoute("/u/$userId")({
 function PersonProfile() {
   const { userId } = Route.useParams();
   const { user } = useAuth();
-  const meId = user?.id ?? "";
+  const meId = user?.id ?? "demo-me";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
