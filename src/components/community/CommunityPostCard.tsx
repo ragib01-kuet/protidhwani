@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AuthorLink } from "@/components/social/AuthorLink";
 import {
   BadgeCheck,
   Clock,
