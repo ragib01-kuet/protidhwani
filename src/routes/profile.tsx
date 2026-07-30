@@ -231,15 +231,20 @@ function Profile() {
       <section className="rounded-[2rem] border border-border bg-card p-6 shadow-card">
         <div className="flex items-start gap-4">
           <label className="relative grid size-16 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-3xl bg-brand-soft text-xl font-bold text-primary">
-            {form.avatar_url ? (
+            {preview ?? form.avatar_url ? (
               <img
-                src={form.avatar_url}
+                src={preview ?? form.avatar_url}
                 alt={`${nameEn} avatar`}
-                className="size-full object-cover"
+                className={`size-full object-cover transition-opacity ${uploading ? "opacity-60" : ""}`}
                 loading="lazy"
               />
             ) : (
               <span lang="bn">{initials(nameBn)}</span>
+            )}
+            {uploading && (
+              <span className="absolute inset-0 grid place-items-center bg-foreground/45 text-[10px] font-bold text-background">
+                {uploadPct}%
+              </span>
             )}
             <span className="absolute inset-x-0 bottom-0 grid h-5 place-items-center bg-foreground/60 text-background">
               {uploading ? (
@@ -257,6 +262,7 @@ function Profile() {
               aria-label="ছবি আপলোড · Upload avatar"
             />
           </label>
+
 
           <div className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
