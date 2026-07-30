@@ -5,7 +5,7 @@ import { ArrowLeft, Loader2, Send, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/AppShell";
-import { Avatar, PersonRow, SchemaNotice } from "@/components/social/PersonRow";
+import { Avatar, DemoNotice, PersonRow } from "@/components/social/PersonRow";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,7 +18,7 @@ import {
   sendMessage,
   subscribeToMessages,
 } from "@/services/messages";
-import { isMissingSocialSchema, personName } from "@/services/social";
+import { personName } from "@/services/social";
 
 interface MessageSearch {
   peer?: string;
@@ -93,8 +93,8 @@ function MessagesPage() {
     });
   }, [meId, peerId, convoQuery.data, queryClient]);
 
-  const schemaMissing =
-    isMissingSocialSchema(threadsQuery.error) || isMissingSocialSchema(convoQuery.error);
+  const schemaMissing = false;
+  const demoMode = (threadsQuery.data ?? []).some((t) => t.peer.id.startsWith("demo-"));
 
   const [draft, setDraft] = useState("");
   const endRef = useRef<HTMLDivElement>(null);
@@ -127,7 +127,7 @@ function MessagesPage() {
       showSearch={false}
     >
       <div className="mx-auto max-w-3xl px-4 py-4 pb-28">
-        {schemaMissing ? <SchemaNotice /> : null}
+        {demoMode && !peerId ? <DemoNotice /> : null}
 
         {!schemaMissing && !peerId ? (
           <section className="space-y-2">
