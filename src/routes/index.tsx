@@ -137,9 +137,9 @@ function TopBar() {
 
 function Logo() {
   return (
-    <a href="/" className="flex items-center gap-2.5">
+    <Link to="/" className="flex items-center gap-2.5">
       <BrandLockup size={36} />
-    </a>
+    </Link>
   );
 }
 
