@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { BrandLockup } from "@/components/BrandLogo";
 import {
@@ -72,6 +72,7 @@ const LANDING_NAV = [
 ] as const;
 
 function TopBar() {
+  const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur-xl">
       <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
@@ -88,16 +89,26 @@ function TopBar() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-2">
-          <div className="hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 md:flex">
-            <Search className="h-4 w-4 text-muted-foreground" />
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              void navigate({ to: "/explore" });
+            }}
+            role="search"
+            className="hidden items-center gap-2 rounded-full border border-border bg-surface px-3 py-1.5 md:flex"
+          >
+            <button type="submit" aria-label="খুঁজুন / Search" className="tap grid place-items-center">
+              <Search className="h-4 w-4 text-muted-foreground" />
+            </button>
             <input
+              name="q"
               placeholder="Search reports, laws, alerts…"
               className="w-56 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
             />
             <kbd className="rounded border border-border bg-background px-1.5 text-[10px] text-muted-foreground">
               ⌘K
             </kbd>
-          </div>
+          </form>
           <Link
             to="/explore"
             aria-label="সতর্কতা / Alerts"
@@ -126,9 +137,9 @@ function TopBar() {
 
 function Logo() {
   return (
-    <a href="/" className="flex items-center gap-2.5">
+    <Link to="/" className="flex items-center gap-2.5">
       <BrandLockup size={36} />
-    </a>
+    </Link>
   );
 }
 
@@ -281,6 +292,7 @@ const pillars = [
     desc: "Photo, video, geo-tagged reports with anonymous options for citizens who need to be heard without being exposed.",
     stat: "৪২k+ reports this month",
     cta: "File a report",
+    to: "/complaints" as const,
   },
   {
     icon: Scale,
@@ -290,6 +302,7 @@ const pillars = [
     desc: "Plain-language legal explainers and citizen protections written by lawyers, translated for everyone.",
     stat: "১২০+ rights explained",
     cta: "Read explainers",
+    to: "/rights" as const,
   },
   {
     icon: ShieldCheck,
@@ -299,6 +312,7 @@ const pillars = [
     desc: "Community and editor verified — misinformation flagged, sources shown, receipts always attached.",
     stat: "98% verification rate",
     cta: "Verify a claim",
+    to: "/explore" as const,
   },
   {
     icon: Radio,
@@ -308,6 +322,7 @@ const pillars = [
     desc: "SOS, floods, curfews, road and weather advisories delivered by district, in Bangla and English.",
     stat: "৬৪ districts covered",
     cta: "See live alerts",
+    to: "/emergency" as const,
   },
   {
     icon: Users,
@@ -317,6 +332,7 @@ const pillars = [
     desc: "Local circles by district, campus and cause — organize, discuss, and act with neighbours you trust.",
     stat: "৯০০+ active circles",
     cta: "Join a circle",
+    to: "/community" as const,
   },
   {
     icon: Landmark,
@@ -326,6 +342,7 @@ const pillars = [
     desc: "Trusted directories, hotlines, and official notices, updated and cross-checked by public servants.",
     stat: "২.১k official sources",
     cta: "Browse directory",
+    to: "/rights" as const,
   },
 ];
 
@@ -423,12 +440,13 @@ function PillarGrid() {
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
+            <Link
+              to={current.to}
               className={`tap inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold text-primary-foreground ${tone.bar} shadow-[0_8px_24px_-10px_currentColor]`}
             >
               {current.cta}
               <ArrowUpRight className="h-3.5 w-3.5" />
-            </button>
+            </Link>
             <span className="bn inline-flex items-center gap-2 rounded-full border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
               <span className={`h-1.5 w-1.5 rounded-full ${tone.bar}`} />
               {current.stat}
@@ -540,6 +558,7 @@ function PillarGrid() {
 const feed = [
   {
     tag: "Road safety",
+    to: "/map" as const,
     tone: "emergency",
     title: "Reckless bus driving on Airport Road — CCTV footage submitted",
     bn: "এয়ারপোর্ট রোডে বেপরোয়া বাসের ভিডিও জমা",
@@ -549,6 +568,7 @@ const feed = [
   },
   {
     tag: "Rights",
+    to: "/rights" as const,
     tone: "primary",
     title: "Explainer: What to do if police stop you without a warrant",
     bn: "ওয়ারেন্ট ছাড়া পুলিশ থামালে করণীয়",
@@ -558,6 +578,7 @@ const feed = [
   },
   {
     tag: "Fact-check",
+    to: "/explore" as const,
     tone: "verified",
     title: "Claim about petrol price hike — marked misleading",
     bn: "পেট্রলের দাম বৃদ্ধির দাবি — বিভ্রান্তিকর",
@@ -567,6 +588,7 @@ const feed = [
   },
   {
     tag: "Flood alert",
+    to: "/emergency" as const,
     tone: "warning",
     title: "Rising water in Sylhet lowlands — advisory issued",
     bn: "সিলেটের নিম্নাঞ্চলে পানি বৃদ্ধি",
@@ -607,18 +629,26 @@ function FeedAndTrending() {
               { t: "#RoadSafety", c: "9.6k reports" },
               { t: "#PriceHike", c: "3.2k signals" },
             ].map((x, i) => (
-              <li key={x.t} className="flex items-center justify-between py-3">
-                <div>
-                  <div className="text-xs text-muted-foreground">Trending · {i + 1}</div>
-                  <div className="mt-0.5 text-sm font-semibold">{x.t}</div>
-                </div>
-                <span className="text-xs text-muted-foreground">{x.c}</span>
+              <li key={x.t}>
+                <Link
+                  to="/explore"
+                  className="tap flex items-center justify-between py-3 transition-colors hover:text-primary"
+                >
+                  <span className="block">
+                    <span className="block text-xs text-muted-foreground">Trending · {i + 1}</span>
+                    <span className="mt-0.5 block text-sm font-semibold">{x.t}</span>
+                  </span>
+                  <span className="text-xs text-muted-foreground">{x.c}</span>
+                </Link>
               </li>
             ))}
           </ul>
-          <button className="tap mt-3 inline-flex w-full items-center justify-center gap-1 rounded-full border border-border bg-background py-2 text-sm font-medium">
+          <Link
+            to="/explore"
+            className="tap mt-3 inline-flex w-full items-center justify-center gap-1 rounded-full border border-border bg-background py-2 text-sm font-medium"
+          >
             See all trends <ChevronRight className="h-3.5 w-3.5" />
-          </button>
+          </Link>
         </div>
       </aside>
     </section>
@@ -633,6 +663,7 @@ function FeedRow({
   place,
   time,
   verified,
+  to,
 }: {
   tag: string;
   tone: string;
@@ -641,6 +672,7 @@ function FeedRow({
   place: string;
   time: string;
   verified: boolean;
+  to: "/map" | "/rights" | "/explore" | "/emergency";
 }) {
   const toneMap: Record<string, string> = {
     emergency: "bg-emergency/10 text-emergency",
@@ -649,7 +681,10 @@ function FeedRow({
     warning: "bg-warning/15 text-warning-foreground",
   };
   return (
-    <article className="card-soft tap group flex items-start gap-4 p-4 hover:-translate-y-0.5 sm:p-5">
+    <Link
+      to={to}
+      className="card-soft tap group flex items-start gap-4 p-4 hover:-translate-y-0.5 sm:p-5"
+    >
       <div className={`hidden h-11 w-11 shrink-0 place-items-center rounded-2xl sm:grid ${toneMap[tone]}`}>
         <AlertTriangle className="h-5 w-5" />
       </div>
@@ -678,7 +713,7 @@ function FeedRow({
         </div>
       </div>
       <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-    </article>
+    </Link>
   );
 }
 
@@ -729,11 +764,11 @@ function VerificationBand() {
 
 function EmergencyStrip() {
   const hotlines = [
-    { name: "National Emergency", num: "999" },
-    { name: "Fire Service", num: "102" },
-    { name: "Ambulance", num: "১০৫১" },
-    { name: "Women & Child", num: "109" },
-    { name: "Anti-corruption", num: "106" },
+    { name: "National Emergency", num: "999", dial: "999" },
+    { name: "Fire Service", num: "102", dial: "102" },
+    { name: "Ambulance", num: "১০৫১", dial: "1051" },
+    { name: "Women & Child", num: "109", dial: "109" },
+    { name: "Anti-corruption", num: "106", dial: "106" },
   ];
   return (
     <section className="mt-20 card-soft overflow-hidden">
@@ -745,10 +780,13 @@ function EmergencyStrip() {
           <div className="text-sm font-semibold">Emergency hotlines</div>
           <div className="bn text-xs text-muted-foreground">জরুরি হেল্পলাইন</div>
         </div>
-        <button className="ml-auto tap inline-flex items-center gap-1 rounded-full bg-emergency px-3 py-1.5 text-xs font-semibold text-emergency-foreground">
+        <Link
+          to="/emergency"
+          className="ml-auto tap inline-flex items-center gap-1 rounded-full bg-emergency px-3 py-1.5 text-xs font-semibold text-emergency-foreground"
+        >
           Send SOS
           <ArrowUpRight className="h-3 w-3" />
-        </button>
+        </Link>
       </div>
       <ul className="grid divide-border sm:grid-cols-5 sm:divide-x">
         {hotlines.map((h) => (
@@ -759,9 +797,13 @@ function EmergencyStrip() {
               </div>
               <div className="mt-0.5 text-lg font-bold tracking-tight">{h.num}</div>
             </div>
-            <button className="tap grid h-8 w-8 place-items-center rounded-full border border-border">
+            <a
+              href={`tel:${h.dial}`}
+              aria-label={`${h.name} — কল করুন / Call ${h.dial}`}
+              className="tap grid h-8 w-8 place-items-center rounded-full border border-border"
+            >
               <ArrowUpRight className="h-4 w-4" />
-            </button>
+            </a>
           </li>
         ))}
       </ul>
@@ -773,9 +815,9 @@ function EmergencyStrip() {
 
 function PublicInfo() {
   const items = [
-    { t: "Right to Information Act", d: "How to file an RTI request in 5 steps.", tag: "Guide" },
-    { t: "Voter services", d: "NID correction, voter list, polling info.", tag: "Directory" },
-    { t: "Disaster preparedness", d: "Cyclone, flood & earthquake protocols.", tag: "Safety" },
+    { t: "Right to Information Act", d: "How to file an RTI request in 5 steps.", tag: "Guide", to: "/rights" as const },
+    { t: "Voter services", d: "NID correction, voter list, polling info.", tag: "Directory", to: "/community" as const },
+    { t: "Disaster preparedness", d: "Cyclone, flood & earthquake protocols.", tag: "Safety", to: "/emergency" as const },
   ];
   return (
     <section className="mt-20">
@@ -786,9 +828,9 @@ function PublicInfo() {
       />
       <div className="mt-8 grid gap-4 md:grid-cols-3">
         {items.map((i) => (
-          <a
+          <Link
             key={i.t}
-            href="#"
+            to={i.to}
             className="card-soft tap group flex flex-col p-6 hover:-translate-y-0.5"
           >
             <span className="inline-flex w-fit rounded-full bg-verified/10 px-2 py-0.5 text-[11px] font-semibold text-verified">
@@ -799,7 +841,7 @@ function PublicInfo() {
             <div className="mt-6 inline-flex items-center gap-1 text-sm font-semibold text-primary">
               Read guide <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </div>
-          </a>
+          </Link>
         ))}
       </div>
     </section>
@@ -833,19 +875,39 @@ function Footer() {
             </p>
           </div>
           {[
-            { h: "Platform", l: ["Feed", "Report", "Fact-check", "Rights"] },
-            { h: "About", l: ["Mission", "Editors", "Trust & safety", "Contact"] },
+            {
+              h: "Platform",
+              l: [
+                { x: "Feed", to: "/dashboard" as const },
+                { x: "Report", to: "/complaints" as const },
+                { x: "Fact-check", to: "/explore" as const },
+                { x: "Rights", to: "/rights" as const },
+              ],
+            },
+            {
+              h: "About",
+              l: [
+                { x: "Mission", to: "/rights" as const },
+                { x: "Editors", to: "/community" as const },
+                { x: "Trust & safety", to: "/map" as const },
+                { x: "Contact", to: "/messages" as const },
+              ],
+            },
           ].map((c) => (
             <div key={c.h}>
               <div className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {c.h}
               </div>
               <ul className="mt-3 space-y-2 text-sm">
-                {c.l.map((x) => (
-                  <li key={x}>
-                    <a href="#" className="text-foreground/80 hover:text-foreground">
-                      {x}
-                    </a>
+                {c.l.map((item) => (
+                  <li key={item.x}>
+                    <Link
+                      to={item.to}
+                      search={item.to === "/messages" ? {} : undefined}
+                      className="text-foreground/80 hover:text-foreground"
+                    >
+                      {item.x}
+                    </Link>
                   </li>
                 ))}
               </ul>
