@@ -878,7 +878,9 @@ function Footer() {
                 { x: "Mission", to: "/about" as const },
                 { x: "Editors", to: "/editors" as const },
                 { x: "Trust & safety", to: "/trust-safety" as const },
+                { x: "July 36 · History", to: "/july36" as const },
                 { x: "Contact", to: "/contact" as const },
+
               ],
             },
 
