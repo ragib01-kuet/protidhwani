@@ -226,20 +226,49 @@ export function CommunityPostCard({
       )}
 
       {post.image_urls.length > 0 && (
-        <div className="mt-4 grid grid-cols-3 gap-2">
-          {post.image_urls.slice(0, 6).map((url) => (
-            <button
-              key={url}
-              type="button"
-              onClick={() => setLightbox(url)}
-              aria-label="ছবি বড় করে দেখুন / Open image"
-              className="aspect-[4/3] overflow-hidden rounded-2xl border border-border"
-            >
-              <img src={url} alt="" loading="lazy" className="size-full object-cover" />
-            </button>
-          ))}
+        <div
+          className={
+            post.image_urls.length === 1
+              ? "mt-4"
+              : post.image_urls.length === 2
+                ? "mt-4 grid grid-cols-2 gap-1.5"
+                : "mt-4 grid grid-cols-2 gap-1.5"
+          }
+        >
+          {post.image_urls.slice(0, 4).map((url, i) => {
+            const count = Math.min(post.image_urls.length, 4);
+            const single = count === 1;
+            // Facebook/Instagram-style: single image is full-width 1:1,
+            // a leading image in an odd 3-up grid spans both columns.
+            const span = count === 3 && i === 0 ? "col-span-2 aspect-[16/9]" : "aspect-square";
+            const extra = i === 3 && post.image_urls.length > 4 ? post.image_urls.length - 4 : 0;
+            return (
+              <button
+                key={url}
+                type="button"
+                onClick={() => setLightbox(url)}
+                aria-label="ছবি বড় করে দেখুন / Open image"
+                className={`relative overflow-hidden border border-border ${
+                  single ? "aspect-square w-full rounded-2xl" : `${span} rounded-xl`
+                }`}
+              >
+                <img
+                  src={url}
+                  alt=""
+                  loading="lazy"
+                  className="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                />
+                {extra > 0 && (
+                  <span className="absolute inset-0 flex items-center justify-center bg-foreground/60 text-xl font-bold text-background">
+                    +{extra}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       )}
+
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-2">
