@@ -5,6 +5,7 @@ import { BottomNav, SideNav } from "./BottomNav";
 import { Composer } from "./Composer";
 import { NotificationsBell } from "./NotificationsBell";
 import { useAuth } from "@/hooks/useAuth";
+import { BrandLogo } from "@/components/BrandLogo";
 import { TOOLS_NAV } from "@/lib/nav";
 
 export function AppShell({
