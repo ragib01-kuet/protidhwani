@@ -106,6 +106,23 @@ export function isVideoUrl(url: string): boolean {
   return VIDEO_EXT.test(url);
 }
 
+/** Turn raw storage errors into actionable bilingual messages. */
+function explainStorageError(message: string, isVideo: boolean): string {
+  const m = message.toLowerCase();
+  if (m.includes("mime") || m.includes("content type") || m.includes("not supported")) {
+    return isVideo
+      ? "স্টোরেজ বাকেট ভিডিও গ্রহণ করছে না · The community-images bucket does not allow video MIME types. Allow video/mp4, video/webm, video/quicktime (or clear the allowed list) in Storage settings."
+      : "স্টোরেজ বাকেট এই ফাইল টাইপ গ্রহণ করছে না · This file type is not allowed by the community-images bucket.";
+  }
+  if (m.includes("bucket not found")) {
+    return "স্টোরেজ বাকেট পাওয়া যায়নি · Storage bucket `community-images` is missing. Create it (public) in Supabase Storage.";
+  }
+  if (m.includes("exceeded") || m.includes("maximum allowed size")) {
+    return "ফাইলটি বাকেটের সাইজ লিমিট ছাড়িয়েছে · File exceeds the bucket's file size limit (raise it to 50 MB for video).";
+  }
+  return message;
+}
+
 /** Upload community photos/videos into `community-images/<uid>/<uuid>.<ext>`. */
 export async function uploadPostMedia(userId: string, files: File[]): Promise<string[]> {
   const urls: string[] = [];
@@ -127,7 +144,7 @@ export async function uploadPostMedia(userId: string, files: File[]): Promise<st
       upsert: false,
       contentType: file.type || undefined,
     });
-    if (error) throw error;
+    if (error) throw new Error(explainStorageError(error.message, isVideo));
     urls.push(supabase.storage.from(COMMUNITY_BUCKET).getPublicUrl(path).data.publicUrl);
   }
   return urls;
