@@ -134,6 +134,7 @@ function Explore() {
         </div>
         <Link
           to="/community"
+          search={{ post: undefined }}
           className="flex shrink-0 items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-[11px] font-bold text-primary"
         >
           <MapPin className="size-3.5" />
