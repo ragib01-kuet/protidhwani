@@ -24,7 +24,7 @@ interface MessageSearch {
   peer?: string;
 }
 
-export const Route = createFileRoute("/_authenticated/messages")({
+export const Route = createFileRoute("/messages")({
   validateSearch: (search: Record<string, unknown>): MessageSearch => ({
     peer: typeof search.peer === "string" && search.peer ? search.peer : undefined,
   }),
