@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Check, Loader2, MapPin, MessageCircle, UserMinus, UserPlus, X } from "lucide-react";
@@ -6,9 +7,10 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/AppShell";
 import { Avatar } from "@/components/social/PersonRow";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/useAuth";
 import { getErrorMessage } from "@/integrations/supabase/client";
-import { getPerson } from "@/services/messages";
+import { getPerson, sendMessage } from "@/services/messages";
 import {
   findLink,
   personName,
@@ -86,6 +88,23 @@ function PersonProfile() {
     onError: (e) => toast.error(getErrorMessage(e)),
   });
 
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const messageMutation = useMutation({
+    mutationFn: (body: string) => sendMessage(meId, userId, body),
+    onSuccess: () => {
+      setComposerOpen(false);
+      setDraft("");
+      void queryClient.invalidateQueries({ queryKey: ["dm-threads", meId] });
+      void queryClient.invalidateQueries({ queryKey: ["dm-conversation", meId, userId] });
+      toast.success("বার্তা পাঠানো হয়েছে · Message sent");
+      // Facebook-style: land straight in the conversation view.
+      void navigate({ to: "/messages", search: { peer: userId } });
+    },
+    onError: (e) => toast.error(getErrorMessage(e)),
+  });
+
   const removeMutation = useMutation({
     mutationFn: () => removeLink(linkQuery.data!.id, meId),
     onSuccess: () => {
@@ -151,7 +170,7 @@ function PersonProfile() {
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {state === "friends" ? (
                   <>
-                    <Button onClick={() => navigate({ to: "/messages", search: { peer: userId } })}>
+                    <Button onClick={() => setComposerOpen(true)}>
                       <MessageCircle className="size-4" /> বার্তা Message
                     </Button>
                     <Button
@@ -184,10 +203,7 @@ function PersonProfile() {
                     <Button disabled={busy || !meId} onClick={() => addMutation.mutate()}>
                       <UserPlus className="size-4" /> বন্ধু হোন Add friend
                     </Button>
-                    <Button
-                      variant="secondary"
-                      onClick={() => navigate({ to: "/messages", search: { peer: userId } })}
-                    >
+                    <Button variant="secondary" onClick={() => setComposerOpen(true)}>
                       <MessageCircle className="size-4" /> বার্তা Message
                     </Button>
                   </>
