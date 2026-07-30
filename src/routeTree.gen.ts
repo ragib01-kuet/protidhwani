@@ -20,6 +20,7 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as July36RouteImport } from './routes/july36'
 import { Route as FriendsRouteImport } from './routes/friends'
+import { Route as FounderRouteImport } from './routes/founder'
 import { Route as EmergencyRouteImport } from './routes/emergency'
 import { Route as EditorsRouteImport } from './routes/editors'
 import { Route as DashboardRouteImport } from './routes/dashboard'
@@ -96,6 +97,11 @@ const July36Route = July36RouteImport.update({
 const FriendsRoute = FriendsRouteImport.update({
   id: '/friends',
   path: '/friends',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FounderRoute = FounderRouteImport.update({
+  id: '/founder',
+  path: '/founder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EmergencyRoute = EmergencyRouteImport.update({
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardRoute
   '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
+  '/founder': typeof FounderRoute
   '/friends': typeof FriendsRoute
   '/july36': typeof July36Route
   '/map': typeof MapRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardRoute
   '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
+  '/founder': typeof FounderRoute
   '/friends': typeof FriendsRoute
   '/july36': typeof July36Route
   '/map': typeof MapRoute
@@ -289,6 +297,7 @@ export interface FileRoutesById {
   '/dashboard': typeof DashboardRoute
   '/editors': typeof EditorsRoute
   '/emergency': typeof EmergencyRoute
+  '/founder': typeof FounderRoute
   '/friends': typeof FriendsRoute
   '/july36': typeof July36Route
   '/map': typeof MapRoute
@@ -325,6 +334,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editors'
     | '/emergency'
+    | '/founder'
     | '/friends'
     | '/july36'
     | '/map'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editors'
     | '/emergency'
+    | '/founder'
     | '/friends'
     | '/july36'
     | '/map'
@@ -394,6 +405,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editors'
     | '/emergency'
+    | '/founder'
     | '/friends'
     | '/july36'
     | '/map'
@@ -430,6 +442,7 @@ export interface RootRouteChildren {
   DashboardRoute: typeof DashboardRoute
   EditorsRoute: typeof EditorsRoute
   EmergencyRoute: typeof EmergencyRoute
+  FounderRoute: typeof FounderRoute
   FriendsRoute: typeof FriendsRoute
   July36Route: typeof July36Route
   MapRoute: typeof MapRoute
@@ -530,6 +543,13 @@ declare module '@tanstack/react-router' {
       path: '/friends'
       fullPath: '/friends'
       preLoaderRoute: typeof FriendsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/founder': {
+      id: '/founder'
+      path: '/founder'
+      fullPath: '/founder'
+      preLoaderRoute: typeof FounderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/emergency': {
@@ -715,6 +735,7 @@ const rootRouteChildren: RootRouteChildren = {
   DashboardRoute: DashboardRoute,
   EditorsRoute: EditorsRoute,
   EmergencyRoute: EmergencyRoute,
+  FounderRoute: FounderRoute,
   FriendsRoute: FriendsRoute,
   July36Route: July36Route,
   MapRoute: MapRoute,
