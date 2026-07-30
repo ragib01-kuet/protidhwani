@@ -21,6 +21,7 @@ export const PRIMARY_NAV = [
 
 /** Secondary civic tools — desktop rail plus the mobile "More" sheet. */
 export const TOOLS_NAV = [
+  { to: "/report", bn: "ঘটনা রিপোর্ট", en: "Report incident" },
   { to: "/emergency", bn: "জরুরি সহায়তা", en: "Emergency" },
   { to: "/rights", bn: "অধিকার", en: "Rights" },
   { to: "/protest", bn: "প্রতিবাদ মোড", en: "Protest Mode" },
@@ -33,7 +34,7 @@ export const TOOLS_NAV = [
 
 /** Composer shortcuts → the route that actually handles each civic action. */
 export const COMPOSER_ROUTES: Record<string, string> = {
-  Report: "/complaints",
+  Report: "/report",
   Ask: "/community",
   Discuss: "/community",
   Emergency: "/emergency",
