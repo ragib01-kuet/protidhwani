@@ -13,6 +13,8 @@ import {
   Settings,
   LogIn,
   LogOut,
+  UserPlus,
+  MessageCircle,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -31,6 +33,8 @@ const ICONS: Record<string, LucideIcon> = {
   "/protest": Megaphone,
   "/vehicle": Car,
   "/complaints": FileWarning,
+  "/friends": UserPlus,
+  "/messages": MessageCircle,
   "/account": Settings,
 };
 
