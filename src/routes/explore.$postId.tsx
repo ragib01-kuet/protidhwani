@@ -2,7 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { BadgeCheck, Clock, Heart, MapPin, MessageCircle, Send, Share2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
-import { kindMeta, postComments, posts, type PostComment } from "@/lib/civic";
+import { kindMeta, postComments, posts, type Post, type PostComment } from "@/lib/civic";
 import { cn } from "@/lib/utils";
 
 const toneClass = {
@@ -19,7 +19,7 @@ const statusLabel = {
 };
 
 export const Route = createFileRoute("/explore/$postId")({
-  loader: ({ params }) => {
+  loader: ({ params }): { post: Post } => {
     const post = posts.find((p) => p.id === params.postId);
     if (!post) throw notFound();
     return { post };
@@ -67,7 +67,7 @@ function PostNotFound() {
 }
 
 function PostDetail() {
-  const { post } = Route.useLoaderData();
+  const { post } = Route.useLoaderData() as { post: Post };
   const meta = kindMeta[post.kind];
   const status = statusLabel[post.status];
   const images = post.images ?? [];
