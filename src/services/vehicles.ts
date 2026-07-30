@@ -186,7 +186,7 @@ export async function submitVehicleReport(
 
   if (error) {
     markLiveUnavailable(error);
-    if (liveRegistryAvailable === false) return keepLocally();
+    if (isLiveRegistryKnownUnavailable()) return keepLocally();
     throw error;
   }
   return { stored: "live" };
