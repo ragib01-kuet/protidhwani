@@ -117,16 +117,10 @@ function TopBar() {
             <Bell className="h-4 w-4" />
           </Link>
           <Link
-            to="/auth/login"
-            className="tap hidden rounded-full border border-border bg-surface px-3 py-1.5 text-sm font-medium sm:inline-flex"
-          >
-            Sign in
-          </Link>
-          <Link
-            to="/complaints"
+            to="/explore"
             className="tap inline-flex items-center gap-1 rounded-full bg-primary px-3.5 py-1.5 text-sm font-semibold text-primary-foreground shadow-[0_4px_20px_-6px_var(--color-primary)]"
           >
-            Report now
+            Explore the feed
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </div>
