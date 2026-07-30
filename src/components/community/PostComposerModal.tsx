@@ -53,6 +53,7 @@ export function PostComposerModal({
   editing,
   initialKind = "report",
   submitting,
+  uploadProgress = [],
   onSubmit,
 }: PostComposerModalProps) {
   const [kind, setKind] = useState<CommunityPostKind>(initialKind);
@@ -62,6 +63,21 @@ export function PostComposerModal({
   const [removedUrls, setRemovedUrls] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+
+  /** Stable object URLs so previews don't flicker/leak on every render. */
+  const previews = useMemo(() => files.map((file) => URL.createObjectURL(file)), [files]);
+  useEffect(() => () => previews.forEach((url) => URL.revokeObjectURL(url)), [previews]);
+
+  const itemFor = (index: number) => uploadProgress.find((item) => item.index === index);
+  const failed = uploadProgress.filter((item) => item.status === "error");
+  const uploading = uploadProgress.some((item) => item.status === "uploading");
+  const overallPct = uploadProgress.length
+    ? Math.round(
+        uploadProgress.reduce((sum, item) => sum + (item.status === "done" ? 100 : item.percent), 0) /
+          uploadProgress.length,
+      )
+    : 0;
+
 
   useEffect(() => {
     if (!open) return;
