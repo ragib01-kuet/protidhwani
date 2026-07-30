@@ -13,6 +13,7 @@ import {
   ShieldAlert,
   ShieldQuestion,
   Trash2,
+  Play,
 } from "lucide-react";
 
 import {
@@ -31,7 +32,7 @@ import {
   toBnNumber,
 } from "@/lib/community-meta";
 import { cn } from "@/lib/utils";
-import type { PostWithAuthor } from "@/services/community";
+import { isVideoUrl, type PostWithAuthor } from "@/services/community";
 
 export interface CommunityPostCardProps {
   post: PostWithAuthor;
@@ -247,17 +248,34 @@ export function CommunityPostCard({
                 key={url}
                 type="button"
                 onClick={() => setLightbox(url)}
-                aria-label="ছবি বড় করে দেখুন / Open image"
+                aria-label="বড় করে দেখুন / Open media"
                 className={`relative overflow-hidden border border-border ${
                   single ? "aspect-square w-full rounded-2xl" : `${span} rounded-xl`
                 }`}
               >
-                <img
-                  src={url}
-                  alt=""
-                  loading="lazy"
-                  className="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
-                />
+                {isVideoUrl(url) ? (
+                  <>
+                    <video
+                      src={url}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      className="size-full object-cover"
+                    />
+                    <span className="pointer-events-none absolute inset-0 grid place-items-center bg-foreground/25">
+                      <span className="grid size-12 place-items-center rounded-full bg-background/85 text-foreground">
+                        <Play className="size-5 fill-current" />
+                      </span>
+                    </span>
+                  </>
+                ) : (
+                  <img
+                    src={url}
+                    alt=""
+                    loading="lazy"
+                    className="size-full object-cover transition-transform duration-300 hover:scale-[1.03]"
+                  />
+                )}
                 {extra > 0 && (
                   <span className="absolute inset-0 flex items-center justify-center bg-foreground/60 text-xl font-bold text-background">
                     +{extra}
@@ -352,7 +370,22 @@ export function CommunityPostCard({
           onClick={() => setLightbox(null)}
           className="fixed inset-0 z-[70] grid place-items-center bg-black/80 p-6"
         >
-          <img src={lightbox} alt="" className="max-h-[85vh] max-w-full rounded-2xl object-contain" />
+          {isVideoUrl(lightbox) ? (
+            <video
+              src={lightbox}
+              controls
+              autoPlay
+              playsInline
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[85vh] max-w-full rounded-2xl"
+            />
+          ) : (
+            <img
+              src={lightbox}
+              alt=""
+              className="max-h-[85vh] max-w-full rounded-2xl object-contain"
+            />
+          )}
         </div>
       )}
     </article>
