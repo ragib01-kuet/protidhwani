@@ -81,8 +81,36 @@ export const DEMO_PEOPLE: PersonCard[] = [
   },
 ];
 
+/**
+ * Extra demo identities registered by feed datasets (community + civic demos)
+ * so tapping any author in a demo post opens a real, messageable profile.
+ */
+const registry = new Map<string, PersonCard>();
+
+export function registerDemoPeople(people: PersonCard[]): void {
+  for (const person of people) registry.set(person.id, person);
+}
+
+function synthesizePerson(id: string): PersonCard {
+  const slug = id.replace(/^demo-/, "").replace(/[-_]+/g, " ").trim();
+  const en = slug.replace(/\b\w/g, (c) => c.toUpperCase()) || "Citizen";
+  return {
+    id,
+    full_name: en,
+    full_name_bn: null,
+    username: slug.replace(/\s+/g, ""),
+    avatar_url: null,
+    district: null,
+  };
+}
+
 export function findDemoPerson(id: string): PersonCard | null {
-  return DEMO_PEOPLE.find((p) => p.id === id) ?? null;
+  const seeded = DEMO_PEOPLE.find((p) => p.id === id);
+  if (seeded) return seeded;
+  const registered = registry.get(id);
+  if (registered) return registered;
+  // Any other demo-prefixed author still resolves to a usable profile.
+  return id.startsWith("demo-") ? synthesizePerson(id) : null;
 }
 
 export function isDemoPerson(id: string): boolean {
