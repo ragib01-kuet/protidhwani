@@ -36,16 +36,35 @@ export async function deleteProfile(userId: string): Promise<void> {
   if (error) throw error;
 }
 
-/** Upload an avatar into `avatars/<uid>/<file>` and return its public URL. */
+/**
+ * Upload an avatar and return its public URL.
+ * Prefers the dedicated `avatars` bucket; when that bucket has not been created
+ * in the project yet, it transparently falls back to the community bucket so
+ * profile photos keep working instead of failing with "Bucket not found".
+ */
 export async function uploadAvatar(userId: string, file: File): Promise<string> {
   const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
-  const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage
-    .from(AVATAR_BUCKET)
-    .upload(path, file, { cacheControl: "3600", upsert: false });
-  if (error) throw error;
-  return supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path).data.publicUrl;
+  const name = `${crypto.randomUUID()}.${ext}`;
+
+  const attempts: Array<{ bucket: string; path: string }> = [
+    { bucket: AVATAR_BUCKET, path: `${userId}/${name}` },
+    { bucket: COMMUNITY_BUCKET, path: `avatars/${userId}/${name}` },
+  ];
+
+  let lastError: unknown = null;
+  for (const { bucket, path } of attempts) {
+    const { error } = await supabase.storage
+      .from(bucket)
+      .upload(path, file, { cacheControl: "3600", upsert: false });
+    if (!error) {
+      return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    }
+    lastError = error;
+    if (!/bucket not found/i.test(error.message)) throw error;
+  }
+  throw lastError;
 }
+
 
 export interface ProfileStats {
   posts: number;
