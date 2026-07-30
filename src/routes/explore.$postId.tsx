@@ -72,7 +72,10 @@ function PostDetail() {
   const status = statusLabel[post.status];
   const images = post.images ?? [];
 
-  const seeded = useMemo<PostComment[]>(() => postComments[post.id] ?? [], [post.id]);
+  const seeded = useMemo<PostComment[]>(
+    () => postComments[post.id] ?? postComments[post.id.split("-")[0]] ?? [],
+    [post.id],
+  );
   const [added, setAdded] = useState<PostComment[]>([]);
   const [draft, setDraft] = useState("");
   const [supported, setSupported] = useState(false);
