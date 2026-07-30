@@ -292,6 +292,7 @@ const pillars = [
     desc: "Photo, video, geo-tagged reports with anonymous options for citizens who need to be heard without being exposed.",
     stat: "৪২k+ reports this month",
     cta: "File a report",
+    to: "/complaints" as const,
   },
   {
     icon: Scale,
@@ -301,6 +302,7 @@ const pillars = [
     desc: "Plain-language legal explainers and citizen protections written by lawyers, translated for everyone.",
     stat: "১২০+ rights explained",
     cta: "Read explainers",
+    to: "/rights" as const,
   },
   {
     icon: ShieldCheck,
@@ -310,6 +312,7 @@ const pillars = [
     desc: "Community and editor verified — misinformation flagged, sources shown, receipts always attached.",
     stat: "98% verification rate",
     cta: "Verify a claim",
+    to: "/explore" as const,
   },
   {
     icon: Radio,
@@ -319,6 +322,7 @@ const pillars = [
     desc: "SOS, floods, curfews, road and weather advisories delivered by district, in Bangla and English.",
     stat: "৬৪ districts covered",
     cta: "See live alerts",
+    to: "/emergency" as const,
   },
   {
     icon: Users,
@@ -328,6 +332,7 @@ const pillars = [
     desc: "Local circles by district, campus and cause — organize, discuss, and act with neighbours you trust.",
     stat: "৯০০+ active circles",
     cta: "Join a circle",
+    to: "/community" as const,
   },
   {
     icon: Landmark,
@@ -337,6 +342,7 @@ const pillars = [
     desc: "Trusted directories, hotlines, and official notices, updated and cross-checked by public servants.",
     stat: "২.১k official sources",
     cta: "Browse directory",
+    to: "/rights" as const,
   },
 ];
 
