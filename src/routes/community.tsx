@@ -291,7 +291,11 @@ function Community() {
   const livePosts = feed.data ?? [];
   // Fall back to the seeded demo feed whenever live data has nothing to show.
   const demoVisible = filterDemoPosts(demoPosts, filters);
-  const showingDemo = !feed.isLoading && livePosts.length === 0 && demoVisible.length > 0;
+  const showingDemo =
+    !feed.isLoading &&
+    (feed.isError || livePosts.length === 0) &&
+    demoVisible.length > 0;
+
   const posts = showingDemo ? demoVisible : livePosts;
 
   const toggleDemoSupport = (post: PostWithAuthor) => {
