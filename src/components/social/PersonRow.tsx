@@ -72,13 +72,14 @@ export function DemoNotice() {
   return (
     <div className="rounded-2xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm">
       <p lang="bn" className="font-semibold">
-        ডেমো নেটওয়ার্ক চালু
+        নমুনা প্রতিবেশী দেখানো হচ্ছে
       </p>
       <p lang="en" className="mt-1 text-xs text-muted-foreground">
-        Demo mode — friend requests and messages work end to end with sample neighbours and are
-        saved on this device. Run <code className="rounded bg-background px-1">supabase/social.sql</code>{" "}
-        to switch to live accounts.
+        Live accounts are active. Some of your connections are sample neighbours kept on this
+        device — friend requests and messages with real Protidhwani accounts sync to your account
+        everywhere.
       </p>
     </div>
   );
 }
+
