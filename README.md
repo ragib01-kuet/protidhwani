@@ -1,8 +1,19 @@
 # Protidhwani (প্রতিধ্বনি)
 
-> A citizen-powered civic safety network for Bangladesh — report incidents, verify information, call for help, and organise your community, in Bangla first.
+>Protidhwani — প্রতিধ্বনি is a citizen-powered civic network built for Bangladesh, designed to turn everyday people into active guardians of their own communities. Unlike conventional social media, which is built for entertainment and algorithmic engagement, Protidhwani is a purpose-driven civic operating system where citizens can report incidents, verify information, request emergency help, organize communities, and protect their rights — all in a Bangla-first, bilingual interface. At its core lies a community safety intelligence map that visualizes risk at division, district, area, and even street level, helping people make informed decisions about the routes they take and the places they visit. When danger strikes, a one-tap SOS broadcasts the caller’s live location to nearby community members and emergency responders, while blood alerts connect those in urgent need with nearby donors. The platform also includes a structured verification pipeline where claims are submitted with sources and reviewed through a transparent status timeline, so information is judged by evidence rather than virality. Community feeds are scoped by real geography — district, upazila, and union — ensuring that what people see reflects what is actually happening around them, not what an opaque algorithm wants them to see. With built-in friend connections, direct messaging, public profiles, legal rights resources, protest coordination with offline resilience, and even agent integrations through secure MCP access, Protidhwani offers a fair, transparent, and functional alternative to traditional social networks: one built not for scrolling, but for safety, accountability, and collective civic action.
 
 Submitted to **July Hackathon 2026**.
+
+---
+## Overview
+
+Bangladesh faces a major challenge during emergencies, civic unrest, disasters, and local safety incidents: information is scattered across social media, messaging platforms, and informal networks. Rumors often spread faster than verified facts, emergency assistance is difficult to coordinate, and citizens lack a trusted source to understand what is happening around them.
+
+**Protidhwani (প্রতিধ্বনি)** aims to transform scattered citizen reports into reliable, actionable community intelligence.
+
+Inspired by the spirit of citizen participation and collective responsibility, Protidhwani provides a unified civic safety network where people can report incidents, verify information, request help, and collaborate with their communities.
+
+The platform is designed **Bangla-first**, making civic technology more accessible for everyday citizens across Bangladesh.
 
 ---
 
@@ -100,12 +111,6 @@ Created by the SQL above; verify they exist and are public:
 - `complaint-images`
 - `community-images`
 
-### Deploying to Netlify
-
-1. Connect the repository to Netlify (build config lives in `netlify.toml`).
-2. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` in Site settings → Environment variables.
-3. Deploy — the build uses the Netlify Nitro preset and ships SSR plus static assets.
-
 ## Screenshots
 
 | Home | Safety map | Emergency |
@@ -116,11 +121,8 @@ Created by the SQL above; verify they exist and are public:
 | --- | --- | --- |
 | _add `docs/screenshots/community.png`_ | _add `docs/screenshots/verify.png`_ | _add `docs/screenshots/founder.png`_ |
 
-## Demo video
-
-_Add the demo video link here before submission._
-
-Live demo: https://protidhwani.lovable.app
+## Live Website
+Live: [[https://protidhwani.ragibabid.me](https://protidhwani.ragibabid.me/)]
 
 ## Team
 
@@ -130,8 +132,8 @@ Live demo: https://protidhwani.lovable.app
 
 ## AI tools used
 
-- **Lovable** — primary AI pair-programming environment used to design and build the app
-- **Claude (Anthropic)** — architecture reasoning, code review, and content drafting
+- **Lovable & Google AI Studio** — primary AI pair-programming environment used to design the UI of the app
+
 
 All generated code was reviewed, adapted, and tested by the team.
 
