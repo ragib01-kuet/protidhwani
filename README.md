@@ -130,11 +130,6 @@ Live: [[https://protidhwani.ragibabid.me](https://protidhwani.ragibabid.me/)]
 | --- | --- | --- |
 | Ragib Abid | Founder, product & engineering | ragibkuet@gmail.com |
 
-## AI tools used
-
-- **Lovable & Google AI Studio** — primary AI pair-programming environment used to design the UI of the app
-
-
 All generated code was reviewed, adapted, and tested by the team.
 
 ## License
